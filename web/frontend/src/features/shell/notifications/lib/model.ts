@@ -197,6 +197,11 @@ const wallLink = (profile: unknown): NotificationLink | undefined => {
     ? { to: "/player/$nick", params: { nick }, search: { tab: "comentarios" } }
     : undefined
 }
+/** Una tierlist (replanteo 137). */
+const tierlistLink = (tierlist: unknown): NotificationLink | undefined =>
+  idOf(tierlist)
+    ? { to: "/tierlists/$id", params: { id: idOf(tierlist) } }
+    : undefined
 const adminEventLink = (event: unknown): NotificationLink | undefined =>
   idOf(event)
     ? { to: "/admin/events/$id", params: { id: idOf(event) } }
@@ -764,6 +769,29 @@ export function describe(n: Notification, me?: string | null): Described {
         title: `A ${player} le gusta tu perfil`,
         body: "Te dio me gusta.",
         link: playerLink(d.player),
+      }
+    // ---------- tus tierlists (replanteo 137, en la categoría Amigos) ----------
+    case "tierlist_comment":
+      return {
+        kind: "friend",
+        title:
+          `${player} comentó tu tierlist ${str(obj(d.tierlist).name)}`.trim(),
+        body: str(d.comment, "Mirá lo que te escribió."),
+        link: tierlistLink(d.tierlist),
+      }
+    case "tierlist_reply":
+      return {
+        kind: "friend",
+        title: `${player} respondió tu comentario`,
+        body: str(d.comment, "Mirá lo que te respondió."),
+        link: tierlistLink(d.tierlist),
+      }
+    case "tierlist_like":
+      return {
+        kind: "friend",
+        title: `A ${player} le gusta tu tierlist`,
+        body: str(obj(d.tierlist).name, "Le dio me gusta."),
+        link: tierlistLink(d.tierlist),
       }
     case "password_changed":
       return {

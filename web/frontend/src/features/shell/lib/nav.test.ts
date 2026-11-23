@@ -31,6 +31,7 @@ describe("activeNavKey", () => {
   it("las fichas de jugador y equipo marcan Ranking", () => {
     expect(activeNavKey("/player/Zeta")).toBe("ranking")
     expect(activeNavKey("/players/compare")).toBe("ranking")
+    expect(activeNavKey("/tierlists/abc")).toBe("ranking")
     expect(activeNavKey("/teams/abc")).toBe("ranking")
     expect(activeNavKey("/ranking/teams")).toBe("ranking")
   })
@@ -55,6 +56,23 @@ describe("activeNavKey", () => {
 describe("breadcrumbsFor", () => {
   const labels = (path: string, data = {}) =>
     breadcrumbsFor(path, data).map((c) => c.label)
+
+  it("una tierlist: el ranking, el perfil del autor (pestaña Tierlists) y el nombre", () => {
+    expect(labels("/tierlists/abc")).toEqual(["Ranking", "Tierlist"])
+    const crumbs = breadcrumbsFor("/tierlists/abc", {
+      tierlist: { name: "Mejores AWP", owner: "Zeta" },
+    })
+    expect(crumbs.map((c) => c.label)).toEqual([
+      "Ranking",
+      "Zeta",
+      "Mejores AWP",
+    ])
+    expect(crumbs[1]).toMatchObject({
+      to: "/player/$nick",
+      params: { nick: "Zeta" },
+      search: { tab: "tierlists" },
+    })
+  })
 
   it("Administración y sus secciones", () => {
     expect(labels("/admin/events")).toEqual([

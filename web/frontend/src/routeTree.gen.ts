@@ -69,6 +69,7 @@ import { Route as AppRankingIndexRouteImport } from './routes/_app/ranking.index
 import { Route as AppRankingTeamsRouteImport } from './routes/_app/ranking.teams'
 import { Route as AppSeasonNumberRouteImport } from './routes/_app/season.$number'
 import { Route as AppTeamsIdRouteImport } from './routes/_app/teams.$id'
+import { Route as AppTierlistsIdRouteImport } from './routes/_app/tierlists.$id'
 import { Route as AppAdminEventsIndexRouteImport } from './routes/_app/admin.events.index'
 import { Route as AppAdminEventsIdRouteImport } from './routes/_app/admin.events.$id'
 import { Route as AppAdminEventsNewRouteImport } from './routes/_app/admin.events.new'
@@ -375,6 +376,11 @@ const AppTeamsIdRoute = AppTeamsIdRouteImport.update({
   path: '/teams/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTierlistsIdRoute = AppTierlistsIdRouteImport.update({
+  id: '/tierlists/$id',
+  path: '/tierlists/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdminEventsIndexRoute = AppAdminEventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
@@ -464,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/ranking/teams': typeof AppRankingTeamsRoute
   '/season/$number': typeof AppSeasonNumberRoute
   '/teams/$id': typeof AppTeamsIdRoute
+  '/tierlists/$id': typeof AppTierlistsIdRoute
   '/events/': typeof AppEventsIndexRoute
   '/help/': typeof AppHelpIndexRoute
   '/matches/': typeof AppMatchesIndexRoute
@@ -530,6 +537,7 @@ export interface FileRoutesByTo {
   '/ranking/teams': typeof AppRankingTeamsRoute
   '/season/$number': typeof AppSeasonNumberRoute
   '/teams/$id': typeof AppTeamsIdRoute
+  '/tierlists/$id': typeof AppTierlistsIdRoute
   '/events': typeof AppEventsIndexRoute
   '/help': typeof AppHelpIndexRoute
   '/matches': typeof AppMatchesIndexRoute
@@ -600,6 +608,7 @@ export interface FileRoutesById {
   '/_app/ranking/teams': typeof AppRankingTeamsRoute
   '/_app/season/$number': typeof AppSeasonNumberRoute
   '/_app/teams/$id': typeof AppTeamsIdRoute
+  '/_app/tierlists/$id': typeof AppTierlistsIdRoute
   '/_app/events/': typeof AppEventsIndexRoute
   '/_app/help/': typeof AppHelpIndexRoute
   '/_app/matches/': typeof AppMatchesIndexRoute
@@ -669,6 +678,7 @@ export interface FileRouteTypes {
     | '/ranking/teams'
     | '/season/$number'
     | '/teams/$id'
+    | '/tierlists/$id'
     | '/events/'
     | '/help/'
     | '/matches/'
@@ -735,6 +745,7 @@ export interface FileRouteTypes {
     | '/ranking/teams'
     | '/season/$number'
     | '/teams/$id'
+    | '/tierlists/$id'
     | '/events'
     | '/help'
     | '/matches'
@@ -804,6 +815,7 @@ export interface FileRouteTypes {
     | '/_app/ranking/teams'
     | '/_app/season/$number'
     | '/_app/teams/$id'
+    | '/_app/tierlists/$id'
     | '/_app/events/'
     | '/_app/help/'
     | '/_app/matches/'
@@ -1261,6 +1273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTeamsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/tierlists/$id': {
+      id: '/_app/tierlists/$id'
+      path: '/tierlists/$id'
+      fullPath: '/tierlists/$id'
+      preLoaderRoute: typeof AppTierlistsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/admin/events/': {
       id: '/_app/admin/events/'
       path: '/events'
@@ -1393,6 +1412,7 @@ interface AppRouteChildren {
   AppRankingTeamsRoute: typeof AppRankingTeamsRoute
   AppSeasonNumberRoute: typeof AppSeasonNumberRoute
   AppTeamsIdRoute: typeof AppTeamsIdRoute
+  AppTierlistsIdRoute: typeof AppTierlistsIdRoute
   AppEventsIndexRoute: typeof AppEventsIndexRoute
   AppHelpIndexRoute: typeof AppHelpIndexRoute
   AppMatchesIndexRoute: typeof AppMatchesIndexRoute
@@ -1423,6 +1443,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRankingTeamsRoute: AppRankingTeamsRoute,
   AppSeasonNumberRoute: AppSeasonNumberRoute,
   AppTeamsIdRoute: AppTeamsIdRoute,
+  AppTierlistsIdRoute: AppTierlistsIdRoute,
   AppEventsIndexRoute: AppEventsIndexRoute,
   AppHelpIndexRoute: AppHelpIndexRoute,
   AppMatchesIndexRoute: AppMatchesIndexRoute,

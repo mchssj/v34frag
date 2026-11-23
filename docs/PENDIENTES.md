@@ -2,6 +2,14 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
 
+## Tierlists de jugadores y equipos (2026-11-22): probado en local
+
+- **Hecho:** replanteo `137`, API, web (pestaña del perfil, `/tierlists/$id`, editor, comentarios con respuestas, me gusta, copiar, imagen, denuncias), manual y legales ("En preparación"). Probado contra la base local y en el navegador. Detalle: [`2026-11-22-tierlists-jugadores-equipos`](bitacora/2026-11-22-tierlists-jugadores-equipos/).
+- **Falta:**
+  - Commit en `main` (Daniel lo pide).
+  - Aplicar la `137` en la base de producción y desplegar la API y la web.
+  - Después: sacar "En preparación" de las tierlists en términos y privacidad, y mandar el changelog.
+
 ## Ranking de clips guardado (2026-11-22): desplegado, falta medir
 
 - **Qué es:** la web se trababa de uno a tres minutos al terminar cada partida (hasta `/auth/me` tardaba 15 a 19 s). La causa: `match_clip_ranked` armaba el puesto de todos los clips de la base en cada consulta (0,9 a 1,9 s en producción) y al terminar un mix se juntaban el grabador, el bot de Discord y los 10 de la sala. El replanteo `136` guarda el puesto en `match_clip_ranks` con triggers; las vistas devuelven lo mismo, en milisegundos. Detalle: [`2026-11-22-ranking-de-clips-guardado`](bitacora/2026-11-22-ranking-de-clips-guardado/).

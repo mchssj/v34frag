@@ -30,9 +30,12 @@ const REASONS = Object.keys(COMMENT_REPORT_REASON) as CommentReportReason[]
 
 export function CommentReportDialog({
   author,
+  title = `Denunciar el comentario de ${author}`,
   onReport,
 }: {
   author: string
+  /** Lo que se denuncia; por defecto, el comentario de `author` (también sirve para una tierlist). */
+  title?: string
   /** Devuelve una promesa: el diálogo se cierra solo si la denuncia se guardó. */
   onReport: (reason: CommentReportReason, note: string) => Promise<unknown>
 }) {
@@ -58,7 +61,7 @@ export function CommentReportDialog({
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label={`Denunciar el comentario de ${author}`}
+          aria-label={title}
           title="Denunciar"
         >
           <FlagIcon />
@@ -66,7 +69,7 @@ export function CommentReportDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Denunciar el comentario de {author}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             Lo revisa un moderador. Si no cumple las reglas, lo borra.
           </DialogDescription>

@@ -146,7 +146,7 @@ export const BanLimits = BanLimitsInput.extend({
 }).openapi('BanLimits');
 
 export const SUPPORT_ACTIONS = ['ban', 'ban_update', 'ban_lift', 'clip_reprocess', 'clip_approve', 'clip_reject', 'photo_remove', 'logo_remove',
-  'comment_delete', 'comment_report', 'penalty_lift', 'cover_remove'] as const;
+  'comment_delete', 'comment_report', 'penalty_lift', 'cover_remove', 'tierlist_comment_delete', 'tierlist_report'] as const; // (replanteo 137) tierlists
 const Ref = z.object({ id: z.uuid(), alias: z.string() });
 export const SupportAction = z
   .object({

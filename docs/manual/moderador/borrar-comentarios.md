@@ -1,6 +1,6 @@
 ---
 titulo: Borrar comentarios de perfiles
-resumen: Revisar los comentarios denunciados y sacar uno que no cumple las reglas del perfil de cualquier jugador.
+resumen: Revisar los comentarios y las tierlists denunciados y sacar lo que no cumple las reglas.
 orden: 8
 ---
 
@@ -21,3 +21,13 @@ Los moderadores, los admins y el soporte ven la papelera en todos los comentario
 2. Toca la papelera del comentario.
 
 El comentario deja de verse enseguida. No se pierde: queda guardado quién lo borró y cuándo, por si hace falta revisar un caso. Un jugador con un baneo activo no puede comentar ni votar perfiles. Si alguien insiste con insultos o acoso, se sanciona como cualquier otra falta a las reglas (ver [Banear a un jugador](/help/moderador/banear-jugador)).
+
+## Tierlists y sus comentarios
+
+Las tierlists y los comentarios de tierlists denunciados están en Administración › Baneos, pestaña **Tierlists**, con los mismos filtros. Cada denuncia dice si es de una tierlist o de un comentario, de quién es y el texto como estaba al denunciarlo, con **Abrir** para ver la tierlist.
+
+- **Descartar:** se queda. Se cierran todas sus denuncias.
+- **Borrar el comentario:** se borra, queda guardado y se cierran sus denuncias. Si tenía respuestas, se ve "Comentario borrado" y las respuestas quedan.
+- **Borrar la tierlist:** se borra entera, con sus comentarios y me gusta, y no se recupera. La denuncia queda con el nombre que tenía.
+
+También ves la papelera en todos los comentarios de las tierlists.

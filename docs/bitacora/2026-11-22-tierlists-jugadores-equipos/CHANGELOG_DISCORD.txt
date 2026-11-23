@@ -1,0 +1,11 @@
+CMLeague 2.9.61 --  Changelog
+
+Tierlists
+- Arma tus tierlists de jugadores o de equipos: los de CMLeague con su foto y los de afuera con su nombre.
+- Ordénalos en tiers arrastrando con el mouse o, en el teléfono, con el menú de cada uno. Los tiers los nombras como quieras.
+- Hasta 10 tierlists por cuenta, con 10 tiers y 100 jugadores o equipos cada una.
+- Nueva pestaña Tierlists en tu perfil: destaca la que más te guste y las demás quedan en "Ver otras tierlists".
+- Dale me gusta a las tierlists de otros, cópialas para armar tu versión o descárgalas como imagen para compartirlas.
+- Comenta las tierlists y responde los comentarios. Si no quieres comentarios en una, puedes cerrarlos.
+- Te avisamos cuando comentan o le dan me gusta a tu tierlist, y cuando responden tu comentario.
+- Si una tierlist o un comentario insulta o es spam, denúncialo con la bandera.

@@ -15,6 +15,8 @@ export const SUPPORT_ACTION_LABEL: Record<SupportActionKind, string> = {
   comment_report: "Denuncias resueltas",
   penalty_lift: "Sanciones de la cola levantadas",
   cover_remove: "Portadas quitadas",
+  tierlist_comment_delete: "Comentarios de tierlists borrados",
+  tierlist_report: "Denuncias de tierlists resueltas",
 }
 
 const str = (v: unknown) => (typeof v === "string" ? v : "")
@@ -54,11 +56,20 @@ export function supportActionText(
       return `levantó la sanción de la cola de ${who}`
     case "cover_remove":
       return `quitó la portada de ${who}`
+    case "tierlist_comment_delete":
+      return `borró un comentario de una tierlist de ${who}`
+    case "tierlist_report":
+      return t.decision === "delete"
+        ? `borró ${t.target === "comment" ? "un comentario denunciado de una tierlist" : "una tierlist denunciada"} de ${who}`
+        : `descartó una denuncia de una tierlist de ${who}`
   }
 }
 
 /** El texto del comentario, si la acción fue sobre uno (para mostrarlo citado). */
 export const supportActionQuote = (a: SupportAction) =>
-  a.action === "comment_delete" || a.action === "comment_report"
+  a.action === "comment_delete" ||
+  a.action === "comment_report" ||
+  a.action === "tierlist_comment_delete" ||
+  a.action === "tierlist_report"
     ? str(a.target.body) || null
     : null

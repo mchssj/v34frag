@@ -26,6 +26,8 @@ import { Achievements } from "./tabs/AchievementsTab"
 import { Showcase } from "./tabs/ShowcaseTab"
 import { showcaseOptions } from "@/features/pins/api"
 import { ProfileWall, wallOptions } from "./ProfileWall"
+import { Tierlists } from "./tabs/TierlistsTab"
+import { tierlistsOfOptions } from "@/features/tierlists/api/queries"
 
 const LABELS: Record<Tab, string> = {
   resumen: "Resumen",
@@ -37,6 +39,7 @@ const LABELS: Record<Tab, string> = {
   equipos: "Equipos",
   temporadas: "Temporadas",
   bio: "Bio y torneos",
+  tierlists: "Tierlists",
   comentarios: "Comentarios",
 }
 
@@ -60,6 +63,7 @@ function useTabCounts(
   const seasons = useQuery(seasonsOptions(nick)).data
   const wall = useQuery(wallOptions(playerId)).data
   const showcase = useQuery(showcaseOptions(nick)).data
+  const tierlists = useQuery(tierlistsOfOptions(playerId)).data
   return {
     clips: clips?.length,
     vitrina: showcase
@@ -69,6 +73,7 @@ function useTabCounts(
     partidas: matches?.total,
     equipos: teams?.length,
     temporadas: seasons?.length,
+    tierlists: tierlists?.items.length,
     comentarios: wall?.comments_open ? wall.total : undefined,
   }
 }
@@ -170,6 +175,9 @@ export function PlayerTabs({ nick, player, search, onTab, onChange }: Props) {
         )}
         {tab === "temporadas" && <Seasons nick={nick} />}
         {tab === "bio" && <Bio nick={nick} player={player} owner={owner} />}
+        {tab === "tierlists" && (
+          <Tierlists playerId={player.id} owner={owner} />
+        )}
         {tab === "comentarios" && <ProfileWall playerId={player.id} />}
       </TabsContent>
     </Tabs>

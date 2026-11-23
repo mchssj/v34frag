@@ -399,6 +399,17 @@ const SECTIONS: LegalSection[] = [
           o un moderador.
         </li>
         <li>
+          Las tierlists <Wip /> que armas son públicas, salen con tu nick y son
+          tu opinión. Sus nombres, los nombres de jugadores y equipos que no
+          están en la liga que escribes y sus comentarios y respuestas siguen
+          las mismas reglas que los comentarios de los perfiles, y respondes por
+          lo que escribes. Cualquiera puede copiar una tierlist tuya (la copia
+          dice en cuál se basa) o descargarla como imagen. El autor de la
+          tierlist puede borrar sus comentarios o cerrarlos, y cualquiera puede
+          denunciar una tierlist o un comentario: si no cumple, el soporte, un
+          moderador o un admin puede borrar el comentario o la tierlist entera.
+        </li>
+        <li>
           La insignia de cuenta verificada (gris o dorada) la pone un admin a su
           criterio, no se compra ni se pide desde la web, y se puede quitar.
         </li>

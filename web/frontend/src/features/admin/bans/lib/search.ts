@@ -11,6 +11,7 @@ export const STATUS_TABS = [
   "all",
   "mm",
   "comments",
+  "tierlists",
   "images",
   "support",
 ] as const

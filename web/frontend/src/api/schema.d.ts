@@ -4858,6 +4858,1088 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/players/{id}/tierlists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Las tierlists de un jugador
+         * @description También sin sesión.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Tierlists */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TierlistsOf"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlists/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Una tierlist
+         * @description También sin sesión. Los `can_*` dependen de quién consulta.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Tierlist */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Tierlist"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Guardar una tierlist
+         * @description Solo el dueño. Reemplaza el nombre, los tiers y los ítems. Hasta 10 tiers y 100 ítems.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TierlistSave"];
+                };
+            };
+            responses: {
+                /** @description Tierlist */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Tierlist"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Borrar una tierlist
+         * @description Solo el dueño. Se van sus comentarios y me gusta.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Borrada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Crear una tierlist
+         * @description Con ficha. Trae los tiers S, A, B, C y D. Hasta 10 por cuenta (`400`).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TierlistCreate"];
+                };
+            };
+            responses: {
+                /** @description Creada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TierlistCreated"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlists/{id}/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Destacar una tierlist
+         * @description Solo el dueño. Una destacada por perfil: la anterior deja de estarlo.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TierlistFlag"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlists/{id}/comments-open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Abrir o cerrar los comentarios
+         * @description Solo el dueño. Cerrados, no se ven ni se dejan.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TierlistCommentsOpen"];
+                };
+            };
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlists/{id}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Me gusta
+         * @description `on: false` lo saca. No a la propia.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TierlistFlag"];
+                };
+            };
+            responses: {
+                /** @description Tierlist */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Tierlist"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlists/{id}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copiar una tierlist ajena
+         * @description Con tiers e ítems, sin comentarios ni me gusta. Cuenta para el tope de 10.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description La copia */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TierlistCreated"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlists/{id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Comentarios de una tierlist
+         * @description También sin sesión. Vacía si están cerrados.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    before?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Comentarios */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TierlistComments"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Comentar o responder
+         * @description Hasta 280 caracteres, 30 segundos entre comentarios y 30 por día (`400`). Una respuesta no se responde (`400`).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TierlistNewComment"];
+                };
+            };
+            responses: {
+                /** @description Comentarios */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TierlistComments"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlist-comments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Borrar un comentario
+         * @description El autor, el dueño de la tierlist, soporte, moderadores y admins.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Borrado */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tierlists/{id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Denunciar una tierlist o un comentario
+         * @description Ajenos, una vez por cuenta; 20 denuncias por día.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TierlistReportBody"];
+                };
+            };
+            responses: {
+                /** @description Denunciada */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/tierlist-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tierlists y comentarios de tierlists denunciados
+         * @description Soporte, moderadores y admins.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    status?: "open" | "resolved" | "all";
+                    reason?: "toxic" | "spam" | "harassment" | "other";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Denuncias */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TierlistReportList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/tierlist-reports/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolver una denuncia de tierlist
+         * @description Cierra las abiertas de lo mismo. `delete` borra el comentario (queda guardado) o la tierlist entera.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TierlistReportResolve"];
+                };
+            };
+            responses: {
+                /** @description Resuelta */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/players": {
         parameters: {
             query?: never;
@@ -12265,7 +13347,7 @@ export interface paths {
                     order?: "asc" | "desc";
                     /** @description La cuenta de soporte (su id de usuario) */
                     actor?: string;
-                    action?: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift" | "cover_remove";
+                    action?: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift" | "cover_remove" | "tierlist_comment_delete" | "tierlist_report";
                     /** @description Desde (incluido) */
                     from?: string;
                     /** @description Hasta (sin incluir) */
@@ -28958,6 +30040,229 @@ export interface components {
         TeamPinList: {
             items: components["schemas"]["TeamPin"][];
         };
+        TierlistsOf: {
+            is_owner: boolean;
+            /** @description Tope de tierlists por cuenta (10) */
+            limit: number;
+            /** @description Cuántas tiene la cuenta que consulta */
+            count: number;
+            /** @description La destacada primero y después la última editada */
+            items: components["schemas"]["TierlistSummary"][];
+        };
+        TierlistSummary: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /**
+             * @description `players` (jugadores) o `teams` (equipos)
+             * @enum {string}
+             */
+            kind: "players" | "teams";
+            featured: boolean;
+            updated_at: string;
+            likes: number;
+            /** @description Comentarios visibles (0 si están cerrados) */
+            comments: number;
+            items: number;
+        };
+        Tierlist: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /**
+             * @description `players` (jugadores) o `teams` (equipos)
+             * @enum {string}
+             */
+            kind: "players" | "teams";
+            featured: boolean;
+            comments_open: boolean;
+            created_at: string;
+            updated_at: string;
+            owner: {
+                /** Format: uuid */
+                player_id: string;
+                nick: string;
+                photo_url: string | null;
+                level: number;
+                /** @enum {string|null} */
+                verified: "gray" | "gold" | null;
+            };
+            /** @description La original, si es una copia y sigue existiendo */
+            copied_from: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nick: string;
+            } | null;
+            likes: number;
+            liked: boolean;
+            is_owner: boolean;
+            can_like: boolean;
+            /** @description Con sesión y ficha, no es la propia y no llegó al tope de 10 */
+            can_copy: boolean;
+            can_comment: boolean;
+            can_report: boolean;
+            /** @enum {string|null} */
+            restriction: "banned" | "blocked" | null;
+            tiers: {
+                /** Format: uuid */
+                id: string;
+                label: string;
+                items: components["schemas"]["TierlistItem"][];
+            }[];
+            /** @description Los ítems que no están en ningún tier */
+            bank: components["schemas"]["TierlistItem"][];
+        };
+        TierlistItem: {
+            /** @enum {string} */
+            kind: "player" | "team" | "external";
+            /**
+             * Format: uuid
+             * @description La ficha o el equipo; null si es externo
+             */
+            id: string | null;
+            /** @description Nick, nombre del equipo o nombre externo, al día */
+            name: string;
+            tag: string | null;
+            image_url: string | null;
+        };
+        TierlistCreated: {
+            /** Format: uuid */
+            id: string;
+        };
+        TierlistCreate: {
+            name: string;
+            /**
+             * @description `players` (jugadores) o `teams` (equipos)
+             * @enum {string}
+             */
+            kind: "players" | "teams";
+        };
+        TierlistSave: {
+            name: string;
+            tiers: {
+                label: string;
+                items: components["schemas"]["TierlistSaveItem"][];
+            }[];
+            bank: components["schemas"]["TierlistSaveItem"][];
+        };
+        /** @description `{player}` en una de jugadores, `{team}` en una de equipos o `{name}` (externo) en las dos */
+        TierlistSaveItem: {
+            /** Format: uuid */
+            player: string;
+        } | {
+            /** Format: uuid */
+            team: string;
+        } | {
+            name: string;
+        };
+        TierlistFlag: {
+            on: boolean;
+        };
+        TierlistCommentsOpen: {
+            open: boolean;
+        };
+        TierlistComments: {
+            /** @description Comentarios y respuestas visibles */
+            total: number;
+            /** @description Comentarios (sin las respuestas) que se paginan, para "Ver más" */
+            threads: number;
+            /** @description Los más nuevos primero, 20 por página, con todas sus respuestas */
+            items: (components["schemas"]["TierlistComment"] & {
+                replies: components["schemas"]["TierlistComment"][];
+            })[];
+        };
+        TierlistComment: {
+            /** Format: uuid */
+            id: string;
+            /** @description Borrado pero con respuestas: sin texto ni autor */
+            deleted: boolean;
+            body: string | null;
+            created_at: string;
+            author: {
+                /** Format: uuid */
+                player_id: string;
+                nick: string;
+                photo_url: string | null;
+                level: number;
+                /** @enum {string|null} */
+                verified: "gray" | "gold" | null;
+            } | null;
+            mine: boolean;
+            can_report: boolean;
+            can_delete: boolean;
+        };
+        TierlistNewComment: {
+            body: string;
+            /**
+             * Format: uuid
+             * @description Para responder un comentario (no una respuesta)
+             */
+            parent_id?: string;
+        };
+        TierlistReportBody: {
+            /** @enum {string} */
+            reason: "toxic" | "spam" | "harassment" | "other";
+            note?: string;
+            /**
+             * Format: uuid
+             * @description Para denunciar un comentario; sin esto, la tierlist
+             */
+            comment_id?: string;
+        };
+        TierlistReportList: {
+            items: components["schemas"]["TierlistReport"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        TierlistReport: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            target: "tierlist" | "comment";
+            /** @enum {string} */
+            reason: "toxic" | "spam" | "harassment" | "other";
+            note: string | null;
+            created_at: string;
+            /** @enum {string} */
+            status: "open" | "dismissed" | "removed";
+            resolved_at: string | null;
+            resolved_by: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            reporter: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+            reports: number;
+            /**
+             * Format: uuid
+             * @description null si la tierlist se borró
+             */
+            tierlist_id: string | null;
+            tierlist_name: string | null;
+            /** @description El nombre de la tierlist o el comentario, como estaba al denunciarlo */
+            text: string;
+            /** @description Si ya se borró lo denunciado */
+            removed: boolean;
+            author: {
+                /** Format: uuid */
+                id: string;
+                alias: string;
+            } | null;
+        };
+        TierlistReportResolve: {
+            /** @enum {string} */
+            action: "dismiss" | "delete";
+        };
         PlayerList: {
             items: components["schemas"]["PlayerSummary"][];
             /** @description Total con los filtros aplicados */
@@ -30454,7 +31759,7 @@ export interface components {
         SupportAction: {
             id: number;
             /** @enum {string} */
-            action: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift" | "cover_remove";
+            action: "ban" | "ban_update" | "ban_lift" | "clip_reprocess" | "clip_approve" | "clip_reject" | "photo_remove" | "logo_remove" | "comment_delete" | "comment_report" | "penalty_lift" | "cover_remove" | "tierlist_comment_delete" | "tierlist_report";
             created_at: string;
             /** @description La ficha de quien lo hizo (null si ya no tiene) */
             actor: {

@@ -40,6 +40,7 @@ import { notifications } from './routes/notifications';
 import { pcw } from './routes/pcw';
 import { pcwPlay } from './routes/pcw-play';
 import { pins } from './routes/pins';
+import { tierlists } from './routes/tierlists';
 import { players } from './routes/players';
 import { ranking } from './routes/ranking';
 import { roster } from './routes/roster';
@@ -105,6 +106,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', ranking); // antes que players: /players/compare no es un {id}
   app.route('/', medals); // antes que players: /players/{id}/medals/progress
   app.route('/', pins); // (replanteo 123) antes que players: /players/{id}/showcase
+  app.route('/', tierlists); // (replanteo 137) antes que players: /players/{id}/tierlists
   app.route('/', players);
   app.route('/', teams);
   app.route('/', roster);

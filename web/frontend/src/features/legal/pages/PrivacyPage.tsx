@@ -63,7 +63,7 @@ const PROVIDERS: [string, ReactNode][] = [
   ["Hosting de la web", "Servir las páginas de la web"],
 ]
 
-const RETENTION: [string, string][] = [
+const RETENTION: [string, ReactNode][] = [
   ["Cuenta y perfil", "Mientras tengas la cuenta"],
   ["Estadísticas, resultados y ELO", "Sin plazo: son el historial de la liga"],
   ["Demos", "Hasta 90 días (antes, las más viejas, si se llena el espacio)"],
@@ -107,6 +107,18 @@ const RETENTION: [string, string][] = [
   [
     "Denuncias de comentarios (motivo, nota y quién la mandó)",
     "Mientras existan el comentario y tu cuenta",
+  ],
+  [
+    "Tierlists, sus comentarios (también los borrados) y me gusta",
+    <>
+      Hasta que borres la tierlist o tu cuenta <Wip />
+    </>,
+  ],
+  [
+    "Denuncias de tierlists y de sus comentarios (motivo, nota, quién la mandó y el texto denunciado)",
+    <>
+      Mientras exista tu cuenta <Wip />
+    </>,
   ],
   ["Chat del grupo en Jugar", "Hasta que el grupo se deshace"],
   [
@@ -180,6 +192,13 @@ const SECTIONS: LegalSection[] = [
             que escribes; el autor del comentario no ve quién lo denunció. Si
             tienes la insignia de cuenta verificada, su color, el motivo, qué
             admin la puso y cuándo.
+          </li>
+          <li>
+            Tus tierlists <Wip />: su nombre, sus tiers, qué jugadores y equipos
+            pusiste en cada uno (y los nombres de afuera que escribiste), cuál
+            destacas y en cuál se basa una copia. También los comentarios y las
+            respuestas que dejas en tierlists, los me gusta que das y las
+            denuncias que mandas.
           </li>
           <li>
             Tus preferencias del matchmaking, como el autoaceptar partida (VIP).
@@ -377,6 +396,14 @@ const SECTIONS: LegalSection[] = [
           con quién lo borró y cuándo, por si hace falta revisar un caso de
           acoso. La insignia de verificado se ve en tu perfil y en tus
           comentarios.
+        </p>
+        <p>
+          Las tierlists <Wip /> las ve cualquiera, con su contenido, tu nick y
+          el total de me gusta (no quién los dio). Tu ficha puede aparecer en
+          las tierlists que arman otros jugadores, con tu nick y tu foto al día,
+          como en el ranking. Si alguien copia una tierlist, la copia muestra tu
+          nick como autor de la original. Al borrar una tierlist o tu cuenta, se
+          borran tus tierlists con sus comentarios y me gusta.
         </p>
         <p>
           En un torneo histórico (el registro de un torneo jugado antes o fuera

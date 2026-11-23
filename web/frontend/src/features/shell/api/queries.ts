@@ -17,6 +17,7 @@ import { sideName } from "@/features/public/lib/format"
 import { eventDetailOptions } from "@/features/events/api/queries"
 import { manualIndexOptions } from "@/features/help/api/queries"
 import { teamDetailOptions } from "@/features/teams/api/queries"
+import { tierlistOptions } from "@/features/tierlists/api/queries"
 import { liveMixesOptions } from "@/features/mixes/api/queries"
 import type { MixItem } from "@/features/mixes/types"
 import type { MatchSummary } from "@/features/matches/types"
@@ -206,6 +207,10 @@ export function useCrumbData(pathname: string): CrumbData {
     ...matchDetailOptions(id ?? ""),
     enabled: first === "match" && !!id,
   }).data
+  const tierlist = useQuery({
+    ...tierlistOptions(id ?? ""),
+    enabled: first === "tierlists" && !!id,
+  }).data
   const manual = useQuery({
     ...manualIndexOptions(),
     enabled: first === "help" && !!id,
@@ -218,6 +223,7 @@ export function useCrumbData(pathname: string): CrumbData {
     help: helpSection &&
       helpPage && { section: helpSection.titulo, title: helpPage.titulo },
     team: team?.name,
+    tierlist: tierlist && { name: tierlist.name, owner: tierlist.owner.nick },
     event: event?.name,
     match: match && {
       kind: match.kind,

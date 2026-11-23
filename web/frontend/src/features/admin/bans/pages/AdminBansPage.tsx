@@ -50,6 +50,10 @@ import {
   useOpenCommentReports,
 } from "../components/CommentReportsPanel"
 import {
+  TierlistReportsPanel,
+  useOpenTierlistReports,
+} from "../components/TierlistReportsPanel"
+import {
   MediaReportsPanel,
   useOpenMediaReports,
 } from "../components/MediaReportsPanel"
@@ -176,6 +180,7 @@ export function AdminBansPage({
     tab === "all" ||
     tab === "mm" ||
     tab === "comments" ||
+    tab === "tierlists" ||
     tab === "images" ||
     tab === "support"
       ? undefined
@@ -218,6 +223,7 @@ export function AdminBansPage({
       : undefined
   const servers = useQuery(serverStatusOptions).data?.servers ?? []
   const openComments = useOpenCommentReports()
+  const openTierlists = useOpenTierlistReports()
   const openImages = useOpenMediaReports()
   const [banning, setBanning] = useState(false)
   const supportLimits = useQuery(banLimitsOptions(support))
@@ -301,6 +307,7 @@ export function AdminBansPage({
           },
           { key: "mm", label: "Matchmaking", badge: mmCount },
           { key: "comments", label: "Comentarios", badge: openComments },
+          { key: "tierlists", label: "Tierlists", badge: openTierlists },
           { key: "images", label: "Imágenes", badge: openImages },
           ...(seesActivity
             ? [{ key: "support" as const, label: "Actividad del soporte" }]
@@ -312,6 +319,8 @@ export function AdminBansPage({
         <SupportActivityPanel canEditLimits={canPermanent} />
       ) : tab === "comments" ? (
         <CommentReportsPanel />
+      ) : tab === "tierlists" ? (
+        <TierlistReportsPanel />
       ) : tab === "images" ? (
         <MediaReportsPanel />
       ) : tab === "mm" ? (

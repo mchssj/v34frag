@@ -32,7 +32,7 @@ En **Mi perfil** › [Preferencias](/profile/preferences), en **Notificaciones**
 | **Torneos** | Inscripciones, fixture, veto y resultados, y cuando tu partida empieza en menos de una hora |
 | **Mixes y ELO** | Cambios de nivel, mixes interrumpidos o borrados, ajustes de ELO, tus jugadas destacadas (un aviso por partida, que lleva a sus estadísticas) y cuando no pudimos respetar tu bloqueo en el matchmaking |
 | **Temporadas** | Tu puesto, el cierre de la temporada y las medallas nuevas, con su dibujo |
-| **Amigos** | Solicitudes de amistad y cuando alguien acepta la tuya ([Amigos](/help/jugador/amigos)) |
+| **Amigos** | Solicitudes de amistad y cuando alguien acepta la tuya ([Amigos](/help/jugador/amigos)); comentarios y me gusta en tu perfil y en tus [tierlists](/help/jugador/tierlists), y respuestas a tus comentarios de tierlists |
 | **Cuenta** | SteamID vinculados, cambios de alias y de rol |
 | **Novedades** | Torneos nuevos y temporadas nuevas. Viene apagada: préndela si quieres enterarte |
 

@@ -236,6 +236,8 @@ export type CrumbData = {
     a: string
     b: string
   }
+  /** Una tierlist (replanteo 137): su nombre y el nick de quien la armó. */
+  tierlist?: { name: string; owner: string }
 }
 
 const seg = (pathname: string, i: number) =>
@@ -263,12 +265,18 @@ export function activeNavKey(
   }
   // Mixes, PCW y torneos están en Partidas, también la sala de un mix en vivo.
   if (first === "match" || first === "mixes") return "matches"
-  if (["player", "players", "teams"].includes(first)) return "ranking"
+  if (["player", "players", "teams", "tierlists"].includes(first))
+    return "ranking"
   if (first === "profile") return "profile"
   return ITEMS.find((i) => i.to === `/${first}`)?.key ?? null
 }
 
-export type Crumb = { label: string; to?: AppPath }
+export type Crumb = {
+  label: string
+  to?: AppPath
+  params?: Record<string, string>
+  search?: Record<string, string>
+}
 
 /** Breadcrumbs de la topbar: los previos son links; el último es la página actual. */
 export function breadcrumbsFor(
@@ -322,6 +330,22 @@ export function breadcrumbsFor(
         { label: "Partidas", to: "/matches" },
         { label: m ? `${m.a} vs ${m.b}` : "Partida" },
       ]
+    }
+    case "tierlists": {
+      // El nick lleva a la pestaña Tierlists de su perfil (replanteo 137).
+      const t = data.tierlist
+      return t
+        ? [
+            ranking,
+            {
+              label: t.owner,
+              to: "/player/$nick",
+              params: { nick: t.owner },
+              search: { tab: "tierlists" },
+            },
+            { label: t.name },
+          ]
+        : [ranking, { label: "Tierlist" }]
     }
     case "help":
       return second

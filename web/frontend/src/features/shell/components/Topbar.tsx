@@ -81,7 +81,13 @@ function Breadcrumbs() {
                   </BreadcrumbPage>
                 ) : c.to ? (
                   <BreadcrumbLink asChild>
-                    <Link to={c.to}>{c.label}</Link>
+                    <Link
+                      to={c.to}
+                      params={c.params as never}
+                      search={c.search as never}
+                    >
+                      {c.label}
+                    </Link>
                   </BreadcrumbLink>
                 ) : (
                   <span>{c.label}</span>
