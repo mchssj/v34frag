@@ -3,9 +3,11 @@
 // La entrada es PNG RGBA de 8 bits; un WebP se convierte antes (ver la guía de arte, Fase 3).
 import { readPng, writePng } from "./png_rgba.mjs"
 
-const args = process.argv.slice(2), black = args.includes("--fondo-negro"), glow = black || args.includes("--brillo")
+const args = process.argv.slice(2), black = args.includes("--fondo-negro"), glow = black || args.includes("--brillo"), personaje = args.includes("--con-personaje")
+// --con-personaje: un personaje asomado tapa a propósito parte de la foto (marco de nieve, 2026-11-23); el centro solo
+// tiene que quedar transparente en un 60 %.
 const [src, out] = args.filter((a) => !a.startsWith("--"))
-if (!src || !out) throw new Error("uso: node docs/recortar_marco.mjs [--brillo | --fondo-negro] entrada.png salida.png")
+if (!src || !out) throw new Error("uso: node docs/recortar_marco.mjs [--brillo | --fondo-negro] [--con-personaje] entrada.png salida.png")
 const { w, h, px } = readPng(src)
 const FILL = 60, LO = 12, HI = 60 // distancia al blanco: hasta FILL entra al relleno; el alfa sube de LO a HI
 const dist = (i) => 255 - Math.min(px[i * 4], px[i * 4 + 1], px[i * 4 + 2])
@@ -60,8 +62,8 @@ for (let i = 0; i < w * h; i++) {
 
 // Comprobación: el centro y la esquina exterior quedan transparentes; la franja del marco, con diseño.
 const center = share(0.3, 0.3, 0.7, 0.7, (a) => a < 10), corner = share(0, 0, 0.02, 0.02, (a) => a < 10)
-const band = share(0.04, 0.3, 0.11, 0.7, (a) => a > 245)
+const band = share(0.04, 0.3, 0.135, 0.7, (a) => a > 245) // hasta el 13,5 %: un marco de línea fina toca o pisa la foto (12,5 %)
 console.log(`centro transparente ${(center * 100).toFixed(1)}%, esquina ${(corner * 100).toFixed(1)}%, franja opaca ${(band * 100).toFixed(1)}%`)
 // La franja solo tiene que tener algo de diseño: un boceto de trazos sueltos ronda el 20 %; un marco borrado, 0 %.
-if (center < 0.98 || corner < 0.98 || band < 0.05) throw new Error("el recorte no quedó como se esperaba: revisar que el centro y el fondo sean blancos")
+if (center < (personaje ? 0.6 : 0.98) || corner < 0.98 || band < 0.05) throw new Error("el recorte no quedó como se esperaba: revisar que el centro y el fondo sean blancos")
 writePng(out, w, h, px)
