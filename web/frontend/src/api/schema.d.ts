@@ -13739,6 +13739,8 @@ export interface paths {
                     weekly?: "true" | "false";
                     /** @description Solo lo que tienes (`true`) o lo que no (`false`). Necesita sesión */
                     owned?: "true" | "false";
+                    /** @description Solo lo que entró hace menos de 3 días (`true`) o lo demás (`false`) */
+                    is_new?: "true" | "false";
                     /** @description Busca en el nombre */
                     q?: string;
                 };

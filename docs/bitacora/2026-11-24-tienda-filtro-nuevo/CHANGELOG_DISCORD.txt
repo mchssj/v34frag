@@ -1,0 +1,3 @@
+CMLeague 2.9.70 --  Changelog
+
+- En la Tienda ahora puedes ver solo lo que acaba de llegar: elige Mostrar y después Nuevo.

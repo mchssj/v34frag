@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { setupServer } from "msw/node"
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest"
@@ -116,5 +117,56 @@ describe("Inventario", () => {
     ).toBeInTheDocument()
     expect(screen.getByText("Ofertas de la semana")).toBeInTheDocument()
     expect(screen.getAllByText("C4 en oferta").length).toBeGreaterThan(0)
+  })
+})
+
+describe("Mostrar › Nuevo", () => {
+  const catalog = [
+    item({ id: "marco-viejo", name: "Viejo" }),
+    item({ id: "marco-nuevo", name: "Recién llegado", is_new: true }),
+    item({
+      id: "marco-nuevo-mio",
+      name: "Nuevo pero mío",
+      is_new: true,
+      owned: true,
+      usable: true,
+    }),
+    item({
+      id: "tema-viejo",
+      kind: "theme",
+      name: "Tema viejo",
+      file: null,
+      css_class: "tema-terro",
+    }),
+  ]
+  const names = () =>
+    screen.queryAllByRole("heading", { level: 3 }).map((h) => h.textContent)
+
+  it("solo lo que lleva la etiqueta Nuevo, por tipo, y avisa si no hay", async () => {
+    server.use(
+      http.get(`${API}/api/v1/shop/items`, () =>
+        HttpResponse.json({
+          items: catalog,
+          total: catalog.length,
+          page: 1,
+          per: 400,
+          sort: "sort",
+          order: "asc",
+          weekly_ends: "2026-11-23T03:00:00.000Z",
+        })
+      )
+    )
+    const user = userEvent.setup()
+    await renderWithRouter(<ShopPage />)
+    expect(await screen.findByText("Viejo")).toBeInTheDocument()
+    await user.click(screen.getByLabelText("Mostrar"))
+    await user.click(await screen.findByRole("option", { name: "Nuevo" }))
+    expect(names()).toEqual(["Recién llegado"])
+    expect(screen.getByText("1 artículos")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: /Temas/ }))
+    expect(names()).toEqual([])
+    expect(
+      screen.getByText("No hay nada nuevo de este tipo por ahora.")
+    ).toBeInTheDocument()
   })
 })

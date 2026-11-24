@@ -90,6 +90,7 @@ export const ShopItemQuery = listQuery(['sort', 'price', 'name'], { sort: 'sort'
   vip: boolParam('Solo lo VIP (`true`) o solo lo de todos (`false`)'),
   weekly: boolParam('Solo las ofertas de la semana'),
   owned: boolParam('Solo lo que tienes (`true`) o lo que no (`false`). Necesita sesión'),
+  is_new: boolParam('Solo lo que entró hace menos de 3 días (`true`) o lo demás (`false`)'),
   q: z.string().max(40).optional().openapi({ description: 'Busca en el nombre' }),
 });
 export const ShopItemList = Envelope(ShopItem).extend({

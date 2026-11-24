@@ -7729,7 +7729,7 @@ isOneToOne: false
                   ]
                 },"shop_catalog": {
                   Row: {
-                    "animated": boolean | null,"base_price": number | null,"collection": string | null,"css_class": string | null,"description": string | null,"file": string | null,"id": string | null,"kind": string | null,"name": string | null,"price": number | null,"sort": number | null,"vip_only": boolean | null,"vip_price": number | null,"vip_reward": boolean | null,"weekly": boolean | null,"weekly_ends": string | null
+                    "animated": boolean | null,"base_price": number | null,"collection": string | null,"css_class": string | null,"description": string | null,"file": string | null,"id": string | null,"is_new": boolean | null,"kind": string | null,"name": string | null,"price": number | null,"sort": number | null,"vip_only": boolean | null,"vip_price": number | null,"vip_reward": boolean | null,"weekly": boolean | null,"weekly_ends": string | null
                   }
                   Relationships: [
                     

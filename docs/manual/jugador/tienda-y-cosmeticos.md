@@ -24,13 +24,13 @@ En la Tienda, **Historial** muestra cada mix, cada compra, cada código que canj
 ## 1. Comprar
 
 1. Entra a la [Tienda](/shop).
-2. Elige el tipo arriba (**Marcos**, **Avatares**, **Stickers**, **Temas**, **Nombres** o **Fondos de miniperfil**). Puedes filtrar por colección, buscar por nombre, mostrar **Puedo comprar** o **Lo mío**, y ordenar por precio.
+2. Elige el tipo arriba (**Marcos**, **Avatares**, **Stickers**, **Temas**, **Nombres** o **Fondos de miniperfil**). Puedes filtrar por colección, buscar por nombre, mostrar **Puedo comprar**, **Lo mío** o **Nuevo**, y ordenar por precio.
 3. Toca **Probar** (o la imagen) para verlo en la **Vista previa** de arriba, con lo que ya tienes puesto.
 4. Toca **Comprar** y confirma. Si te faltan puntos, la tarjeta te dice cuántos y más o menos cuántos mixes son.
 
 Las **Ofertas de la semana** tienen descuento y cambian cada lunes a las 00:00 (hora de Argentina).
 
-Lo que llegó a la tienda en los últimos 3 días lleva la etiqueta **Nuevo** (si ya lo tienes, no).
+Lo que llegó a la tienda en los últimos 3 días lleva la etiqueta **Nuevo** (si ya lo tienes, no). Para ver solo eso, elige **Mostrar › Nuevo**: muestra lo nuevo del tipo que tienes elegido.
 
 ## 2. Ponértelo
 
