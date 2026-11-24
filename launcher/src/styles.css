@@ -1,0 +1,43 @@
+:root {
+  color-scheme: dark;
+  --bg: #0e1116;
+  --card: #171b22;
+  --line: #262c36;
+  --text: #e6e8eb;
+  --muted: #8b93a1;
+  --accent: #f5a623;
+  --danger: #ff6b6b;
+  --ok: #3ccf7a;
+  font-family: "Inter", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+main { max-width: 720px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+.center { min-height: 100vh; place-content: center; }
+header { display: flex; align-items: center; gap: 12px; }
+.grow { flex: 1; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+.dot.on { background: var(--ok); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 12px; }
+.card.small { padding: 14px; }
+.login { width: 340px; }
+h1, h2, h3 { margin: 0; }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+input, select { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: inherit; min-width: 0; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+.row input { flex: 1; }
+button { background: var(--line); color: var(--text); border: 0; border-radius: 8px; padding: 8px 14px; font: inherit; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: default; }
+button.primary { background: var(--accent); color: #111; font-weight: 600; }
+button.big { padding: 14px 28px; font-size: 18px; }
+button.link { background: none; color: var(--muted); padding: 0; }
+a { color: var(--accent); }
+.muted { color: var(--muted); margin: 0; }
+.error { color: var(--danger); margin: 0; }
+.banner { background: #2a1517; border-radius: 8px; padding: 10px; }
+.timer { font-size: 40px; font-variant-numeric: tabular-nums; margin: 0; }
+.players { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.players li { display: grid; gap: 4px; }
+.players .me { color: var(--accent); }
+.connect { display: grid; gap: 8px; }
+code { color: var(--muted); }

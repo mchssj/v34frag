@@ -271,3 +271,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-22 | [Super bloqueo del admin en el matchmaking](2026-11-22-super-bloqueo/) | Replanteo `135`, API y web |
 | 2026-11-22 | [Ranking de clips guardado (la web ya no se traba al terminar una partida)](2026-11-22-ranking-de-clips-guardado/) | Replanteo `136` desplegado (2026-11-22); falta medir después de la próxima partida |
 | 2026-11-22 | [Tierlists de jugadores y equipos](2026-11-22-tierlists-jugadores-equipos/) | Replanteo `137`, API y web (desplegado el 2026-11-23) |
+| 2026-11-24 | [Launcher de escritorio](2026-11-24-launcher-escritorio/) | Planeado, pendiente de aprobación. Prototipo en `launcher/` (Tauri 2) que compila, sin probar en Windows |

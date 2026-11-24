@@ -1,6 +1,17 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-24**.
+
+## Launcher de escritorio (2026-11-24): plan y prototipo, sin probar en Windows
+
+- **Qué es:** una app de Windows al estilo del cliente de FACEIT. Inicias sesión, buscas partida, te avisa encima de todo cuando aparece, aceptas y abre ClientMod conectado a la sala. `steam://connect` no sirve porque ClientMod no es de Steam. Tauri 2, en `launcher/`. Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
+- **Hecho:** `PLAN.md` y prototipo. Compilan la interfaz y el chequeo de Rust para Windows, y pasan las pruebas de la validación y de `clientmod.ini`.
+- **Falta:**
+  - Que Daniel y Kyan aprueben el plan.
+  - Abrirlo en una PC con Windows (Rust y las Build Tools de Visual Studio), con ClientMod en `C:\CSSv34_ClientMod`, y ver si `CMLauncher.exe` toma `+connect` desde `Params=` y si `-hijack` funciona con el juego abierto.
+  - Sumar `http://tauri.localhost` a `CORS_ORIGINS` de la API.
+  - Protocolo `cmleague://` y los botones "Conectar" de la web, que hoy usan `steam://connect`.
+  - Guardar la sesión en el Administrador de credenciales, armar el instalador, el manual, los legales y el changelog.
 
 ## Tierlists de jugadores y equipos (2026-11-22): desplegado el 2026-11-23
 
