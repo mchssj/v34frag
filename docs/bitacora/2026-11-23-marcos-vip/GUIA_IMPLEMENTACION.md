@@ -28,11 +28,18 @@
 
 ## Despliegue
 
-**Sin desplegar.** Va en este orden:
+**Desplegado el 2026-11-24 (~02:40 UTC)**, commit `87388ef5`, con una sala del matchmaking en curso (Daniel avisó). Ningún paso reinicia nada: la web solo cambia los archivos que sirve Caddy y la `138` solo inserta filas en `shop_items`, que el matchmaking no usa. Faltan publicar el changelog. Antes decía: **Sin desplegar.**
 
-1. La web (`web/frontend`), desde una copia limpia del commit: los archivos tienen que estar antes que los artículos.
-2. `138_tienda_marcos_vip.sql` en la base de producción.
-3. Publicar `CHANGELOG_DISCORD.txt` (CMLeague 2.9.66).
+1. Commit `87388ef5` en `main` solo con lo de este pedido: los dos índices (`docs/bitacora/README.md` y `supabase/replanteo/README.md`) se commitearon desde `HEAD` más su fila, sin los cambios ajenos que tienen.
+2. Worktree limpio en `87388ef5` (`v34frag-deploy`), `pnpm install --frozen-lockfile` y `deploy/vps/desplegar.sh web` (con sus pruebas), con `VPS_HOST` del `.env` de `main`. Web `87388ef5324b` (antes `c3803aa60c69`). Comprobado: `cmleague.lat` sirve los 4 archivos y `catalogo.json` versión 17 (408 artículos).
+3. Base, desde la PC de Daniel, después de la web:
+
+   ```bash
+   (echo "set lock_timeout = '5s';"; cat supabase/replanteo/138_tienda_marcos_vip.sql) | ssh ubuntu@<VPS> "sudo docker exec -i supabase-db psql -U postgres -v ON_ERROR_STOP=1 -q"
+   ```
+
+   Antes: 404 artículos, ninguno de los 4, todos los marcos VIP activos a 450 y el orden más alto de los marcos en 4040. Después: 408 artículos, los 4 VIP a 450 (orden 4050 a 4080), y `GET /api/v1/shop/items?kind=frame` los devuelve con `is_new`.
+4. Pendiente: publicar `CHANGELOG_DISCORD.txt` (CMLeague 2.9.66).
 
 No toca los servidores de juego (#1, #2, #3): no hay nada que subir por SFTP.
 
