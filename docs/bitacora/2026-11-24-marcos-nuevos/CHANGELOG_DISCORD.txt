@@ -1,0 +1,12 @@
+CMLeague 2.9.71 --  Changelog
+
+- Llegaron 7 marcos nuevos a la Tienda, todos animados.
+- Para todos, a 550 puntos:
+- Bosque: tu foto vista desde adentro de un bosque que se mece con el viento.
+- Siesta: una ovejita cabecea sobre tu marco, se duerme y se despierta de un susto.
+- Para los VIP, a 450 monedas VIP:
+- Fauces: una boca de monstruo respira alrededor de tu foto.
+- Siesta azul: la ovejita dormilona, con el marco en azul oscuro.
+- Mar de nubes: pixel art nocturno, con nubes que corren bajo la luna.
+- Sabueso: un detective de los años 30 te examina con su lupa.
+- Terminal: un monitor viejo de fósforo verde, con tu foto en la pantalla.
