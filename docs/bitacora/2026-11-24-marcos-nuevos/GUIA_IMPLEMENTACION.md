@@ -2,7 +2,7 @@
 
 ## Estado
 
-Commiteado el 2026-11-24. El despliegue se anota abajo.
+Desplegado el 2026-11-24 (~22:12 UTC). Falta publicar el changelog.
 
 ## Archivos
 
@@ -13,9 +13,21 @@ Commiteado el 2026-11-24. El despliegue se anota abajo.
 | `supabase/replanteo/143_tienda_marcos_nuevos.sql` y su inversa | Las 7 filas de `shop_items` |
 | `web/frontend/public/cosmetics/catalogo.json` | Versión 18, 415 artículos |
 
-## Despliegue
+## Despliegue (hecho el 2026-11-24)
 
-Pendiente.
+1. Commit `bb718895` en `main`, solo con lo de este pedido (los índices compartidos, desde `HEAD` más su fila), y push.
+2. Worktree limpio en `bb718895`, `pnpm install --frozen-lockfile`, pruebas de la API (685) y de la web (846).
+3. Sin ninguna sala armándose (había una en vivo): `desplegar.sh web --sin-pruebas` y después `desplegar.sh api --sin-pruebas`, comprobando las salas antes de cada una. Web y API `bb718895cc67` (antes `87388ef5324b` y `c3803aa60c69`). La API es por el filtro "Nuevo"; su reinicio no tocó el worker del matchmaking.
+4. `143` en la base de producción, después de comprobar que `cmleague.lat` sirve los 7 SVG con el mismo tamaño que en git:
+
+   ```bash
+   (echo "set lock_timeout = '5s';"; cat supabase/replanteo/143_tienda_marcos_nuevos.sql) | ssh ubuntu@<VPS> "sudo docker exec -i supabase-db psql -U postgres -v ON_ERROR_STOP=1 -q"
+   ```
+
+   De 408 a 415 artículos. `GET /api/v1/shop/items?kind=frame&is_new=true` devuelve los 7 (y los 4 de la `138`), y `catalogo.json` está en la versión 18.
+5. Pendiente: publicar `CHANGELOG_DISCORD.txt` (CMLeague 2.9.71).
+
+No toca los servidores de juego (#1, #2, #3).
 
 ## Pruebas
 

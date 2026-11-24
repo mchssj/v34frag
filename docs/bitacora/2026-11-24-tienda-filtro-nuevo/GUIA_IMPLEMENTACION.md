@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local el 2026-11-24. **Sin commit ni despliegue.**
+Desplegado el 2026-11-24 (~22:11 UTC), junto con los 7 marcos nuevos. Falta publicar el changelog.
 
 ## Archivos
 
@@ -18,7 +18,7 @@ Hecho y probado en local el 2026-11-24. **Sin commit ni despliegue.**
 
 ## Despliegue
 
-Sin hacer. Va la API y la web, en cualquier orden: la web no usa el parámetro nuevo. Sin migración. No toca los servidores de juego (#1, #2, #3).
+Commit `b246b832`. Web y API `bb718895cc67`, en el despliegue de [`2026-11-24-marcos-nuevos`](../2026-11-24-marcos-nuevos/GUIA_IMPLEMENTACION.md), sin migración. En producción, `is_new=true` filtra bien. Pendiente: publicar `CHANGELOG_DISCORD.txt` (CMLeague 2.9.70). No toca los servidores de juego (#1, #2, #3).
 
 ## Pruebas
 
@@ -30,7 +30,7 @@ Sin hacer. Va la API y la web, en cualquier orden: la web no usa el parámetro n
 ### Web
 
 - `pnpm typecheck`, ESLint, Prettier y las 51 pruebas de `src/features/shop`: solo queda lo que lleva la etiqueta, lo nuevo que ya tienes no sale, y el mensaje cuando el tipo no tiene nada nuevo.
-- Sin probar a mano en el navegador. No se corrió el resto de las pruebas de la web.
+- Sin probar a mano en el navegador. Antes de desplegar se corrieron las 846 pruebas de la web.
 
 ## En qué se apartó del plan
 

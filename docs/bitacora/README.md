@@ -272,5 +272,5 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-22 | [Ranking de clips guardado (la web ya no se traba al terminar una partida)](2026-11-22-ranking-de-clips-guardado/) | Replanteo `136` desplegado (2026-11-22); falta medir después de la próxima partida |
 | 2026-11-22 | [Tierlists de jugadores y equipos](2026-11-22-tierlists-jugadores-equipos/) | Replanteo `137`, API y web (desplegado el 2026-11-23) |
 | 2026-11-23 | [4 marcos VIP nuevos (Nevada, Celda, Polaroid y Pintura)](2026-11-23-marcos-vip/) | Replanteo `138` y web (desplegado el 2026-11-24); falta publicar el changelog |
-| 2026-11-24 | [Filtro "Nuevo" en la tienda](2026-11-24-tienda-filtro-nuevo/) | API y web, probados en local; **sin commit ni despliegue** |
-| 2026-11-24 | [7 marcos nuevos (Bosque, Siesta y 5 VIP)](2026-11-24-marcos-nuevos/) | Replanteo `143` y web; commiteado, despliegue en curso |
+| 2026-11-24 | [Filtro "Nuevo" en la tienda](2026-11-24-tienda-filtro-nuevo/) | API y web (desplegado el 2026-11-24); falta publicar el changelog |
+| 2026-11-24 | [7 marcos nuevos (Bosque, Siesta y 5 VIP)](2026-11-24-marcos-nuevos/) | Replanteo `143` y web (desplegado el 2026-11-24); falta publicar el changelog |
