@@ -279,3 +279,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-25 | [Sin silencio en el clutch (se saca `!voz`)](2026-11-25-sin-silencio-en-el-clutch/) | `csstv_qol` 1.5.0 subido a #1, #2 y #3 el 2026-11-25 (entra en el próximo cambio de mapa). Falta verlo en un mix |
 | 2026-11-25 | [Prueba sin `Anti_Wallhack_Lite`](2026-11-25-sin-anti-wallhack-prueba/) | En `disabled/` en #1, #2 y #3 el 2026-11-25 (entra en el próximo cambio de mapa); falta la prueba con jugadores |
 | 2026-11-11 | [Flash según el ángulo y la distancia](2026-11-11-flash-por-angulo/) | `csstv_flash` 1.0.0 de Kyan, en #1, #2 y #3 desde el 2026-11-11 y en `main` desde el 2026-11-25 |
+| 2026-11-25 | [El nombre de los jugadores, en un solo plugin](2026-11-25-nombre-web-en-vivo/) | Reporter 2.10.3 (maneja los nombres y limpia los caracteres raros) y `csstv_qol` 1.6.0 (deja de tocarlos), probados en local con bots; sin commit ni desplegar. Va antes que la `134` |

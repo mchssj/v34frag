@@ -13,7 +13,8 @@
  * del mix al final de cada ronda (mixes en vivo en la web) y recupera un mix cortado por una caída.
  * csstv/claim.inc (!claim) vincula el SteamID del jugador a su cuenta de la web (csstv_claim lo apaga).
  * csstv/whois.inc (!whois, admins y moderadores): nicks que usó un jugador en las partidas y su perfil en la web.
- * csstv/webnick.inc: a quien tiene ficha en la web se le pone el nick de la ficha (csstv_web_names lo apaga).
+ * csstv/webnick.inc: los nombres de los jugadores: el nick de la ficha (csstv_web_names) y el bloqueo con la partida
+ * empezada (csstv_lock_names). Ningún otro plugin nuestro los toca.
  * csstv/clips.inc anota las jugadas destacadas de cada ronda (ticks de cada kill y clutches) y las
  * manda con el resultado; la web arma los clips (csstv_clips lo apaga).
  * csstv/mm.inc toma las salas del matchmaking de la web (csstv_mm lo prende).
@@ -37,7 +38,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.10.2"
+#define PLUGIN_VERSION "2.10.3"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";

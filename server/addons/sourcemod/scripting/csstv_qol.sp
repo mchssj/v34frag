@@ -21,7 +21,7 @@
  *   - al empezar cada ronda en vivo, los espectadores y la SourceTV ven la plata de cada equipo y si
  *     le alcanza para comprar todo (los coaches de csstv_coach no);
  *   - 4 kills y ace al final de la ronda; a los T, quién tiene la C4 y dónde quedó si muere con ella;
- *   - durante la partida: espectadores sin chat general ni voz para los jugadores, nombres bloqueados
+ *   - durante la partida: espectadores sin chat general ni voz para los jugadores
  *     y aviso de quién se fue con su K/D; !admins.
  *   Los avisos de fin de ronda salen 0,3 s después: en el mismo instante no quedan en la demo.
  *   - 1.2.1: en el calentamiento los cuerpos desaparecen a los 2 s y las armas tiradas a los
@@ -45,7 +45,7 @@
 #include <nextmap>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.5.0"
+#define PLUGIN_VERSION "1.6.0"
 #define AMMO_HE    11
 #define AMMO_FLASH 12
 #define AMMO_SMOKE 13
@@ -106,7 +106,6 @@ ConVar g_cvAce;
 ConVar g_cvC4Info;
 ConVar g_cvSpecChat;
 ConVar g_cvSpecVoice;
-ConVar g_cvLockNames;
 ConVar g_cvGoodbye;
 ConVar g_cvBlockKill;
 ConVar g_cvCleanup;
@@ -117,7 +116,6 @@ int g_iWarmGun[MAXPLAYERS + 1];                    // !armas: 0 = la de su lado
 int g_iCleaned;                                    // cuerpos y armas borrados en el calentamiento, para sm_qol_status
 int g_iRoundKills[MAXPLAYERS + 1];                 // kills a rivales en esta ronda, para el ace
 bool g_bSpecMuted[MAXPLAYERS + 1][MAXPLAYERS + 1]; // [jugador][espectador]: silenciado durante la partida
-bool g_bNameRevert[MAXPLAYERS + 1];                // el próximo cambio de nombre es la vuelta al anterior
 
 native bool CSSTV_IsCoach(int client);   // csstv_coach 1.1.0
 
@@ -143,7 +141,6 @@ public void OnPluginStart()
 	g_cvC4Info    = CreateConVar("csstv_qol_c4_info", "1", "A los T: quién tiene la C4 al empezar la ronda y dónde quedó si muere quien la llevaba.", _, true, 0.0, true, 1.0);
 	g_cvSpecChat  = CreateConVar("csstv_qol_spec_chat", "1", "Durante la partida, los espectadores no escriben en el chat general (los admins sí).", _, true, 0.0, true, 1.0);
 	g_cvSpecVoice = CreateConVar("csstv_qol_spec_voice", "1", "Durante la partida, los jugadores no escuchan a los espectadores (el coach sí, a su equipo).", _, true, 0.0, true, 1.0);
-	g_cvLockNames = CreateConVar("csstv_qol_lock_names", "1", "Durante la partida no se puede cambiar el nombre.", _, true, 0.0, true, 1.0);
 	g_cvAutoClass = CreateConVar("csstv_qol_auto_class", "1", "Sin el menú de modelos al entrar a un equipo: se elige uno al azar de su lado.", _, true, 0.0, true, 1.0);
 	g_cvWarmGuns  = CreateConVar("csstv_qol_warmup_guns", "1", "En el calentamiento, al aparecer: un arma gratis (la de su lado o la de !armas) y chaleco con casco.", _, true, 0.0, true, 1.0);
 	g_cvCleanup   = CreateConVar("csstv_qol_warmup_cleanup", "8", "En el calentamiento: segundos para borrar un arma tirada que nadie levantó (los cuerpos, a los 2 s). 0 = no limpiar.", _, true, 0.0, true, 120.0);
@@ -160,7 +157,6 @@ public void OnPluginStart()
 	AddCommandListener(Cmd_Suicide, "kill");
 	AddCommandListener(Cmd_Suicide, "explode");
 	HookEvent("bomb_dropped", Event_BombDropped);
-	HookEvent("player_changename", Event_ChangeName);
 	HookEvent("player_disconnect", Event_Disconnect, EventHookMode_Pre);
 	g_cvFreezeTime = FindConVar("mp_freezetime");
 	g_hSaved = new StringMap();
@@ -240,7 +236,6 @@ public void OnMapStart()
 public void OnClientDisconnect(int client)
 {
 	Restore_Save(client);
-	g_bNameRevert[client] = false;
 	g_iWarmGun[client] = 0;
 	for (int i = 1; i <= MaxClients; i++)
 		g_bSpecMuted[client][i] = g_bSpecMuted[i][client] = false;   // el slot que sigue empieza sin overrides
@@ -1228,44 +1223,6 @@ public Action Cmd_Suicide(int client, const char[] command, int argc)
 // ---------------------------------------------------------------------------
 // Nombres bloqueados durante la partida
 // ---------------------------------------------------------------------------
-
-public void Event_ChangeName(Event event, const char[] name, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(event.GetInt("userid"));
-	if (client <= 0)
-		return;
-	if (g_bNameRevert[client])
-	{
-		g_bNameRevert[client] = false;
-		return;
-	}
-	if (!g_cvLockNames.BoolValue || !InMatch())
-		return;
-	char old[MAX_NAME_LENGTH];
-	event.GetString("oldname", old, sizeof(old));
-	DataPack pack = new DataPack();
-	pack.WriteCell(GetClientUserId(client));
-	pack.WriteString(old);
-	RequestFrame(Frame_NameRevert, pack);
-}
-
-public void Frame_NameRevert(DataPack pack)
-{
-	pack.Reset();
-	int client = GetClientOfUserId(pack.ReadCell());
-	char old[MAX_NAME_LENGTH];
-	pack.ReadString(old, sizeof(old));
-	delete pack;
-	if (client <= 0 || !IsClientInGame(client))
-		return;
-	g_bNameRevert[client] = true;
-	SetClientInfo(client, "name", old);
-	if (HasEntProp(client, Prop_Data, "m_szNetname"))
-		SetEntPropString(client, Prop_Data, "m_szNetname", old);
-	char tag[32];
-	Tag(tag, sizeof(tag));
-	PrintToChat(client, "\x04[%s]\x01 Durante la partida no se puede cambiar el nombre.", tag);
-}
 
 // ---------------------------------------------------------------------------
 // !admins y despedida
