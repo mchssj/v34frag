@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "ajustes",
+  "description": "La ventana de Configuración (página local ajustes.html): lee y guarda la configuración del launcher, la carpeta de ClientMod y las actualizaciones.",
+  "windows": ["settings"],
+  "permissions": [
+    "allow-settings-get",
+    "allow-settings-set",
+    "allow-game-detect",
+    "allow-game-set-dir",
+    "allow-update-check",
+    "allow-update-install",
+    "allow-app-version"
+  ]
+}

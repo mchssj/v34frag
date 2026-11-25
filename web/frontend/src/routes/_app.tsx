@@ -10,6 +10,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { apiMmSource } from "@/features/matchmaking/apiSource"
+import { LauncherTheme } from "@/features/launcher/LauncherTheme"
 import { GlobalMatchAlerts } from "@/features/matchmaking/MatchAlerts"
 import { ReconnectBanner } from "@/features/matchmaking/ReconnectBanner"
 import { MmSourceContext } from "@/features/matchmaking/source"
@@ -70,6 +71,8 @@ function AppLayout() {
             </div>
           </div>
           <GlobalMatchAlerts />
+          {/* Solo en el launcher de escritorio: el tema de la tienda, si el jugador lo prendió. */}
+          <LauncherTheme />
         </MmSourceContext>
       </SidebarInset>
       <CommandMenu user={user} open={searchOpen} onOpenChange={setSearchOpen} />

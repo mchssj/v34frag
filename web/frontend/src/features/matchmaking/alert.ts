@@ -110,7 +110,7 @@ function tones(freqs: number[], step: number) {
 }
 
 export function alertServerReady() {
-  launcherAttention()
+  launcherAttention("server")
   tones([520, 780, 1040], 0.16)
   notify(
     "Tu servidor está listo",

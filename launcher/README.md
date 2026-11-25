@@ -3,16 +3,47 @@
 Es la web de CMLeague (`https://cmleague.lat`) en una ventana propia, como el cliente de FACEIT. No es un anticheat. Tiene la misma sesión, las mismas secciones y el mismo matchmaking, más lo que el navegador no puede hacer:
 
 - **Abrir ClientMod conectado a la sala.** En la web, "Conectar" (sala del matchmaking), "Volver a la partida" y "Entrar" (PCW) abren el juego en lugar de `steam://connect`, que no funciona con ClientMod. Agrega `+connect` y `+password` a `Params=` de `clientmod.ini`, abre `CMLauncher.exe` (con el aviso de UAC, nunca `hl2.exe`) y restaura el `.ini` cuando aparece el juego. Con el juego ya abierto, solo copia el `connect`. El `connect` siempre queda copiado.
-- **Traer la ventana al frente** cuando aparece la partida o el servidor está listo, aunque esté minimizada o en la bandeja.
-- **Bandeja del sistema:** cerrar la ventana no cierra el launcher, así sigues en la cola.
+- **Avisos de Windows** cuando aparece la partida o el servidor está listo (si la ventana no está a la vista), y la ventana al frente.
+- **Bandeja con el estado:** el ícono dice qué estás haciendo ("Buscando partida · 5v5"), tiene **Aceptar partida** cuando aparece una, Configuración, la actualización pendiente y Salir. Doble clic abre la ventana. La X manda a la bandeja.
+- **Discord Rich Presence:** "Buscando partida", "Jugando 5v5 · de_dust2 · 9-7", con el tiempo.
+- **Actualización automática:** busca al abrir y cada 6 horas, avisa, y se instala cuando el jugador lo elige (bandeja o Configuración), así nunca corta una partida.
+- **Tema de la tienda:** si el jugador lo prende, el launcher (la web y la barra de título) usa el tema que tiene equipado en su perfil. Solo se pueden equipar los temas que tiene.
+- **Una sola instancia:** abrirlo de nuevo trae la ventana que ya está.
+- **Configuración propia** (bandeja › Configuración), guardada en la PC (`%APPDATA%\lat.cmleague.launcher\ajustes.json`), sin tocar la web ni la cuenta:
+
+  | Opción | De fábrica |
+  |---|---|
+  | Abrir con Windows | No |
+  | Arrancar en la bandeja (al abrirse con Windows) | Sí |
+  | Cerrar a la bandeja | Sí |
+  | Avisos de Windows | Sí |
+  | Traer la ventana al frente | Sí |
+  | Mostrar en Discord | Sí |
+  | Tema de mi perfil | No |
+  | Buscar actualizaciones solo | Sí |
+  | Carpeta de ClientMod | Se busca sola |
 
 Plan: [`docs/bitacora/2026-11-24-launcher-escritorio/PLAN.md`](../docs/bitacora/2026-11-24-launcher-escritorio/PLAN.md). Se cambió el enfoque después del plan: la interfaz aparte del plan se reemplazó por la web misma.
 
+## Qué hay que encender en GitHub (Daniel)
+
+Sin esto el launcher funciona igual, pero sin actualizaciones automáticas ni Discord. Va en el repo, **Settings › Secrets and variables › Actions**.
+
+1. **Actualizaciones.** En una PC con el proyecto:
+   ```bash
+   pnpm tauri signer generate -w ~/.tauri/cmleague-launcher.key
+   ```
+   - El contenido de `cmleague-launcher.key` va al secreto `TAURI_SIGNING_PRIVATE_KEY` (y la contraseña, si se puso, a `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). **No se commitea ni se comparte.** Si se pierde, los launchers instalados no aceptan más actualizaciones y hay que reinstalar.
+   - El contenido de `cmleague-launcher.key.pub` va a la variable `CMLEAGUE_UPDATER_PUBKEY`.
+   - Con eso, cada compilación deja en el artefacto el `.exe`, su `.sig` y `latest.json`.
+2. **Publicar una versión:** subir la versión en `src-tauri/tauri.conf.json` y `src-tauri/Cargo.toml`, compilar, y copiar el `.exe` y `latest.json` del artefacto al VPS en `cmleague.lat/launcher/` (los launchers buscan `https://cmleague.lat/launcher/latest.json`). Hace falta que Caddy sirva esa carpeta.
+3. **Discord.** En <https://discord.com/developers/applications>, crear la aplicación "CMLeague", subir en Rich Presence › Art Assets el isotipo con el nombre `cmleague`, y poner su Application ID en la variable `CMLEAGUE_DISCORD_APP_ID`.
+
 ## Cómo se conecta con la web
 
-- La ventana abre `https://cmleague.lat/play` (`src-tauri/tauri.conf.json`). `offline/` es la carpeta local que Tauri exige.
+- La ventana abre `https://cmleague.lat/play` (`src-tauri/src/lib.rs`, `WEB_URL`). `local/` tiene las páginas propias: `ajustes.html` (Configuración) e `index.html`.
 - La web detecta el launcher (`web/frontend/src/lib/launcher.ts`) y llama a los comandos nativos por el IPC de Tauri. Fuera del launcher no cambia nada.
-- Solo `https://cmleague.lat` y `www` pueden usar los comandos, y solo estos cuatro: `game_detect`, `game_set_dir`, `game_launch` y `window_attention` (`src-tauri/capabilities/web.json`). La dirección y la contraseña se validan en Rust: no pueden meter otro comando en la línea del juego.
+- Solo `https://cmleague.lat` y `www` pueden usar los comandos del launcher, y solo los de `src-tauri/capabilities/web.json`: abrir el juego, contar el estado, traer la ventana, pintar la barra con el tema y abrir Configuración. La web **no** puede leer ni cambiar la Configuración: eso solo lo hace la ventana local (`capabilities/ajustes.json`). La dirección y la contraseña se validan en Rust: no pueden meter otro comando en la línea del juego.
 - La carpeta de ClientMod se busca en las rutas comunes (`C:\CSSv34_ClientMod`, `C:\ClientMod`, …). Si no aparece, la web la pide una vez y queda guardada.
 - No hace falta tocar la API ni `CORS_ORIGINS`: la web carga desde su propio dominio, como en el navegador.
 
@@ -34,7 +65,7 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-Para probar contra una web local, cambia `url` en `tauri.conf.json` (por ejemplo `http://localhost:5173/play`) y suma ese origen en `capabilities/web.json`.
+Para probar contra una web local, cambia `WEB_URL` en `src-tauri/src/lib.rs` (por ejemplo `http://localhost:5173/play`) y suma ese origen en `capabilities/web.json`.
 
 ## Pruebas
 

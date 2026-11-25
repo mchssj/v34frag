@@ -47,12 +47,48 @@ jobs:
       - name: Pruebas de Rust
         run: cargo test --manifest-path src-tauri/Cargo.toml
 
+      # Lo que se enciende con datos que pone Daniel en GitHub (Settings › Secrets and variables › Actions):
+      # - variable CMLEAGUE_UPDATER_PUBKEY y secreto TAURI_SIGNING_PRIVATE_KEY (+ TAURI_SIGNING_PRIVATE_KEY_PASSWORD):
+      #   actualizaciones automáticas. Sin ellos, el launcher no busca actualizaciones.
+      # - variable CMLEAGUE_DISCORD_APP_ID: Discord Rich Presence. Sin ella, no muestra nada en Discord.
       - name: Instalador
-        run: pnpm tauri build
+        shell: pwsh
+        env:
+          CMLEAGUE_UPDATER_PUBKEY: ${{ vars.CMLEAGUE_UPDATER_PUBKEY }}
+          CMLEAGUE_DISCORD_APP_ID: ${{ vars.CMLEAGUE_DISCORD_APP_ID }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if ($env:TAURI_SIGNING_PRIVATE_KEY -and $env:CMLEAGUE_UPDATER_PUBKEY) {
+            # Archivo y no JSON en la línea: pnpm en Windows pasa por cmd, que rompe las comillas.
+            pnpm tauri build --config src-tauri/tauri.updater.conf.json
+          } else {
+            Write-Host "Sin clave de firma: el instalador sale sin actualizaciones automáticas."
+            pnpm tauri build
+          }
+
+      # latest.json para https://cmleague.lat/launcher/ (solo con la clave de firma).
+      - name: latest.json
+        if: ${{ hashFiles('launcher/src-tauri/target/release/bundle/nsis/*.sig') != '' }}
+        shell: pwsh
+        run: |
+          $dir = "src-tauri/target/release/bundle/nsis"
+          $exe = Get-ChildItem "$dir/*-setup.exe" | Select-Object -First 1
+          $sig = Get-Content "$($exe.FullName).sig" -Raw
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          @{
+            version = $version
+            notes = ""
+            pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            platforms = @{ "windows-x86_64" = @{ signature = $sig.Trim(); url = "https://cmleague.lat/launcher/$($exe.Name)" } }
+          } | ConvertTo-Json -Depth 5 | Set-Content "$dir/latest.json" -Encoding utf8
 
       - uses: actions/upload-artifact@v4
         with:
           name: cmleague-launcher-windows
-          path: launcher/src-tauri/target/release/bundle/nsis/*.exe
+          path: |
+            launcher/src-tauri/target/release/bundle/nsis/*.exe
+            launcher/src-tauri/target/release/bundle/nsis/*.sig
+            launcher/src-tauri/target/release/bundle/nsis/latest.json
           if-no-files-found: error
           retention-days: 14

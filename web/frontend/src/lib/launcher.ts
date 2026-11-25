@@ -18,11 +18,73 @@ function tauri(): TauriInternals | null {
 /** Si la web está abierta dentro del launcher. */
 export const inLauncher = () => tauri() !== null
 
-/** Partida encontrada o servidor listo: trae la ventana del launcher al frente. */
-export function launcherAttention() {
+/**
+ * Partida encontrada (`found`) o servidor listo (`server`): aviso de Windows y la ventana del launcher al frente
+ * (según su Configuración).
+ */
+export function launcherAttention(kind: "found" | "server" = "found") {
   void tauri()
-    ?.invoke("window_attention")
+    ?.invoke("window_attention", { kind })
     .catch(() => undefined)
+}
+
+/** Estado del matchmaking para la bandeja y Discord. `since` en milisegundos. */
+export type LauncherStatus = {
+  state: "idle" | "queue" | "found" | "lobby" | "live"
+  mode?: string | null
+  map?: string | null
+  since?: number | null
+  score?: string | null
+}
+
+export function launcherStatus(status: LauncherStatus) {
+  void tauri()
+    ?.invoke("launcher_status", { status })
+    .catch(() => undefined)
+}
+
+/** Lo que la web necesita de la Configuración del launcher. */
+export async function launcherPrefs(): Promise<{ shop_theme: boolean } | null> {
+  const t = tauri()
+  if (!t) return null
+  return t.invoke<{ shop_theme: boolean }>("launcher_prefs").catch(() => null)
+}
+
+/** Colores de la barra de título ("#rrggbb"); null vuelve a los de fábrica. */
+export function launcherWindowTheme(
+  caption: string | null,
+  border: string | null
+) {
+  void tauri()
+    ?.invoke("window_theme", { caption, border })
+    .catch(() => undefined)
+}
+
+/** Abre la ventana de Configuración del launcher. */
+export function openLauncherSettings() {
+  void tauri()
+    ?.invoke("settings_open")
+    .catch(() => undefined)
+}
+
+/**
+ * Funciones que el launcher llama desde la parte nativa (por ejemplo "Aceptar partida" en la bandeja). Devuelve cómo
+ * sacarlas.
+ */
+export function registerLauncherHandlers(handlers: {
+  accept?: () => void
+  prefsChanged?: () => void
+}) {
+  if (!inLauncher()) return () => undefined
+  const w = window as unknown as {
+    __cmleagueLauncher?: Record<string, (() => void) | undefined>
+  }
+  const bag = (w.__cmleagueLauncher ??= {})
+  Object.assign(bag, handlers)
+  return () => {
+    for (const key of Object.keys(handlers))
+      if (bag[key] === handlers[key as keyof typeof handlers]) delete bag[key]
+  }
 }
 
 // El mismo texto que "Copiar connect" del matchmaking (connectCommand en features/matchmaking/labels.ts).
@@ -47,7 +109,7 @@ export async function openGame(address: string, password: string) {
   } catch (e) {
     if (message(e) !== "NO_GAME") {
       toast.error(
-        `${message(e)} El connect quedó copiado: pegalo en la consola (º).`
+        `${message(e)} El connect quedó copiado: pégalo en la consola (º).`
       )
       return
     }
@@ -56,7 +118,7 @@ export async function openGame(address: string, password: string) {
       "C:\\CSSv34_ClientMod"
     )
     if (!dir) {
-      toast.info("El connect quedó copiado: pegalo en la consola (º).")
+      toast.info("El connect quedó copiado: pégalo en la consola (º).")
       return
     }
     try {
@@ -66,7 +128,7 @@ export async function openGame(address: string, password: string) {
       )
     } catch (e2) {
       toast.error(
-        `${message(e2)} El connect quedó copiado: pegalo en la consola (º).`
+        `${message(e2)} El connect quedó copiado: pégalo en la consola (º).`
       )
     }
   }

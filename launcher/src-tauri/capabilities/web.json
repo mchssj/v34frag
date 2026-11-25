@@ -1,8 +1,17 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "web",
-  "description": "La web de CMLeague (y nada más) puede abrir el juego y traer la ventana al frente. Sin acceso a archivos, procesos ni otras APIs de Tauri.",
+  "description": "La web de CMLeague (y nada más) puede abrir el juego, contar el estado del matchmaking, traer la ventana al frente, pintar la barra con el tema y abrir Configuración. No puede leer ni cambiar la configuración del launcher, ni archivos, procesos u otras APIs de Tauri.",
   "windows": ["main"],
   "remote": { "urls": ["https://cmleague.lat/*", "https://www.cmleague.lat/*"] },
-  "permissions": ["allow-game-detect", "allow-game-set-dir", "allow-game-launch", "allow-window-attention"]
+  "permissions": [
+    "allow-game-detect",
+    "allow-game-set-dir",
+    "allow-game-launch",
+    "allow-window-attention",
+    "allow-launcher-status",
+    "allow-launcher-prefs",
+    "allow-window-theme",
+    "allow-settings-open"
+  ]
 }

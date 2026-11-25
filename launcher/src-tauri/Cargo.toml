@@ -14,6 +14,14 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = ["tray-icon"] }
 serde = { version = "1", features = ["derive"] }
+tauri-plugin-notification = "2"
+tauri-plugin-autostart = "2"
+# Cifrado nativo de Windows (SChannel): sin ring ni compilador de C.
+tauri-plugin-updater = { version = "2", default-features = false, features = ["native-tls", "system-proxy", "zip"] }
+serde_json = "1"
+discord-rich-presence = "1.1.0"
+tokio = { version = "1", features = ["time"] }
+tauri-plugin-single-instance = "2"
 
 # Colores de la barra de título nativa (DwmSetWindowAttribute, Windows 11). Ya viene con Tauri: no suma descargas.
 [target.'cfg(windows)'.dependencies]
