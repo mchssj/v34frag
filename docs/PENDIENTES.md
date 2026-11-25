@@ -7,8 +7,8 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Qué es:** #1, #2 y #3 corren el reporter **2.10.2** de Kyan desde el 2026-11-13 y `main` tenía la 2.10.0. Ya están en `main` el código y el mismo binario. Detalle: [`2026-11-25-reporter-de-los-servidores-en-main`](bitacora/2026-11-25-reporter-de-los-servidores-en-main/).
 - **Falta:**
   - Que el manual (cuchillo por vida y `!ready` automático) salga con el próximo despliegue de la API.
-  - Aplicar la `134`: sin ella no funciona el nombre de la web, y cada entrada deja un error en `errors_*.log`.
-  - Llevar a `main` `csstv_flash` (solo en `kyan/pruebas`) y pedirle a Kyan el código de `csstv_ff`, que no está en ninguna rama. Los dos corren en los tres servidores.
+  - **No aplicar la `134` (nombre de la web) con los plugins de hoy.** Si el nombre de la ficha llega con la partida en vivo (un reemplazo, una reconexión), el reporter lo pone y `csstv_qol` 1.4.0 (`csstv_qol_lock_names 1`) lo revierte, sin fin: 66 cambios de nombre por segundo, con un aviso en el chat cada vez (probado el 2026-11-25 en el servidor local, con los `.smx` del #1 y bots; con `csstv_qol_lock_names 0` no pasa). Antes, en los tres servidores: un reporter 2.10.3 con la native `CSSTV_NameHandled` y el `csstv_qol` 1.4.1, que la consulta (están en `archivo/reporter-2.11.0`). Sin la `134`, cada entrada deja un error en `errors_*.log` y nadie cambia de nombre.
+  - Pedirle a Kyan el código de `csstv_ff`, que no está en ninguna rama y corre en los tres servidores. (`csstv_flash` está en `main` desde el 2026-11-25.)
   - Decidir qué se hace con el reporter 2.11.0 sin commit (rama local `archivo/reporter-2.11.0`): sale de la 2.10.0, así que **no se puede subir como está**.
 
 ## Abandono del reemplazo y ELO de quien abandona si su equipo gana (2026-11-25): desplegado, falta publicar el changelog

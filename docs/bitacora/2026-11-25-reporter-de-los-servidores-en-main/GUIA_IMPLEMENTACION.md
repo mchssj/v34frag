@@ -30,8 +30,9 @@ Ninguno.
 ## Pendiente
 
 - **Antes de subir otro reporter:** que salga de esta versión. El 2.11.0 sin commit salía de la 2.10.0 y borraba el cuchillo por vida y el `!ready` automático.
-- **Replanteo `134`:** sin él no funciona el nombre de la web.
-- **`csstv_flash`** está solo en `kyan/pruebas`, y **`csstv_ff`** no está en ninguna rama. Los dos corren en #1, #2 y #3.
+- **Replanteo `134`:** sin él no funciona el nombre de la web, pero **no se puede aplicar con los plugins de hoy**: con la partida en vivo, el reporter y `csstv_qol` 1.4.0 se pelean por el nombre (66 cambios por segundo, probado el 2026-11-25 en el servidor local). Detalle en `docs/PENDIENTES.md`.
+- **`csstv_ff`** corre en #1, #2 y #3 y no está en ninguna rama.
+- **`csstv_flash`** 1.0.0 está en `main` desde el 2026-11-25: código, `.smx` (md5 `c8a43695…`) y cfg iguales a los de los tres servidores, y su bitácora [`2026-11-11-flash-por-angulo`](../2026-11-11-flash-por-angulo/), copiados de `kyan/pruebas`.
 
 ## Cómo revertir
 
