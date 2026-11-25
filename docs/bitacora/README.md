@@ -274,4 +274,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-23 | [4 marcos VIP nuevos (Nevada, Celda, Polaroid y Pintura)](2026-11-23-marcos-vip/) | Replanteo `138` y web (desplegado el 2026-11-24); falta publicar el changelog |
 | 2026-11-24 | [Filtro "Nuevo" en la tienda](2026-11-24-tienda-filtro-nuevo/) | API y web (desplegado el 2026-11-24); falta publicar el changelog |
 | 2026-11-24 | [7 marcos nuevos (Bosque, Siesta y 5 VIP)](2026-11-24-marcos-nuevos/) | Replanteo `143` y web (desplegado el 2026-11-24); falta publicar el changelog |
-| 2026-11-25 | [Abandono del reemplazo y ELO de quien abandona si su equipo gana](2026-11-25-abandono-del-reemplazo/) | Replanteo `145` (desplegado el 2026-11-25); falta la web (manual) y publicar el changelog |
+| 2026-11-25 | [Abandono del reemplazo y ELO de quien abandona si su equipo gana](2026-11-25-abandono-del-reemplazo/) | Replanteo `145` y API con el manual (desplegado el 2026-11-25); falta publicar el changelog |
