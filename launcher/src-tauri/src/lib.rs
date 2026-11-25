@@ -8,7 +8,7 @@ use std::process::Command;
 use serde::Serialize;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{Manager, UserAttentionType, WindowEvent};
+use tauri::{Manager, UserAttentionType, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 
 #[derive(Serialize)]
 struct GameInfo {
@@ -211,9 +211,66 @@ fn window_attention(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// La web que abre la ventana.
+const WEB_URL: &str = "https://cmleague.lat/play";
+
+/// Fondo oscuro de la web (`--background` de .dark, oklch(0.145 0 0)), para que no haya un destello blanco al abrir.
+const BACKGROUND: (u8, u8, u8) = (0x0a, 0x0a, 0x0a);
+
+/// Scroll fino y del color del texto con poca opacidad, como `scrollbar-thin` de la web. Se agrega en cada carga de
+/// cmleague.lat, así no depende de desplegar la web.
+const SCROLL_STYLE: &str = r#"
+(() => {
+  if (!/(^|\.)cmleague\.lat$/.test(location.hostname)) return;
+  const css = `
+    * { scrollbar-width: thin; scrollbar-color: color-mix(in oklch, var(--foreground, #fafafa) 22%, transparent) transparent; }
+    html { scrollbar-gutter: stable; }
+  `;
+  const add = () => {
+    const s = document.createElement("style");
+    s.dataset.cmleagueLauncher = "";
+    s.textContent = css;
+    document.head.appendChild(s);
+  };
+  if (document.head) add(); else document.addEventListener("DOMContentLoaded", add, { once: true });
+})();
+"#;
+
+/// Barra de título nativa con los colores de la web (Windows 11; en Windows 10 queda la de siempre).
+#[cfg(windows)]
+fn style_title_bar(w: &tauri::WebviewWindow) {
+    use windows_sys::Win32::Graphics::Dwm::{
+        DwmSetWindowAttribute, DWMWA_BORDER_COLOR, DWMWA_CAPTION_COLOR, DWMWA_TEXT_COLOR, DWMWA_USE_IMMERSIVE_DARK_MODE,
+    };
+    let Ok(hwnd) = w.hwnd() else { return };
+    let hwnd = hwnd.0 as _;
+    // COLORREF es 0x00BBGGRR.
+    let rgb = |r: u8, g: u8, b: u8| u32::from(r) | (u32::from(g) << 8) | (u32::from(b) << 16);
+    let set = |attr: i32, value: u32| unsafe {
+        DwmSetWindowAttribute(hwnd, attr as u32, &value as *const u32 as _, 4);
+    };
+    set(DWMWA_USE_IMMERSIVE_DARK_MODE, 1);
+    set(DWMWA_CAPTION_COLOR, rgb(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2));
+    set(DWMWA_TEXT_COLOR, rgb(0xfa, 0xfa, 0xfa));
+    set(DWMWA_BORDER_COLOR, rgb(0x26, 0x26, 0x26));
+}
+
+#[cfg(not(windows))]
+fn style_title_bar(_w: &tauri::WebviewWindow) {}
+
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
+            let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(WEB_URL.parse().expect("URL")))
+                .title("CMLeague")
+                .inner_size(1280.0, 800.0)
+                .min_inner_size(900.0, 600.0)
+                .theme(Some(tauri::Theme::Dark))
+                .background_color(tauri::window::Color(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255))
+                .initialization_script(SCROLL_STYLE)
+                .build()?;
+            style_title_bar(&window);
+
             // Bandeja: cerrar la ventana no corta el launcher, así sigue en la cola y avisa.
             let show = MenuItem::with_id(app, "show", "Abrir CMLeague", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Salir", true, None::<&str>)?;

@@ -7,17 +7,7 @@
     "frontendDist": "../offline"
   },
   "app": {
-    "windows": [
-      {
-        "label": "main",
-        "title": "CMLeague",
-        "width": 1280,
-        "height": 800,
-        "minWidth": 900,
-        "minHeight": 600,
-        "url": "https://cmleague.lat/play"
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": null
     }
