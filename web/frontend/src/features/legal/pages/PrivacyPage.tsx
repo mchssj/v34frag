@@ -370,6 +370,11 @@ const SECTIONS: LegalSection[] = [
           privado.
         </p>
         <p>
+          En los servidores de la liga, si tu SteamID está vinculado a tu perfil
+          y tu perfil no es privado, apareces con tu tag de la web; con VIP, con
+          el nombre que quieras.
+        </p>
+        <p>
           Al terminar cada temporada publicamos el recap de cada jugador que
           jugó al menos un mix (sus cifras de la temporada comparadas con el
           promedio de todos, su curva de ELO, sus mapas, su mejor partida, sus

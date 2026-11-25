@@ -1,6 +1,6 @@
 ---
 titulo: Jugar en el servidor
-resumen: Cómo arranca la partida, el calentamiento, el formato, las pausas, la rendición, pedir un arma, la flash y los espectadores.
+resumen: Cómo arranca la partida, el calentamiento, el formato, las pausas, la rendición, pedir un arma, la flash, tu nombre y los espectadores.
 orden: 4
 ---
 
@@ -46,12 +46,20 @@ Si no te alcanza la plata, un compañero te puede comprar el arma:
 
 La flash ciega según cómo la agarres, parecido a CS:GO. Si la miras de frente, te ciega completa. De costado te ciega menos, y de espaldas es solo un destello corto. De lejos también dura menos. Si la escuchas venir, darte vuelta a tiempo sirve.
 
+## Tu nombre en el servidor
+
+Si tu SteamID está vinculado a tu perfil (con `!claim`), al entrar al servidor te aparece tu alias de la web, el mismo del ranking y las partidas. Vale en los mixes, el matchmaking, los torneos y las PCW. Si te lo cambias, vuelve solo. Para usar otro, cambia tu alias en tu perfil de la web y entra de nuevo.
+
+- Con **VIP** usas el nombre que quieras y te lo cambias cuando quieras.
+- Si no vinculaste tu SteamID o tu perfil es **privado**, sigues con tu nombre, pero no te lo puedes cambiar con la partida empezada.
+- El juego no muestra todo: los emojis y los caracteres invisibles de tu alias no aparecen, y un nombre muy largo se corta.
+
 ## Si algo pasa
 
 Si alguien hace trampa, insulta o hay un problema que necesita a alguien ya, escribe `!calladmin`: avisa a los moderadores en Discord.
 
 ## Si estás de espectador
 
-Durante la partida, los espectadores no escriben en el chat general y los jugadores no los escuchan. Nadie se puede cambiar el nombre hasta que termina.
+Durante la partida, los espectadores no escriben en el chat general y los jugadores no los escuchan. Los nombres tampoco se cambian (ver "Tu nombre en el servidor").
 
 Los modos aparte (deathmatch, retake y 2v2) están en [Deathmatch, retake y 2v2](/help/jugador/otros-modos).

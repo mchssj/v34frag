@@ -300,6 +300,12 @@ const SECTIONS: LegalSection[] = [
           aunque los equipos queden desparejos.
         </li>
         <li>
+          En los servidores de la liga juegas con el nombre de tu ficha de la
+          web, si tu SteamID está vinculado y tu perfil no es privado, también
+          en los torneos y las PCW. Con VIP usas el nombre que quieras. Los
+          caracteres que el juego no muestra se quitan.
+        </li>
+        <li>
           Si alguien abandona una partida del matchmaking, la liga puede
           publicar en su Discord un aviso con un link para entrar en su lugar.
           El aviso muestra el modo, el mapa y el marcador, no los nombres de los
