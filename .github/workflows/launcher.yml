@@ -1,0 +1,61 @@
+# Compila el instalador del launcher de escritorio en Windows (docs/bitacora/2026-11-24-launcher-escritorio).
+# Así no hace falta instalar Rust ni las Build Tools de Visual Studio en una PC para probarlo.
+# El instalador queda como artefacto de la corrida ("cmleague-launcher-windows").
+name: Launcher
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "launcher/**"
+      - ".github/workflows/launcher.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # pnpm 12.8.1 con Corepack, como pide package.json ("packageManager").
+      - name: pnpm
+        run: |
+          corepack enable
+          pnpm --version
+        env:
+          COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher/src-tauri
+
+      - name: Dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Tipos
+        run: pnpm typecheck
+
+      - name: Pruebas de Rust
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: Instalador
+        run: pnpm tauri build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cmleague-launcher-windows
+          path: launcher/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+          retention-days: 14
