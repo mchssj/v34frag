@@ -221,8 +221,8 @@ const SECTIONS: LegalSection[] = [
           lo revisan.
         </li>
         <li>
-          Un baneo alcanza a tu ficha y a todos sus SteamID, también a los que
-          sumes después. La lista de baneos <Wip /> va a ser pública y va a
+          Un baneo alcanza a tu ficha, aunque todavía no tenga SteamID, y a
+          todos sus SteamID, también a los que sumes después. La lista de baneos <Wip /> va a ser pública y va a
           mostrar a quién, desde cuándo, hasta cuándo y el motivo.
         </li>
         <li>

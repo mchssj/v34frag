@@ -2,6 +2,16 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
 
+## Banear una ficha sin SteamID (2026-11-25): probado en local, sin commit ni despliegue
+
+- **Qué es:** no se podía banear a aura67 porque su ficha no tiene SteamID; el baneo tiene que sacarlo del matchmaking igual. Detalle: [`2026-11-25-banear-ficha-sin-steamid`](bitacora/2026-11-25-banear-ficha-sin-steamid/).
+- **Hecho:** replanteo `147` (con inversa y `pruebas/prueba_147.sql`, todo OK en la copia local con rollback), el buscador de **Banear** con las fichas sin SteamID, manual de moderador y soporte, y `/terminos`.
+- **Falta:**
+  1. Aplicar la `147` en producción (respaldo antes). No toca los servidores de juego.
+  2. Desplegar la API y la web; `pnpm gen:api` en el frontend.
+  3. Commit en `main` y el replanteo también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+  4. Banear a aura67. Si su cuenta todavía no tiene ficha (nunca buscó partida), no aparece en el buscador: queda fuera de este cambio.
+
 ## Pasos que no se oyen al quedar solo (2026-11-25): silencio del clutch sacado, falta el anti-wallhack
 
 - **Qué es:** jugadores reportan que no oyen los pasos cuando quedan solos. Daniel pidió sacar el silencio del clutch (`!voz`). Detalle: [`2026-11-25-sin-silencio-en-el-clutch`](bitacora/2026-11-25-sin-silencio-en-el-clutch/).
