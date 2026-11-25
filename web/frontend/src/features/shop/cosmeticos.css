@@ -2861,3 +2861,530 @@
     ),
     var(--background);
 }
+
+/* --- Temas con textura (2026-11-24-temas-con-textura) ---
+   Cada tema define sus colores y estas variables; lo de abajo las dibuja:
+   --tex (textura de las tarjetas), --tex-pagina (fondo de la página), --tex-2 (color de las barras de las
+   estadísticas) y --tex-cinta con --tex-alto (la cinta de arriba de la tarjeta del nick).
+   Las tarjetas son de color, así que también redefinen texto, victoria, derrota y el fondo de la página. */
+[class*="tema-tex-"] {
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  color: var(--foreground);
+}
+/* La tarjeta del nick y las muestras de la tienda: la textura completa. */
+[class*="tema-tex-"]:not(.perfil-tema) {
+  position: relative;
+  isolation: isolate;
+  border-color: var(--border);
+  background: var(--tex), var(--card);
+}
+/* Las demás tarjetas tienen números y tablas: la textura va debajo de un velo del color de la tarjeta. */
+.perfil-tema[class*="tema-tex-"]
+  [data-slot="card"]:not([data-slot="card"] *):not([class*="tema-tex-"]) {
+  --tex-velo: color-mix(in srgb, var(--card) 66%, transparent);
+  background:
+    linear-gradient(var(--tex-velo), var(--tex-velo)), var(--tex), var(--card);
+}
+.perfil-tema[class*="tema-tex-"] {
+  background:
+    var(--tex-pagina, linear-gradient(#0000, #0000)), var(--background);
+}
+.perfil-tema[class*="tema-tex-"]
+  [data-slot="progress-indicator"].bg-foreground {
+  background: var(--tex-2, var(--foreground));
+}
+div[class*="tema-tex-"]:not(.perfil-tema)::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: var(--tex-alto, 0px);
+  border-radius: inherit;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: var(--tex-cinta, none);
+}
+/* La portada va debajo de la cinta. En la tienda, la muestra ya tiene su propio margen interno. */
+.perfil-tema > div[class*="tema-tex-"] {
+  padding-top: var(--tex-alto, 0px);
+}
+.tema-tex-tubo {
+  --primary: #ffb347;
+  --primary-foreground: #1d1102;
+  --tex-2: #ffd9a0;
+  --card: #17110a;
+  --muted: #2a1f11;
+  --border: #ffb34744;
+  --background: #0a0704;
+  --foreground: #ffe9c9;
+  --muted-foreground: #c09a68;
+  --tex:
+    radial-gradient(110% 150% at 50% 0, #ffb34724, #0000 62%),
+    repeating-linear-gradient(0deg, #0000 0 2px, #00000066 2px 3px);
+  --ring: #ffb347;
+}
+.tema-tex-pantallazo {
+  --primary: #ffffff;
+  --primary-foreground: #0a1a86;
+  --tex-2: #9ad7ff;
+  --card: #0b1e96;
+  --muted: #2340c4;
+  --border: #9db0ff66;
+  --background: #06105a;
+  --muted-foreground: #b9c7ff;
+  --win: #7df0b0;
+  --destructive: #ffa0a0;
+  --tex: linear-gradient(180deg, #ffffff0d, #0000 40%);
+  --foreground: #fafafa;
+  --ring: #ffffff;
+}
+.tema-tex-ficha {
+  --primary: #ffd84a;
+  --primary-foreground: #1c1500;
+  --tex-2: #ff7a54;
+  --card: #262008;
+  --muted: #3a3110;
+  --border: #ffd84a3d;
+  --background: #0c0a03;
+  --muted-foreground: #b9ac74;
+  --tex:
+    radial-gradient(circle at 0 50%, #0c0a03 4.5px, #0000 5px) 0 0/50% 17px
+      no-repeat,
+    radial-gradient(circle at 0 50%, #0c0a03 4.5px, #0000 5px) 0 0/50% 17px
+      repeat-y,
+    radial-gradient(circle at 100% 50%, #0c0a03 4.5px, #0000 5px) 100% 0/50%
+      17px repeat-y;
+  --foreground: #fafafa;
+  --ring: #ffd84a;
+}
+.tema-tex-cuaderno {
+  --primary: #1f4fb8;
+  --primary-foreground: #ffffff;
+  --tex-2: #d2383a;
+  --card: #fbf9f1;
+  --muted: #e6e7ea;
+  --border: #a9b8d4;
+  --background: #d9dde3;
+  --foreground: #1c2333;
+  --muted-foreground: #586074;
+  --win: #14803f;
+  --destructive: #c42b2b;
+  --tex:
+    linear-gradient(90deg, #0000 9px, #e2707080 9px 10.5px, #0000 10.5px),
+    linear-gradient(#7fa3dd3d 1px, #0000 1px) 0 0/15px 15px,
+    linear-gradient(90deg, #7fa3dd3d 1px, #0000 1px) 0 0/15px 15px;
+  --ring: #1f4fb8;
+  --input: #1c233326;
+  --level-1: oklch(0.62 0.01 260);
+  --level-2: oklch(0.62 0.17 148);
+  --level-4: oklch(0.72 0.16 82);
+  --level-8: oklch(0.65 0.19 45);
+  --level-10: oklch(0.58 0.21 25);
+  --level-off: oklch(0.85 0.01 260);
+  color-scheme: light;
+}
+.tema-tex-pano {
+  --destructive: #ff958e;
+  --primary: #f3d588;
+  --primary-foreground: #1d1503;
+  --tex-2: #ff8071;
+  --card: #0e4630;
+  --muted: #0a3324;
+  --border: #d6aa5566;
+  --background: #1d110a;
+  --muted-foreground: #a9cdb8;
+  --tex-pagina: repeating-linear-gradient(
+    92deg,
+    #0000 0 11px,
+    #6b3d1f30 11px 13px,
+    #0000 13px 29px
+  );
+  --tex:
+    radial-gradient(90% 130% at 50% 40%, #2a8a5c66, #0000 72%),
+    radial-gradient(#00000038 0.8px, #0000 1.1px) 0 0/4px 4px;
+  --foreground: #fafafa;
+  --ring: #f3d588;
+}
+.tema-tex-baraja {
+  --primary: #ffc24a;
+  --primary-foreground: #1f1200;
+  --tex-2: #7fb4ff;
+  --card: #4a0f18;
+  --muted: #330a11;
+  --border: #ffc24a59;
+  --background: #16060a;
+  --muted-foreground: #dfa9a5;
+  --destructive: #ff9d8f;
+  --tex:
+    linear-gradient(90deg, #4a0f18 20%, #4a0f1899 75%, #4a0f1833),
+    repeating-linear-gradient(45deg, #0000 0 9px, #ffc24a3d 9px 10px),
+    repeating-linear-gradient(-45deg, #0000 0 9px, #ffc24a3d 9px 10px);
+  --foreground: #fafafa;
+  --ring: #ffc24a;
+}
+.tema-tex-domino {
+  --primary: #f5ecd8;
+  --primary-foreground: #17140e;
+  --tex-2: #d8b98a;
+  --card: #171513;
+  --muted: #2b2723;
+  --border: #f5ecd83b;
+  --background: #0a0908;
+  --muted-foreground: #b0a698;
+  --tex-alto: 11px;
+  --tex-cinta:
+    radial-gradient(circle, #f5ecd8 2.6px, #0000 3.1px) 0 0/15px 11px, #2b2723;
+  --tex:
+    linear-gradient(90deg, #171513 35%, #0000),
+    radial-gradient(circle, #f5ecd82e 4px, #0000 4.6px) 0 0/24px 24px;
+  --foreground: #fafafa;
+  --ring: #f5ecd8;
+}
+.tema-tex-ajedrez {
+  --primary: #f0d6a6;
+  --primary-foreground: #1d1306;
+  --tex-2: #c98d52;
+  --card: #231811;
+  --muted: #3a281c;
+  --border: #c98d5259;
+  --background: #100a06;
+  --muted-foreground: #b99b80;
+  --tex:
+    linear-gradient(100deg, #231811 30%, #23181199 70%, #0000),
+    repeating-conic-gradient(#f0d6a62e 0 25%, #0000 0 50%) 0 0/38px 38px;
+  --foreground: #fafafa;
+  --ring: #f0d6a6;
+}
+.tema-tex-plano {
+  --primary: #e2f4ff;
+  --primary-foreground: #0a2a4c;
+  --tex-2: #79ccff;
+  --card: #0d3760;
+  --muted: #174a7a;
+  --border: #9fd8ff80;
+  --background: #082542;
+  --muted-foreground: #a5cbea;
+  --win: #7ef0b8;
+  --destructive: #ffab9a;
+  --tex-pagina:
+    linear-gradient(#9fd8ff14 1px, #0000 1px) 0 0/12px 12px,
+    linear-gradient(90deg, #9fd8ff14 1px, #0000 1px) 0 0/12px 12px;
+  --tex:
+    linear-gradient(#9fd8ff2b 1px, #0000 1px) 0 0/50px 50px,
+    linear-gradient(90deg, #9fd8ff2b 1px, #0000 1px) 0 0/50px 50px,
+    linear-gradient(#9fd8ff14 1px, #0000 1px) 0 0/10px 10px,
+    linear-gradient(90deg, #9fd8ff14 1px, #0000 1px) 0 0/10px 10px;
+  --foreground: #fafafa;
+  --ring: #e2f4ff;
+}
+.tema-tex-curvas {
+  --primary: #d3ea74;
+  --primary-foreground: #161c03;
+  --tex-2: #f09a4e;
+  --card: #1a2217;
+  --muted: #2a3524;
+  --border: #d3ea743d;
+  --background: #0c110a;
+  --muted-foreground: #a2b092;
+  --tex: repeating-radial-gradient(
+    ellipse 130% 100% at 88% 118%,
+    #0000 0 10px,
+    #d3ea7433 11.5px,
+    #0000 13px 21px,
+    #d3ea741c 22.5px,
+    #0000 24px
+  );
+  --foreground: #fafafa;
+  --ring: #d3ea74;
+}
+.tema-tex-historieta {
+  --primary: #ffe24d;
+  --primary-foreground: #191500;
+  --tex-2: #ff4d7d;
+  --card: #1a1836;
+  --muted: #2b2854;
+  --border: #ffe24d8c;
+  --background: #0d0c1d;
+  --muted-foreground: #b3b0dc;
+  --tex:
+    linear-gradient(115deg, #1a1836 38%, #1a183600 100%),
+    radial-gradient(circle, #ff4d7d8c 2.6px, #0000 3.1px) 0 0/9px 9px;
+  --foreground: #fafafa;
+  --ring: #ffe24d;
+}
+.tema-tex-tintas {
+  --primary: #ff86a3;
+  --primary-foreground: #2a0410;
+  --tex-2: #57d5e6;
+  --card: #241b33;
+  --muted: #37294c;
+  --border: #ff86a347;
+  --background: #120d1b;
+  --muted-foreground: #b6a5cb;
+  --tex:
+    radial-gradient(circle at 96% 0, #ff86a35c 0 52px, #0000 53px),
+    radial-gradient(circle at 84% 100%, #57d5e652 0 44px, #0000 45px),
+    radial-gradient(#ffffff12 0.7px, #0000 1px) 0 0/3px 3px;
+  --foreground: #fafafa;
+  --ring: #ff86a3;
+}
+.tema-tex-salar {
+  --primary: #ffdccb;
+  --primary-foreground: #2a1410;
+  --tex-2: #9cc3ff;
+  --card: #2a2440;
+  --muted: #3b3358;
+  --border: #ffdccb47;
+  --background: #14101f;
+  --muted-foreground: #b9aecb;
+  --tex-pagina: linear-gradient(180deg, #6b3f6b66, #0000 55%);
+  --tex:
+    linear-gradient(180deg, #e0856a38, #0000 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='73'%3E%3Cpath d='M21 0v12L0 24.3v24.3L21 61v12M21 12l21 12.3v24.3L21 61M0 24.3v0M42 24.3v0' fill='none' stroke='%23ffdccb' stroke-opacity='.17' stroke-width='1.2'/%3E%3C/svg%3E");
+  --foreground: #fafafa;
+  --ring: #ffdccb;
+}
+.tema-tex-paramo {
+  --primary: #d6eeb6;
+  --primary-foreground: #12210f;
+  --tex-2: #f5cd66;
+  --card: #172a25;
+  --muted: #24403a;
+  --border: #d6eeb63b;
+  --background: #0b1613;
+  --muted-foreground: #9fbbb0;
+  --tex: linear-gradient(180deg, #8fb3a62e, #0000 70%);
+  --foreground: #fafafa;
+  --ring: #d6eeb6;
+}
+.tema-tex-luciernagas {
+  --primary: #dcff72;
+  --primary-foreground: #141c00;
+  --tex-2: #63d3a4;
+  --card: #0f1f1b;
+  --muted: #1a332c;
+  --border: #63d3a447;
+  --background: #060d0b;
+  --muted-foreground: #8fb3a5;
+  --tex: linear-gradient(0deg, #1f4a3a73, #0000 70%);
+  --foreground: #fafafa;
+  --ring: #dcff72;
+}
+.tema-tex-fileteado {
+  --primary: #ffd257;
+  --primary-foreground: #201500;
+  --tex-2: #4fcab5;
+  --card: #13243f;
+  --muted: #1d3556;
+  --border: #ffd25773;
+  --background: #0a1424;
+  --muted-foreground: #a5b6d0;
+  --tex-alto: 16px;
+  --tex-cinta:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='16' fill='none' stroke-linecap='round'%3E%3Cpath d='M0 8c8-9 18-9 20-2 1 5-6 7-8 3M64 8c-8-9-18-9-20-2-1 5 6 7 8 3' stroke='%23ffd257' stroke-width='2'/%3E%3Cpath d='M22 10c4 3 6 3 10 0 4 3 6 3 10 0' stroke='%234fcab5' stroke-width='2'/%3E%3Ccircle cx='32' cy='6' r='3' fill='%23ff6a5c'/%3E%3C/svg%3E")
+      50% 0/64px 16px repeat-x,
+    #0d1a30;
+  --tex:
+    radial-gradient(70% 120% at 100% 100%, #ff6a5c26, #0000),
+    radial-gradient(60% 100% at 0 100%, #4fcab526, #0000);
+  --foreground: #fafafa;
+  --ring: #ffd257;
+}
+.tema-tex-azulejo {
+  --primary: #f0f6ff;
+  --primary-foreground: #12315f;
+  --tex-2: #f7bd4b;
+  --card: #153a73;
+  --muted: #0f2c59;
+  --border: #8fb9f7;
+  --background: #0a1c3a;
+  --muted-foreground: #b2cbf0;
+  --win: #8df2b8;
+  --destructive: #ffaa9c;
+  --tex:
+    linear-gradient(90deg, #153a73 22%, #153a7300 120%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' fill='none'%3E%3Cpath d='M0 0h44v44H0z' stroke='%23f0f6ff' stroke-opacity='.4'/%3E%3Cpath d='M22 4c5 7 5 11 0 18-5-7-5-11 0-18zM22 40c5-7 5-11 0-18-5 7-5 11 0 18zM4 22c7 5 11 5 18 0-7-5-11-5-18 0zM40 22c-7 5-11 5-18 0 7-5 11-5 18 0z' fill='%23f0f6ff' fill-opacity='.38'/%3E%3Ccircle cx='22' cy='22' r='3.4' fill='%23f7bd4b' fill-opacity='.9'/%3E%3Cpath d='M0 12A12 12 0 0 0 12 0M32 0a12 12 0 0 0 12 12M44 32a12 12 0 0 0-12 12M12 44A12 12 0 0 0 0 32' stroke='%23f7bd4b' stroke-opacity='.6' stroke-width='2'/%3E%3C/svg%3E");
+  --foreground: #fafafa;
+  --ring: #f0f6ff;
+}
+.tema-tex-bus {
+  --primary: #ffd84a;
+  --primary-foreground: #1e1400;
+  --tex-2: #ff5f98;
+  --card: #2b1746;
+  --muted: #402463;
+  --border: #ff5f985c;
+  --background: #150a24;
+  --muted-foreground: #bda6dc;
+  --tex-alto: 14px;
+  --tex-cinta: linear-gradient(
+    180deg,
+    #ffd84a 0 3px,
+    #2b1746 3px 5px,
+    #ff5f98 5px 9px,
+    #2b1746 9px 11px,
+    #3fd0d8 11px 14px
+  );
+  --tex: repeating-linear-gradient(
+    -60deg,
+    #0000 0 60px,
+    #ff5f981c 60px 78px,
+    #ffd84a1c 78px 88px,
+    #3fd0d81c 88px 96px
+  );
+  --foreground: #fafafa;
+  --ring: #ffd84a;
+}
+.tema-tex-carbono {
+  --primary: #ff4a3d;
+  --primary-foreground: #1f0301;
+  --tex-2: #f4f4f5;
+  --card: #15161a;
+  --muted: #2a2c32;
+  --border: #ffffff2e;
+  --background: #08090b;
+  --muted-foreground: #a3a6ae;
+  --tex-alto: 4px;
+  --tex-cinta: #ff4a3d;
+  --tex:
+    linear-gradient(180deg, #ffffff12, #0000 45%),
+    linear-gradient(45deg, #ffffff14 25%, #0000 25% 75%, #ffffff14 75%) 0 0/8px
+      8px,
+    linear-gradient(45deg, #00000073 25%, #0000 25% 75%, #00000073 75%) 4px
+      4px/8px 8px;
+  --foreground: #fafafa;
+  --ring: #ff4a3d;
+}
+.tema-tex-obra {
+  --primary: #ffd60a;
+  --primary-foreground: #191500;
+  --tex-2: #ff8a1f;
+  --card: #1c1c1b;
+  --muted: #30302d;
+  --border: #ffd60a52;
+  --background: #0c0c0b;
+  --muted-foreground: #aaa99f;
+  --tex-alto: 13px;
+  --tex-cinta: repeating-linear-gradient(
+    -45deg,
+    #ffd60a 0 13px,
+    #151514 13px 26px
+  );
+  --tex:
+    radial-gradient(60% 90% at 90% 0, #ffd60a1f, #0000),
+    radial-gradient(#ffffff12 1px, #0000 1.4px) 0 0/7px 7px;
+  --foreground: #fafafa;
+  --ring: #ffd60a;
+}
+
+/* Los que se mueven: solo en la tarjeta del nick y en la muestra de la tienda. */
+div.tema-tex-tubo:not(.perfil-tema)::after,
+div.tema-tex-paramo:not(.perfil-tema)::after,
+div.tema-tex-luciernagas:not(.perfil-tema)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+div.tema-tex-tubo:not(.perfil-tema)::after {
+  box-shadow: inset 0 0 34px #ffb34740;
+  animation: cos-tex-tubo 4.2s steps(1) infinite;
+}
+div.tema-tex-paramo:not(.perfil-tema)::after {
+  background:
+    radial-gradient(closest-side, #dcefe62e, #0000) 10% 110%/70% 90% no-repeat,
+    radial-gradient(closest-side, #dcefe626, #0000) 90% 140%/80% 100% no-repeat;
+  animation: cos-tex-niebla 11s ease-in-out infinite alternate;
+}
+div.tema-tex-luciernagas:not(.perfil-tema)::after {
+  --luz: #dcff72 0 2.2px, #dcff7259 3px, #0000 15px;
+  background:
+    radial-gradient(circle at 62% 24%, var(--luz)),
+    radial-gradient(circle at 86% 62%, var(--luz)),
+    radial-gradient(circle at 44% 82%, var(--luz)),
+    radial-gradient(circle at 94% 18%, var(--luz)),
+    radial-gradient(circle at 16% 12%, var(--luz)),
+    radial-gradient(circle at 74% 88%, var(--luz));
+  animation: cos-tex-luces 5s ease-in-out infinite alternate;
+}
+@keyframes cos-tex-tubo {
+  0%,
+  46%,
+  52%,
+  78%,
+  100% {
+    opacity: 1;
+  }
+  47%,
+  51% {
+    opacity: 0.4;
+  }
+  79% {
+    opacity: 0.7;
+  }
+}
+@keyframes cos-tex-niebla {
+  to {
+    background-position:
+      75% 110%,
+      15% 140%;
+  }
+}
+@keyframes cos-tex-luces {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 0.95;
+    background-position:
+      9px -6px,
+      -7px 4px,
+      6px 5px,
+      -5px -6px,
+      7px 4px,
+      -8px -5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  div[class*="tema-tex-"]:not(.perfil-tema)::after {
+    animation: none;
+  }
+}
+/* Los botones de la tarjeta del nick (Comparar, Editar perfil…) son translúcidos: sobre la textura no se leen. */
+.perfil-tema
+  > div[class*="tema-tex-"]
+  :is(a, button)[class*="dark:bg-input/30"] {
+  border-color: var(--border);
+  background: var(--background);
+}
+.perfil-tema
+  > div[class*="tema-tex-"]
+  :is(a, button)[class*="dark:bg-input/30"]:hover {
+  background: var(--muted);
+}
+/* Cuaderno es claro y los efectos de nombre están hechos para fondo oscuro: van sobre una etiqueta oscura. */
+div.tema-tex-cuaderno:not(.perfil-tema) :has(> [class*="nombre-"]) {
+  padding: 0 0.4em;
+  border-radius: 0.3em;
+  background: #1c2333;
+  color: #fff;
+  --primary: #8fb2ff;
+}
+/* Textos que en modo oscuro son claros (visitas al perfil, medallas de torneo): en Cuaderno, oscuros. */
+.perfil-tema.tema-tex-cuaderno [class*="dark:text-yellow-300"] {
+  color: #8a5a00;
+}
+.perfil-tema.tema-tex-cuaderno [class*="dark:text-slate-300"] {
+  color: #475569;
+}

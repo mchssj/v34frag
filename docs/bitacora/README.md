@@ -274,6 +274,7 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-23 | [4 marcos VIP nuevos (Nevada, Celda, Polaroid y Pintura)](2026-11-23-marcos-vip/) | Replanteo `138` y web (desplegado el 2026-11-24); falta publicar el changelog |
 | 2026-11-24 | [Filtro "Nuevo" en la tienda](2026-11-24-tienda-filtro-nuevo/) | API y web (desplegado el 2026-11-24); falta publicar el changelog |
 | 2026-11-24 | [7 marcos nuevos (Bosque, Siesta y 5 VIP)](2026-11-24-marcos-nuevos/) | Replanteo `143` y web (desplegado el 2026-11-24); falta publicar el changelog |
+| 2026-11-24 | [20 temas de perfil con textura](2026-11-24-temas-con-textura/) | Hecho en local (replanteo `144`); sin commit ni desplegar |
 | 2026-11-25 | [Abandono del reemplazo y ELO de quien abandona si su equipo gana](2026-11-25-abandono-del-reemplazo/) | Replanteo `145` y API con el manual (desplegado el 2026-11-25); falta publicar el changelog |
 | 2026-11-25 | [El reporter de los servidores, en main](2026-11-25-reporter-de-los-servidores-en-main/) | Código y binario de la 2.10.2 en `main`, con las bitácoras [cuchillo por vida y nombre de la web](2026-11-12-cuchillo-por-vida-y-nombre-web/) y [!ready automático](2026-11-13-ready-automatico/) de Kyan; la `134` va en [El nick de la web](2026-11-22-nick-de-la-web-en-produccion/) |
 | 2026-11-25 | [Sin silencio en el clutch (se saca `!voz`)](2026-11-25-sin-silencio-en-el-clutch/) | `csstv_qol` 1.5.0 subido a #1, #2 y #3 el 2026-11-25 (entra en el próximo cambio de mapa). Falta verlo en un mix |

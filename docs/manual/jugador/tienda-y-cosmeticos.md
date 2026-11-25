@@ -97,7 +97,7 @@ Donde la foto es grande (tu perfil, tu tarjeta del lobby, Quiénes somos, tu men
 
 ## Temas
 
-Un tema pinta toda tu página de jugador con sus colores: la tarjeta de arriba, el nivel, el gráfico de ELO, las estadísticas y las pestañas, con un brillo de su color arriba. Algunos temas, además, hacen brillar el borde de la tarjeta de tu nombre. Tu página se ve siempre en oscuro con el tema, aunque quien la mire use el modo claro.
+Un tema pinta toda tu página de jugador con sus colores: la tarjeta de arriba, el nivel, el gráfico de ELO, las estadísticas y las pestañas, con un brillo de su color arriba. Algunos temas, además, hacen brillar el borde de la tarjeta de tu nombre. Los de la colección **Texturas** (la mitad para todos y la mitad solo VIP) cambian también el fondo de la página y el de las tarjetas, con su propio dibujo, y algunos se mueven. Tu página se ve siempre en oscuro con el tema, aunque quien la mire use el modo claro. La excepción es **Cuaderno de clase**, que se ve siempre claro.
 
 ## Lo VIP
 
