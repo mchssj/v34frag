@@ -58,7 +58,8 @@ Cuenta la parte de la partida que jugaste:
 - **Su equipo** pierde menos si pierde, y gana más si gana igual. Si se rinden con `!gg`, pierden menos de lo normal, pero al menos 10.
 - **El equipo rival** gana menos, porque jugó con ventaja.
 - Si abandonan 2 o más del mismo equipo, ese equipo pierde la partida.
-- Irse en la última ronda no cuenta como abandono: el ELO de todos se calcula normal.
+- Irse en la última ronda no cuenta como abandono: el ELO de todos se calcula normal. Vale también para quien entró de reemplazo.
+- **Si abandona alguien que entró de reemplazo**, solo cuentan las rondas desde que entró.
 
 ## Niveles
 

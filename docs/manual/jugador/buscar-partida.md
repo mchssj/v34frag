@@ -103,7 +103,7 @@ Cuando alguien abandona, puede salir un aviso en el Discord de la liga con un li
 4. Te lleva a la sala: tu fila ocupa el lugar del que se fue, con la etiqueta **Reemplazo**, y arriba ves **Entra al servidor** con la cuenta regresiva. Ahí están el servidor y la contraseña. Tienes {{mm.conectar}} para entrar. Si no entras, se te sanciona como a quien no se conecta a su partida y se busca otro reemplazo.
 5. En el servidor entras directo al equipo del que abandonó.
 
-Ganas o pierdes ELO como cualquiera, según las rondas que juegues: si entras muy tarde y juegas pocas, la partida no te cuenta.
+Ganas o pierdes ELO como cualquiera, según las rondas que juegues: si entras muy tarde y juegas pocas, la partida no te cuenta. Irte en la última ronda tampoco es abandono para ti. Si te vas antes sí lo es, y las rondas de antes de que entraras no cuentan como no jugadas.
 
 Al terminar, la sala muestra el resultado, el MVP, los destacados y los clips.
 

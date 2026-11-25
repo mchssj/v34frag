@@ -1,0 +1,6 @@
+CMLeague 2.9.73 --  Changelog
+
+Matchmaking
+- Si entras de reemplazo y te vas en la última ronda, ya no te cuenta como abandono: no te llevas sanción ni pierdes ELO por eso.
+- Si entras de reemplazo y abandonas antes, solo cuentan las rondas desde que entraste, no las que se jugaron sin ti.
+- Si abandonas y tu equipo gana, ahora sí pierdes entre 10 y 15 de ELO. Antes perdías lo mismo que en una derrota.
