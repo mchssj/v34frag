@@ -2,7 +2,8 @@
  * Ronda de cuchillo (!live knife): antes del LO3 se juega una ronda solo con cuchillo, sin
  * compras ni C4. El capitán del equipo que la gana (el jugador que le da nombre al equipo) elige
  * lado en un menú o con !stay / !switch. Si el capitán ya no está en el equipo, elige el primero
- * del equipo que lo escriba. Si nadie elige en csstv_knife_time segundos, se queda. No cuenta para las
+ * del equipo que lo escriba. Si nadie elige en csstv_knife_time segundos, se queda. Si se acaba el tiempo de la ronda,
+ * gana el lado que suma más vida entre sus vivos (2.12.0; antes ganaban los CT y se escondían). No cuenta para las
  * estadísticas, el marcador ni la demo, que empiezan con el LO3.
  *
  * La usan !live knife y, desde la 1.8.0, el inicio por !ready (csstv_ready_knife 1, por defecto).
@@ -50,7 +51,7 @@ void Knife_Begin()
 
 void Knife_OnRestartsDone()
 {
-	QolChatAll("%s {#amarillo}¡A cuchillo!{#normal} No se puede comprar en esta ronda.", PREFIX);
+	QolChatAll("%s {#amarillo}¡A cuchillo!{#normal} No se puede comprar en esta ronda. Si se acaba el tiempo, gana el equipo que sume más vida entre sus vivos.", PREFIX);
 	for (int i = 1; i <= MaxClients; i++)
 		if (IsClientInGame(i) && IsPlayerAlive(i))
 			CreateTimer(0.1, Timer_KnifeStrip, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
@@ -105,6 +106,7 @@ void Knife_OnRoundEnd(int winnerSide)
 {
 	if (g_bKnifeChoosing)
 		return;   // las rondas mientras se elige lado no cuentan
+	winnerSide = Knife_TimeoutWinner(winnerSide);
 	if (winnerSide != TEAM_CT && winnerSide != TEAM_T)
 	{
 		QolChatAll("%s La ronda de cuchillo terminó empatada: se juega otra.", PREFIX);
@@ -127,6 +129,40 @@ void Knife_OnRoundEnd(int winnerSide)
 			g_sTeam[g_iKnifeWinner], winnerSide == TEAM_CT ? "{#ct}CT{#normal}" : "{#t}T{#normal}", secs);
 	delete g_hKnifeTimer;
 	g_hKnifeTimer = CreateTimer(float(secs), Timer_KnifeTimeout, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/**
+ * Si se acabó el tiempo (quedan vivos de los dos lados: en la ronda de cuchillo no hay C4 ni rehenes), gana el lado
+ * que suma más vida entre sus vivos, no el que el juego da por ganador (los CT). Con la misma vida devuelve 0
+ * (empate: se juega otra). Si no se acabó el tiempo, devuelve el ganador del juego. (2.12.0)
+ */
+int Knife_TimeoutWinner(int gameWinner)
+{
+	int alive[4], hp[4];
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || !IsPlayerAlive(i) || IsClientSourceTV(i))
+			continue;
+		int team = GetClientTeam(i);
+		if (team != TEAM_CT && team != TEAM_T)
+			continue;
+		alive[team]++;
+		hp[team] += GetClientHealth(i);
+	}
+	if (!alive[TEAM_CT] || !alive[TEAM_T])
+		return gameWinner;
+	int winner = hp[TEAM_CT] > hp[TEAM_T] ? TEAM_CT : hp[TEAM_T] > hp[TEAM_CT] ? TEAM_T : 0;
+	LogMessage("Partida %s: ronda de cuchillo por tiempo, vida CT %d (%d vivos) contra T %d (%d vivos).", g_sMatchUid,
+		hp[TEAM_CT], alive[TEAM_CT], hp[TEAM_T], alive[TEAM_T]);
+	if (winner)
+	{
+		int k = winner == g_iSideA ? 0 : 1;
+		QolChatAll("%s Se acabó el tiempo: gana el {#amarillo}%s{#normal} por vida (%d contra %d).", PREFIX,
+			g_sTeam[k], hp[winner], hp[OtherSide(winner)]);
+	}
+	else
+		QolChatAll("%s Se acabó el tiempo con la misma vida de los dos lados (%d).", PREFIX, hp[TEAM_CT]);
+	return winner;
 }
 
 /** El capitán del equipo ganador si sigue en el servidor y en el equipo; si no, 0. Puede ser un bot (solo en pruebas). */

@@ -1,0 +1,21 @@
+CMLeague 2.9.33 --  Changelog
+
+Dos cambios que salieron de sugerencias de ustedes en Discord. ¡Gracias tam y tetr1c!
+
+Ronda de cuchillo: esconderse ya no sirve
+
+- Hasta ahora, si en la ronda de cuchillo se acababa el tiempo, la ganaban los CT. Por eso muchas veces los CT se quedaban escondidos esperando que corra el reloj, sin pelear.
+- Ahora, si se acaba el tiempo, gana el equipo que sume más vida entre los que quedan vivos. Si empatan en vida, se juega otra ronda de cuchillo.
+- La idea es que el cuchillo se gane peleando: el que se esconde no suma nada, y el que va a buscar y gana los duelos se lleva la elección de lado.
+- Si un equipo mata a todos los del otro, gana como siempre.
+
+Tu nombre en el servidor es el de tu perfil
+
+- Si tienes tu SteamID vinculado a tu perfil de la web, al entrar al servidor te aparece el mismo nombre que en tu perfil, el ranking y las partidas.
+- Así es fácil saber quién es quién: el que ves en la partida es el mismo que buscas en la web.
+- Mientras estás en el servidor no puedes cambiarlo. Si quieres otro nombre, cámbialo en tu perfil de cmleague.lat y se actualiza la próxima vez que entres.
+- Los VIP pueden seguir usando el nombre que quieran dentro del servidor.
+- Si no tienes el SteamID vinculado, sigues con tu nombre de Steam. Para vincularlo, usa !claim.
+- Si tu perfil es privado, tampoco se toca tu nombre.
+
+Ya está en los tres servidores. Si estabas en una partida, empieza a funcionar en el próximo mapa.
