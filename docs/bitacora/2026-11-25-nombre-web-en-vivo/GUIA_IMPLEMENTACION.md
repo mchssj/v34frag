@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en el servidor local con bots (2026-11-25), en la rama `fix/nombre-web-en-vivo`. **Sin commit y sin desplegar.** Falta que lo pruebe una persona con su cliente.
+Subido a **#1**, **#2** y **#3** el 2026-11-25 (16:08 UTC) y en `main`. Entra en el próximo cambio de mapa de cada uno. **Falta** verificar que cargó, probarlo con una persona y aplicar la `134`.
 
 ## Archivos
 
@@ -17,11 +17,11 @@ Hecho y probado en el servidor local con bots (2026-11-25), en la rama `fix/nomb
 
 Compilados con `spcomp` 1.8.0.5963.
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-25, salvo los pasos 2 y 3)
 
-1. Los dos `.smx` y las dos cfg a **#1**, **#2** y **#3** en la misma tanda, con respaldo en `plugins/disabled/` y comparados byte a byte. Sin recargar: entran en el próximo cambio de mapa.
-2. Comprobar en cada uno que cargaron (`sm plugins list`: 2.10.3 y 1.6.0).
-3. **Recién ahí**, la `134` en la base, con el manual, `/terminos` y `/privacidad`. Con un `csstv_qol` viejo en algún servidor, la `134` lo mete a pelearse por el nombre.
+1. `pruebas/desplegar.py --hacer`, por la API del panel: primero revisa que los tres tengan el reporter 2.10.2 y `csstv_qol` 1.5.0, los respalda en `plugins/disabled/` (`csstv_reporter_2.10.2.smx` y `csstv_qol_1.5.0.smx`), sube los dos `.smx` y cambia tres líneas de cfg. Los tres quedaron iguales byte a byte. Sin recargar nada; los servidores estaban vacíos.
+2. **Falta:** comprobar en cada uno que cargaron, después de un cambio de mapa: `sm plugins info csstv_reporter.smx` (2.10.3) y `sm plugins info csstv_qol.smx` (1.6.0). `csstv_reporter_version` y `csstv_qol_version` no sirven: conservan el valor de cuando arrancó el servidor.
+3. **Falta, y recién ahí:** la `134` en la base, con el manual, `/terminos` y `/privacidad`. Con un `csstv_qol` viejo en algún servidor, la `134` lo mete a pelearse por el nombre.
 
 ## Pruebas
 

@@ -8,9 +8,9 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Hecho:** `csstv_qol` **1.5.0** (md5 `a2a8f43e…`, 1.4.0 menos el silencio) y `csstv_qol.cfg` sin `csstv_qol_clutch_mute` en **#1, #2 y #3** el 2026-11-25, sin recargar: entra en el próximo cambio de mapa. El de retake no se tocó (no se pudo entrar, y ahí el silencio no corre porque el reporter está en `disabled/`). En el worktree, `csstv_qol.sp` es **1.5.1**: lo mismo más el cambio de nombres de la ficha sin desplegar (antes 1.4.1).
 - **Anti-wallhack:** `Anti_Wallhack_Lite` a `disabled/` en **#1, #2 y #3** el 2026-11-25, a prueba (pedido de Daniel), sin recargar. Su código descarta pasos para el vivo y no para el espectador en primera persona, que es lo que dicen los jugadores ([`2026-11-25-sin-anti-wallhack-prueba`](bitacora/2026-11-25-sin-anti-wallhack-prueba/)).
 - **Falta:**
-  1. Verificar después de un cambio de mapa en #1, #2 y #3: `csstv_qol` 1.5.0 y sin "Anti-Wallhack Lite" en `sm plugins list` (`node docs/bitacora/2026-11-25-sin-anti-wallhack-prueba/pruebas/consola.mjs "sm plugins list"`).
+  1. Verificar después de un cambio de mapa en #1, #2 y #3: `csstv_qol` 1.6.0 (trae lo de la 1.5.0) y sin "Anti-Wallhack Lite" en `sm plugins list` (`node docs/bitacora/2026-11-25-sin-anti-wallhack-prueba/pruebas/consola.mjs "sm plugins list"`).
   2. Uno o dos mixes y preguntar por los pasos. Si se oyen, decidir si `Anti_Wallhack_Lite` queda afuera; si no, devolverlo a `plugins/`.
-  3. El cambio de nombres de la ficha (`csstv_qol` 1.5.1) sigue en el worktree, sin commit ni despliegue.
+  3. El `csstv_qol` subido después (1.6.0, sin el bloqueo de nombres) conserva este cambio.
   4. Que el manual salga con el próximo despliegue de la API, y publicar el changelog 2.9.75.
 
 ## El reporter de los servidores, en `main` (2026-11-25): hecho, falta lo que sigue
@@ -18,9 +18,9 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Qué es:** #1, #2 y #3 corren el reporter **2.10.2** de Kyan desde el 2026-11-13 y `main` tenía la 2.10.0. Ya están en `main` el código y el mismo binario. Detalle: [`2026-11-25-reporter-de-los-servidores-en-main`](bitacora/2026-11-25-reporter-de-los-servidores-en-main/).
 - **Falta:**
   - Que el manual (cuchillo por vida y `!ready` automático) salga con el próximo despliegue de la API.
-  - **No aplicar la `134` (nombre de la web) con los plugins de hoy.** Si el nombre de la ficha llega con la partida en vivo (un reemplazo, una reconexión), el reporter lo pone y `csstv_qol` 1.4.0 (`csstv_qol_lock_names 1`) lo revierte, sin fin: 66 cambios de nombre por segundo, con un aviso en el chat cada vez (probado el 2026-11-25 en el servidor local, con los `.smx` del #1 y bots; con `csstv_qol_lock_names 0` no pasa). Antes, en los tres servidores: un reporter 2.10.3 con la native `CSSTV_NameHandled` y el `csstv_qol` 1.4.1, que la consulta (están en `archivo/reporter-2.11.0`). Sin la `134`, cada entrada deja un error en `errors_*.log` y nadie cambia de nombre.
+  - **Nombre de la web (`134`):** el reporter 2.10.3 y `csstv_qol` 1.6.0 que sacan el choque están subidos a **#1, #2 y #3** desde el 2026-11-25 (16:08 UTC), sin recargar ([`2026-11-25-nombre-web-en-vivo`](bitacora/2026-11-25-nombre-web-en-vivo/)). Falta, en este orden: comprobar en los tres que cargaron (`sm plugins info`, no las variables de versión), probarlo con una persona (reconexión, reemplazo, cómo se ven los caracteres, anticheat), avisar en Discord, y aplicar la `134` con el manual y los legales. Hasta entonces nadie cambia de nombre y cada entrada deja un error en `errors_*.log`.
   - Pedirle a Kyan el código de `csstv_ff`, que no está en ninguna rama y corre en los tres servidores. (`csstv_flash` está en `main` desde el 2026-11-25.)
-  - Decidir qué se hace con el reporter 2.11.0 sin commit (rama local `archivo/reporter-2.11.0`): sale de la 2.10.0, así que **no se puede subir como está**.
+  - Descartar (o no) el reporter 2.11.0 sin commit (`names.inc`; rama local `archivo/reporter-2.11.0`): la 2.10.3 ya hace lo mismo. **No se puede subir como está.**
 
 ## Abandono del reemplazo y ELO de quien abandona si su equipo gana (2026-11-25): desplegado, falta publicar el changelog
 
