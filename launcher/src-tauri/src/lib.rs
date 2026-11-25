@@ -106,13 +106,31 @@ fn settings_open(app: tauri::AppHandle) {
 /// Argumento con el que Windows lo abre al iniciar (ver la opción "Abrir con Windows").
 const AUTOSTART_ARG: &str = "--al-iniciar";
 
+/// Si el launcher se cierra por un error, lo deja en %LOCALAPPDATA%\lat.cmleague.launcher\error.log (sin consola en
+/// release, si no, no se vería nada).
+fn log_panics() {
+    let default = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        if let Some(dir) = std::env::var_os("LOCALAPPDATA").map(|d| std::path::PathBuf::from(d).join("lat.cmleague.launcher")) {
+            let _ = std::fs::create_dir_all(&dir);
+            let _ = std::fs::write(dir.join("error.log"), format!("{info}\n"));
+        }
+        default(info);
+    }));
+}
+
 pub fn run() {
-    tauri::Builder::default()
+    log_panics();
+    let mut builder = tauri::Builder::default();
+    // Actualizaciones solo con la clave pública puesta al compilar (src/updater.rs).
+    if updater::enabled() {
+        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    }
+    builder
         // Abrirlo de nuevo no crea otro: trae la ventana que ya está.
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| status::show_main(app)))
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::Builder::new().args([AUTOSTART_ARG]).build())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(Shared::default())
         .setup(|app| {
             let prefs = settings::load(app.handle());

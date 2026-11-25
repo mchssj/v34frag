@@ -67,6 +67,21 @@ jobs:
             pnpm tauri build
           }
 
+      # Que abra y se quede abierto: el 2026-11-25 una versión se cerraba al arrancar sin mostrar nada.
+      - name: Abre y no se cierra
+        shell: pwsh
+        run: |
+          $exe = "src-tauri/target/release/cmleague-launcher.exe"
+          $p = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 20
+          if ($p.HasExited) {
+            $log = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/error.log"
+            if (Test-Path $log) { Get-Content $log }
+            throw "El launcher se cerró solo (código $($p.ExitCode))."
+          }
+          Write-Host "Sigue abierto después de 20 s."
+          Stop-Process -Id $p.Id -Force
+
       # latest.json para https://cmleague.lat/launcher/ (solo con la clave de firma).
       - name: latest.json
         if: ${{ hashFiles('launcher/src-tauri/target/release/bundle/nsis/*.sig') != '' }}
