@@ -5,8 +5,8 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 ## Abandono del reemplazo y ELO de quien abandona si su equipo gana (2026-11-25): la base desplegada, falta la web (manual)
 
 - **Qué es:** un reemplazo que se iba en la última ronda quedaba como abandono (Artemis, −18), y quien abandona perdía lo de una derrota aunque su equipo ganara. Detalle: [`2026-11-25-abandono-del-reemplazo`](bitacora/2026-11-25-abandono-del-reemplazo/).
-- **Hecho:** replanteo `145` aplicado en producción el 2026-11-25 (14:14 UTC, respaldo `20261125T141403Z`), con su inversa, pruebas, tipos y manual, en `fix/abandono-reemplazo` (worktree `v34frag-abandono`); el replanteo, también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`. Daniel compensó a mano a Artemis (+18) y a 1GRIM (+40), y el nivel de sanción de Artemis volvió a 0.
-- **Falta:** mergear a `main`, la web (solo el manual) y publicar el changelog 2.9.73. No toca los servidores de juego.
+- **Hecho:** replanteo `145` aplicado en producción el 2026-11-25 (14:14 UTC, respaldo `20261125T141403Z`), con su inversa, pruebas, tipos y manual, en `main`; el replanteo, también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`. Daniel compensó a mano a Artemis (+18) y a 1GRIM (+40), y el nivel de sanción de Artemis volvió a 0.
+- **Falta:** la web (solo el manual) y publicar el changelog 2.9.73. No toca los servidores de juego.
 - **Sin decidir:** compensar o no a los otros 10 que abandonaron y ganaron desde el 2026-11-09 (perdieron de 18 a 20 y pico, en vez de 10 a 15). Algunos ya tienen ajuste a mano.
 
 ## Tierlists de jugadores y equipos (2026-11-22): desplegado el 2026-11-23

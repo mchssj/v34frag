@@ -2,7 +2,7 @@
 
 ## Estado
 
-La `145` está **aplicada en producción desde el 2026-11-25 (14:14 UTC)**. Commit en `fix/abandono-reemplazo` (worktree `v34frag-abandono`), sin mergear a `main`. El manual sale con la web, en el próximo despliegue.
+La `145` está **aplicada en producción desde el 2026-11-25 (14:14 UTC)**. En `main` desde el mismo día. El manual sale con la web, en el próximo despliegue.
 
 ## Archivos
 
