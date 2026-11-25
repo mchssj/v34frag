@@ -106,6 +106,9 @@ fn settings_open(app: tauri::AppHandle) {
 /// Argumento con el que Windows lo abre al iniciar (ver la opción "Abrir con Windows").
 const AUTOSTART_ARG: &str = "--al-iniciar";
 
+/// Abre Configuración directo (acceso directo, o con el launcher ya abierto).
+const SETTINGS_ARG: &str = "--ajustes";
+
 /// Si el launcher se cierra por un error, lo deja en %LOCALAPPDATA%\lat.cmleague.launcher\error.log (sin consola en
 /// release, si no, no se vería nada).
 fn log_panics() {
@@ -128,7 +131,13 @@ pub fn run() {
     }
     builder
         // Abrirlo de nuevo no crea otro: trae la ventana que ya está.
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| status::show_main(app)))
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            if args.iter().any(|a| a == SETTINGS_ARG) {
+                open_settings(app);
+            } else {
+                status::show_main(app);
+            }
+        }))
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::Builder::new().args([AUTOSTART_ARG]).build())
         .manage(Shared::default())
@@ -179,6 +188,9 @@ pub fn run() {
             }
             tray.build(app)?;
 
+            if std::env::args().any(|a| a == SETTINGS_ARG) {
+                open_settings(handle);
+            }
             status::start_discord(handle);
             updater::start(handle);
             Ok(())
