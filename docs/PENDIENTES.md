@@ -2,6 +2,17 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
 
+## Pasos que no se oyen al quedar solo (2026-11-25): silencio del clutch sacado, falta el anti-wallhack
+
+- **Qué es:** jugadores reportan que no oyen los pasos cuando quedan solos. Daniel pidió sacar el silencio del clutch (`!voz`). Detalle: [`2026-11-25-sin-silencio-en-el-clutch`](bitacora/2026-11-25-sin-silencio-en-el-clutch/).
+- **Hecho:** `csstv_qol` **1.5.0** (md5 `a2a8f43e…`, 1.4.0 menos el silencio) y `csstv_qol.cfg` sin `csstv_qol_clutch_mute` en **#1, #2 y #3** el 2026-11-25, sin recargar: entra en el próximo cambio de mapa. El de retake no se tocó (no se pudo entrar, y ahí el silencio no corre porque el reporter está en `disabled/`). En el worktree, `csstv_qol.sp` es **1.5.1**: lo mismo más el cambio de nombres de la ficha sin desplegar (antes 1.4.1).
+- **Anti-wallhack:** `Anti_Wallhack_Lite` a `disabled/` en **#1, #2 y #3** el 2026-11-25, a prueba (pedido de Daniel), sin recargar. Su código descarta pasos para el vivo y no para el espectador en primera persona, que es lo que dicen los jugadores ([`2026-11-25-sin-anti-wallhack-prueba`](bitacora/2026-11-25-sin-anti-wallhack-prueba/)).
+- **Falta:**
+  1. Verificar después de un cambio de mapa en #1, #2 y #3: `csstv_qol` 1.5.0 y sin "Anti-Wallhack Lite" en `sm plugins list` (`node docs/bitacora/2026-11-25-sin-anti-wallhack-prueba/pruebas/consola.mjs "sm plugins list"`).
+  2. Uno o dos mixes y preguntar por los pasos. Si se oyen, decidir si `Anti_Wallhack_Lite` queda afuera; si no, devolverlo a `plugins/`.
+  3. El cambio de nombres de la ficha (`csstv_qol` 1.5.1) sigue en el worktree, sin commit ni despliegue.
+  4. Que el manual salga con el próximo despliegue de la API, y publicar el changelog 2.9.75.
+
 ## El reporter de los servidores, en `main` (2026-11-25): hecho, falta lo que sigue
 
 - **Qué es:** #1, #2 y #3 corren el reporter **2.10.2** de Kyan desde el 2026-11-13 y `main` tenía la 2.10.0. Ya están en `main` el código y el mismo binario. Detalle: [`2026-11-25-reporter-de-los-servidores-en-main`](bitacora/2026-11-25-reporter-de-los-servidores-en-main/).

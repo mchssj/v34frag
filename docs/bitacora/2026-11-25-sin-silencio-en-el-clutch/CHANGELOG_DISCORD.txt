@@ -1,0 +1,4 @@
+CMLeague 2.9.75 --  Changelog
+
+Voz en el clutch
+- Se quitó el comando !voz. Cuando quedas último vivo de tu equipo siempre escuchas a tus compañeros.

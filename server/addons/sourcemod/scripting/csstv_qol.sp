@@ -18,8 +18,6 @@
  *   - !nades en el calentamiento: granadas infinitas, trayectoria visible y !rethrow.
  *
  * Desde la 1.2.0 (plan docs/bitacora/2026-11-02-qol-tanda-4):
- *   - quien queda último vivo de su equipo deja de escuchar a sus compañeros muertos hasta el final
- *     de la ronda, si lo pidió con !voz (desde la 1.4.0; antes era al revés);
  *   - al empezar cada ronda en vivo, los espectadores y la SourceTV ven la plata de cada equipo y si
  *     le alcanza para comprar todo (los coaches de csstv_coach no);
  *   - 4 kills y ace al final de la ronda; a los T, quién tiene la C4 y dónde quedó si muere con ella;
@@ -30,8 +28,7 @@
  *     csstv_qol_warmup_cleanup segundos.
  *   - 1.3.0: el calentamiento como deathmatch: al aparecer, un arma gratis (!armas) y chaleco con casco.
  *   - 1.3.2: sin el menú de modelos al entrar o cambiar de equipo: se elige uno al azar (csstv_qol_auto_class).
- *   - 1.4.0 (plan docs/bitacora/2026-11-10-voz-apagada-por-defecto): el silencio del clutch es al
- *     revés, se pide con !voz. Por defecto, quien queda solo sigue escuchando a sus compañeros muertos.
+ *   - 1.5.0 (plan docs/bitacora/2026-11-25-sin-silencio-en-el-clutch): se saca el silencio del clutch y !voz.
  *
  * El estado del mix se lee de la ConVar csstv_state del reporter (2.7.7 o más nuevo) y el de los otros
  * modos de sm_retake_on, sm_2v2_on y sm_dm_on. Si no existen, de las respuestas de sm_csstv_status y de
@@ -48,7 +45,7 @@
 #include <nextmap>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.4.0"
+#define PLUGIN_VERSION "1.5.0"
 #define AMMO_HE    11
 #define AMMO_FLASH 12
 #define AMMO_SMOKE 13
@@ -103,11 +100,7 @@ float g_fThrowAng[MAXPLAYERS + 1][3];
 char g_sThrowWeapon[MAXPLAYERS + 1][24];
 int g_iBeam;
 int g_iHalo;
-ConVar g_cvMute;
 ConVar g_cvSpecMoney;
-bool g_bMuting[MAXPLAYERS + 1];                    // quedó solo y ya se silenció a sus compañeros muertos
-bool g_bMuted[MAXPLAYERS + 1][MAXPLAYERS + 1];     // [vivo][muerto]: silenciado por el clutch
-bool g_bClutchMute[MAXPLAYERS + 1];                // !voz: silenciar a los muertos al quedar solo (apagado por defecto)
 
 ConVar g_cvAce;
 ConVar g_cvC4Info;
@@ -145,7 +138,6 @@ public void OnPluginStart()
 	g_cvEq        = CreateConVar("csstv_qol_eq", "6", "Segundos antes del fin del freezetime para mostrarle a cada equipo qué tiene cada uno (0 = no; !eq siempre).", _, true, 0.0, true, 60.0);
 	g_cvClutch    = CreateConVar("csstv_qol_clutch", "1", "Anunciar los clutch (1 vs 2 o más) a los muertos y los espectadores.", _, true, 0.0, true, 1.0);
 	g_cvNades     = CreateConVar("csstv_qol_nades", "1", "Permitir !nades (práctica de granadas) en el calentamiento.", _, true, 0.0, true, 1.0);
-	g_cvMute      = CreateConVar("csstv_qol_clutch_mute", "1", "Quien queda último vivo de su equipo y lo pidió con !voz no escucha a sus compañeros muertos hasta el final de la ronda (por defecto los sigue escuchando).", _, true, 0.0, true, 1.0);
 	g_cvSpecMoney = CreateConVar("csstv_qol_spec_money", "1", "Al empezar cada ronda en vivo, mostrarles a los espectadores y a la SourceTV la plata de cada equipo (no a los coaches).", _, true, 0.0, true, 1.0);
 	g_cvAce       = CreateConVar("csstv_qol_ace", "1", "Con la partida en vivo, anunciar al final de la ronda a quien hizo 4 kills o un ace.", _, true, 0.0, true, 1.0);
 	g_cvC4Info    = CreateConVar("csstv_qol_c4_info", "1", "A los T: quién tiene la C4 al empezar la ronda y dónde quedó si muere quien la llevaba.", _, true, 0.0, true, 1.0);
@@ -158,7 +150,6 @@ public void OnPluginStart()
 	g_cvBlockKill = CreateConVar("csstv_qol_block_kill", "1", "Durante la partida, kill y explode (suicidarse por consola) no hacen nada.", _, true, 0.0, true, 1.0);
 	g_cvGoodbye   = CreateConVar("csstv_qol_goodbye", "1", "Durante la partida, avisar quién se fue y con qué K/D.", _, true, 0.0, true, 1.0);
 	AutoExecConfig(true, "csstv_qol");
-	RegConsoleCmd("sm_voz", Cmd_Voz, "Cuando quedes solo: dejar de escuchar (o volver a escuchar) a tus compañeros muertos.");
 	RegConsoleCmd("sm_admins", Cmd_Admins, "Qué admins están conectados.");
 	RegConsoleCmd("sm_armas", Cmd_Armas, "En el calentamiento: elegir el arma con la que aparecés.");
 	for (int i = 1; i <= MaxClients; i++)   // recarga del plugin con jugadores adentro
@@ -249,15 +240,6 @@ public void OnMapStart()
 public void OnClientDisconnect(int client)
 {
 	Restore_Save(client);
-	Mute_Clear(client);
-	for (int c = 1; c <= MaxClients; c++)
-		if (g_bMuted[c][client])
-		{
-			g_bMuted[c][client] = false;
-			if (IsClientInGame(c))
-				SetListenOverride(c, client, Listen_Default);
-		}
-	g_bClutchMute[client] = false;
 	g_bNameRevert[client] = false;
 	g_iWarmGun[client] = 0;
 	for (int i = 1; i <= MaxClients; i++)
@@ -362,8 +344,6 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		CreateTimer(2.0, Timer_RemoveBody, GetClientUserId(victim), TIMER_FLAG_NO_MAPCHANGE);
 	if (g_cvClutch.BoolValue && IsLive())
 		RequestFrame(Frame_Clutch);
-	if (g_cvMute.BoolValue && IsLive())
-		RequestFrame(Frame_Mute);
 }
 
 public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
@@ -496,7 +476,6 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 	g_bLive = g_cvRoundBest.BoolValue && IsLive();
 	for (int t = 0; t < 4; t++)
 		g_iClutch[t] = 0;
-	Mute_Clear();
 	if (g_cvSpecMoney.BoolValue)
 		CreateTimer(2.5, Timer_SpecMoney, g_iRound, TIMER_FLAG_NO_MAPCHANGE);   // el estado se lee con hasta 2 s de atraso
 	if (g_cvEq.IntValue > 0 && IsLive() && g_cvFreezeTime != null)
@@ -630,7 +609,6 @@ public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
-	Mute_Clear();
 	// Los mensajes van 0,3 s después: lo que se manda en el mismo instante del fin de la ronda no queda en la demo.
 	CreateTimer(0.3, Timer_RoundEndMsgs, event.GetInt("winner"), TIMER_FLAG_NO_MAPCHANGE);
 }
@@ -1020,77 +998,6 @@ public void Frame_Clutch(any data)
 			if (IsClientInGame(i) && (IsClientSourceTV(i) || (!IsFakeClient(i) && !IsPlayerAlive(i))))
 				PrintCenterText(i, "%N: 1 vs %d", last, vs);
 	}
-}
-
-// ---------------------------------------------------------------------------
-// Silencio en el clutch: el último vivo no escucha a sus compañeros muertos
-// ---------------------------------------------------------------------------
-
-public void Frame_Mute(any data)
-{
-	if (!g_cvMute.BoolValue || !IsLive())
-		return;
-	for (int team = TEAM_T; team <= TEAM_CT; team++)
-	{
-		int last, other;
-		if (AliveOn(team, last) != 1 || AliveOn(team == TEAM_T ? TEAM_CT : TEAM_T, other) < 1)
-			continue;
-		if (IsFakeClient(last) || !g_bClutchMute[last] || g_bMuting[last])
-			continue;
-		int n;
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (i != last && IsClientInGame(i) && !IsFakeClient(i) && !IsPlayerAlive(i) && GetClientTeam(i) == team)
-			{
-				SetListenOverride(last, i, Listen_No);
-				g_bMuted[last][i] = true;
-				n++;
-			}
-		}
-		g_bMuting[last] = true;
-		if (n)
-		{
-			char tag[32];
-			Tag(tag, sizeof(tag));
-			PrintToChat(last, "\x04[%s]\x01 Quedaste solo: no escuchas a tus compañeros muertos hasta el final de la ronda. \x04!voz\x01 para volver a escucharlos.", tag);
-		}
-	}
-}
-
-/** Devuelve la voz de todos los que silenció; con only > 0, solo los de ese jugador. */
-void Mute_Clear(int only = 0)
-{
-	for (int c = 1; c <= MaxClients; c++)
-	{
-		if (only && c != only)
-			continue;
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (!g_bMuted[c][i])
-				continue;
-			g_bMuted[c][i] = false;
-			if (IsClientInGame(c) && IsClientInGame(i))
-				SetListenOverride(c, i, Listen_Default);
-		}
-		g_bMuting[c] = false;
-	}
-}
-
-public Action Cmd_Voz(int client, int args)
-{
-	if (client <= 0)
-		return Plugin_Handled;
-	g_bClutchMute[client] = !g_bClutchMute[client];
-	if (!g_bClutchMute[client])
-		Mute_Clear(client);
-	else if (g_cvMute.BoolValue && IsLive())
-		RequestFrame(Frame_Mute);   // si ya quedó solo, lo silencia ahora
-	char tag[32];
-	Tag(tag, sizeof(tag));
-	PrintToChat(client, "\x04[%s]\x01 %s", tag, g_bClutchMute[client]
-		? "Cuando quedes solo no vas a escuchar a tus compañeros muertos hasta el final de la ronda. \x04!voz\x01 para volver a escucharlos."
-		: "Vas a seguir escuchando a tus compañeros muertos aunque quedes solo.");
-	return Plugin_Handled;
 }
 
 // ---------------------------------------------------------------------------
