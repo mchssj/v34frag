@@ -1,0 +1,6 @@
+CMLeague 2.9.74 --  Changelog
+
+Preveto de mapas (VIP)
+- Si eres VIP, en Jugar elige un mapa que no quieras jugar. Queda guardado para tus próximas partidas.
+- Al empezar la sala, antes del veto de capitanes, quedan fuera los mapas más votados por los VIP de los dos equipos: hasta 2 por partida. Si empatan, se elige al azar.
+- La sala muestra qué mapas cayeron y con cuántos votos, no quién votó.

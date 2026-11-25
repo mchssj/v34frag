@@ -88,6 +88,8 @@ export type MmSource = {
   setSound(soundId: string | null): Promise<MmState>
   /** Solo VIP. */
   setAutoAccept(enabled: boolean): Promise<MmState>
+  /** El mapa que preveta en ese modo (solo VIP); null lo saca. */
+  setPreveto(mode: string, map: string | null): Promise<MmState>
   /** Solo VIP. */
   uploadMySound(file: File): Promise<MmState>
   deleteMySound(): Promise<MmState>
@@ -341,6 +343,7 @@ export function createApiSource(openSocket: MmSocketFactory): MmSource {
       send("/api/v1/mm/sounds/selected", { sound_id }, "PUT"),
     setAutoAccept: (enabled) =>
       send("/api/v1/mm/auto-accept", { enabled }, "PUT"),
+    setPreveto: (mode, map) => send("/api/v1/mm/preveto", { mode, map }, "PUT"),
     uploadMySound: (file) => {
       const body = new FormData()
       body.set("file", file)

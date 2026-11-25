@@ -3461,7 +3461,7 @@ export interface paths {
         };
         /**
          * Ranking de jugadores
-         * @description Jugadores con ELO (solo cuentan los mixes del servidor, con todos sus SteamID), por posición global. La posición no cambia al filtrar. Nivel: `10` (2001 o más), `7-9` (1351 a 2000) o `1-6` (menos de 1351). `elo_trend`: su ELO en sus últimos 30 mixes.
+         * @description Jugadores con ELO (solo cuentan los mixes del servidor, con todos sus SteamID), por posición global. La posición no cambia al filtrar. Nivel: `10` (2001 o más), `7-9` (1351 a 2000) o `1-6` (menos de 1351). `elo_trend`: su ELO en sus últimos 30 mixes. Los filtros marcados VIP piden sesión (401) y VIP (403 `VIP_REQUIRED`).
          */
         get: {
             parameters: {
@@ -3480,6 +3480,28 @@ export interface paths {
                     level?: "10" | "7-9" | "1-6";
                     /** @description Jugadores activos de un equipo oficial */
                     team?: string;
+                    /** @description VIP */
+                    elo_min?: number | null;
+                    /** @description VIP. Inclusive */
+                    elo_max?: number | null;
+                    /** @description VIP */
+                    kd_min?: number | null;
+                    /** @description VIP */
+                    rating_min?: number | null;
+                    /** @description VIP. Porcentaje, de todas sus partidas */
+                    hs_min?: number | null;
+                    /** @description VIP. Partidas terminadas (en una temporada, sus mixes) */
+                    matches_min?: number | null;
+                    /** @description VIP. Jugó en los últimos N días */
+                    active_days?: number;
+                    /** @description VIP. Mapa más jugado en mixes, sin el prefijo (`dust2_ob`) */
+                    map?: string;
+                    /** @description VIP. Un perfil privado no aparece */
+                    country?: string;
+                    /** @description VIP. Con o sin equipo oficial */
+                    has_team?: "true" | "false";
+                    /** @description VIP. Solo los VIP, o solo los que no lo son */
+                    vip?: "true" | "false";
                 };
                 header?: never;
                 path?: never;
@@ -3514,6 +3536,15 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3532,8 +3563,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Comparar dos jugadores
-         * @description Stats de los dos (ELO, rating, K/D, HS %, ADR, % de victorias y partidas), su ELO en los últimos 30 mixes y los mixes que jugaron juntos (mismo bando) o como rivales. `a` y `b` aceptan el id o el nick.
+         * Comparar de dos a cinco jugadores
+         * @description Stats de los dos (ELO, rating, K/D, HS %, ADR, % de victorias y partidas), su ELO en los últimos 30 mixes y los mixes que jugaron juntos (mismo bando) o como rivales. Aceptan el id o el nick. Con `c`, `d` o `e` (hasta 5 en total) pide sesión y VIP (403 `VIP_REQUIRED`); vienen en `others`.
          */
         get: {
             parameters: {
@@ -3542,6 +3573,12 @@ export interface paths {
                     a: string;
                     /** @description Jugador B: id o nick */
                     b: string;
+                    /** @description Tercer jugador (VIP) */
+                    c?: string;
+                    /** @description Cuarto jugador (VIP) */
+                    d?: string;
+                    /** @description Quinto jugador (VIP) */
+                    e?: string;
                 };
                 header?: never;
                 path?: never;
@@ -3569,6 +3606,15 @@ export interface paths {
                 };
                 /** @description Sin sesión o sesión vencida */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5934,6 +5980,425 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/favorites/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Marcar una partida como favorita
+         * @description Solo VIP (403 `VIP_REQUIRED`). Marcarla dos veces no cambia nada. Las marcadas salen con `GET /api/v1/matches?favorites=true`.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Sacar una partida de las favoritas
+         * @description También con el VIP vencido. Si no estaba marcada, no cambia nada.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stats de mi tarjeta para redes
+         * @description Las stats de mixes del período. No pide VIP: son datos públicos y la imagen se dibuja en el navegador (sin VIP, con marca de agua). Sin ficha vinculada, 400 `PLAYER_NOT_LINKED`.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    period?: "season" | "30d" | "all";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Stats */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerCard"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/searches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis búsquedas guardadas
+         * @description Hasta 5 de jugadores y 5 de partidas. Con el VIP vencido se siguen viendo.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at`, `name` */
+                    sort?: "created_at" | "name";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    kind?: "players" | "matches";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Búsquedas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SavedSearchList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /**
+         * Guardar una búsqueda
+         * @description Solo VIP (403 `VIP_REQUIRED`). Con un nombre que ya existe, la reemplaza. La sexta del mismo tipo da 400 `BUSINESS_RULE`.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SaveSearchBody"];
+                };
+            };
+            responses: {
+                /** @description Guardada */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SavedSearchId"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/searches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Borrar una búsqueda guardada */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/elo/breakdown": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Desglose de mi ELO
+         * @description Mis mixes con ELO, del más nuevo al más viejo. Con VIP, cada paso de la cuenta; sin VIP, solo el cambio. Sin ficha, la lista viene vacía.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    per?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Desglose */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EloBreakdown"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -18775,6 +19240,82 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/mm/preveto": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** El mapa que preveto en un modo (VIP); null para sacarlo */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MmPreveto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MmJson"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/mm/sounds/mine": {
         parameters: {
             query?: never;
@@ -22148,7 +22689,7 @@ export interface paths {
         };
         /**
          * Ranking de una temporada
-         * @description En vivo si está activa; la foto del cierre si está cerrada (no cambia aunque después se recalcule el ELO). Por defecto, por puesto: primero los que llegan al mínimo de mixes y después el resto por ELO.
+         * @description En vivo si está activa; la foto del cierre si está cerrada (no cambia aunque después se recalcule el ELO). Por defecto, por puesto: primero los que llegan al mínimo de mixes y después el resto por ELO. Los filtros marcados VIP piden sesión (401) y VIP (403 `VIP_REQUIRED`).
          */
         get: {
             parameters: {
@@ -22169,6 +22710,28 @@ export interface paths {
                     level?: "10" | "7-9" | "1-6";
                     /** @description Jugadores activos de un equipo oficial */
                     team?: string;
+                    /** @description VIP */
+                    elo_min?: number | null;
+                    /** @description VIP. Inclusive */
+                    elo_max?: number | null;
+                    /** @description VIP */
+                    kd_min?: number | null;
+                    /** @description VIP */
+                    rating_min?: number | null;
+                    /** @description VIP. Porcentaje, de todas sus partidas */
+                    hs_min?: number | null;
+                    /** @description VIP. Partidas terminadas (en una temporada, sus mixes) */
+                    matches_min?: number | null;
+                    /** @description VIP. Jugó en los últimos N días */
+                    active_days?: number;
+                    /** @description VIP. Mapa más jugado en mixes, sin el prefijo (`dust2_ob`) */
+                    map?: string;
+                    /** @description VIP. Un perfil privado no aparece */
+                    country?: string;
+                    /** @description VIP. Con o sin equipo oficial */
+                    has_team?: "true" | "false";
+                    /** @description VIP. Solo los VIP, o solo los que no lo son */
+                    vip?: "true" | "false";
                 };
                 header?: never;
                 path: {
@@ -22198,6 +22761,15 @@ export interface paths {
                 };
                 /** @description Sin sesión o sesión vencida */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -22885,7 +23457,7 @@ export interface paths {
         };
         /**
          * Partidas
-         * @description Torneo, PCW y mixes (sin byes). Por defecto, la más nueva primero. Sin sesión.
+         * @description Torneo, PCW y mixes (sin byes). Por defecto, la más nueva primero. Sin sesión, salvo `mine` y `favorites` (401) y los filtros VIP: `with`, `against`, `max_diff`, `demo` y los órdenes `round_diff` y `mvp_rating` (401 sin sesión, 403 `VIP_REQUIRED` sin VIP).
          */
         get: {
             parameters: {
@@ -22894,8 +23466,8 @@ export interface paths {
                     page?: number;
                     /** @description Elementos por página (máximo 100) */
                     per?: number;
-                    /** @description Campo de orden: `played_at`, `starts_at` */
-                    sort?: "played_at" | "starts_at";
+                    /** @description Campo de orden: `played_at`, `starts_at`, `round_diff`, `mvp_rating` */
+                    sort?: "played_at" | "starts_at" | "round_diff" | "mvp_rating";
                     /** @description `asc` o `desc` */
                     order?: "asc" | "desc";
                     /** @description `official` (torneo), `pcw` o `mix`. Sin filtro: todas */
@@ -22908,8 +23480,18 @@ export interface paths {
                     event?: string;
                     /** @description Partidas de un equipo */
                     team?: string;
-                    /** @description Partidas donde jugó un jugador (en una serie, en alguno de sus mapas) */
+                    /** @description Partidas donde jugó un jugador, por id o nick (en una serie, en alguno de sus mapas) */
                     player?: string;
+                    /** @description VIP. Con `player`: en las que este otro jugó en su mismo bando (id o nick) */
+                    with?: string;
+                    /** @description VIP. Con `player`: en las que este otro jugó en el bando contrario (id o nick) */
+                    against?: string;
+                    /** @description VIP. Diferencia de rondas máxima (en una serie, en todos sus mapas) */
+                    max_diff?: number | null;
+                    /** @description VIP. `true`: solo con demo para descargar */
+                    demo?: "true" | "false";
+                    /** @description `true`: solo mis favoritas (pide sesión) */
+                    favorites?: "true" | "false";
                     /** @description Partidas de un servidor (`GET /api/v1/servers/status` da los ids) */
                     server?: string;
                     /** @description Mapa (contiene) */
@@ -22918,7 +23500,7 @@ export interface paths {
                     from?: string;
                     /** @description Hasta (fecha jugada, o programada si no se jugó) */
                     to?: string;
-                    /** @description Busca en equipos, bandos y torneo */
+                    /** @description Busca en equipos, bandos, torneo y nombres de los jugadores */
                     q?: string;
                     /** @description Mixes interrumpidos por una caída: `pending` (falta que un admin decida), `applied` o `discarded` */
                     review?: "pending" | "applied" | "discarded";
@@ -22949,6 +23531,24 @@ export interface paths {
                 };
                 /** @description Sin sesión o sesión vencida */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -29435,6 +30035,10 @@ export interface components {
             game_role: string | null;
             /** @description ELO después de cada uno de sus últimos 30 mixes, del más viejo al más nuevo */
             elo_trend: number[];
+            /** @description HS % de todas sus partidas. Solo viene con un filtro avanzado */
+            hs: number | null;
+            /** @description Su última partida. Solo viene con un filtro avanzado */
+            last_played_at: string | null;
         };
         /** @description Marco y efecto de nombre (replanteo 113) */
         CosmeticsLight: {
@@ -29486,6 +30090,22 @@ export interface components {
                     a_wins: number;
                 };
             };
+            /** @description El tercero, el cuarto y el quinto (VIP), en el orden pedido, con sus mixes contra y junto a A. Vacío con dos jugadores */
+            others: {
+                player: components["schemas"]["ComparePlayer"];
+                together: {
+                    /** @description Mixes en el mismo bando y cuántos ganaron */
+                    same_team: {
+                        matches: number;
+                        wins: number;
+                    };
+                    /** @description Mixes como rivales y cuántos ganó A */
+                    against: {
+                        matches: number;
+                        a_wins: number;
+                    };
+                };
+            }[];
         };
         ComparePlayer: {
             player: {
@@ -30264,6 +30884,142 @@ export interface components {
         TierlistReportResolve: {
             /** @enum {string} */
             action: "dismiss" | "delete";
+        };
+        PlayerCard: {
+            /** Format: uuid */
+            player_id: string;
+            nick: string;
+            team_tag: string | null;
+            photo_url: string | null;
+            elo: number | null;
+            matches: number;
+            wins: number;
+            kd: number | null;
+            rating: number | null;
+            hs: number | null;
+            adr: number | null;
+            /** @description Mixes en los que tuvo el mejor rating */
+            mvp: number;
+            /** @description ELO máximo del período */
+            peak_elo: number | null;
+            /** @description Victorias seguidas, la mejor del período */
+            streak: number;
+            /** @description Los 3 más jugados */
+            maps: {
+                name: string;
+                matches: number;
+                wins: number;
+            }[];
+            /** @description ELO después de cada mix del período, del más viejo al más nuevo */
+            elo_history: number[];
+            /** @description Número de la temporada activa (null si no hay: el período `season` trae todo) */
+            season: number | null;
+        };
+        SavedSearchList: {
+            items: components["schemas"]["SavedSearch"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        SavedSearch: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "players" | "matches";
+            name: string;
+            /** @description Los filtros, como van en la URL de la página. Hasta 1000 caracteres en total */
+            query: {
+                [key: string]: string | number | boolean;
+            };
+            created_at: string;
+        };
+        SavedSearchId: {
+            /** Format: uuid */
+            id: string;
+        };
+        SaveSearchBody: {
+            /** @enum {string} */
+            kind: "players" | "matches";
+            name: string;
+            /** @description Los filtros, como van en la URL de la página. Hasta 1000 caracteres en total */
+            query: {
+                [key: string]: string | number | boolean;
+            };
+        };
+        EloBreakdown: {
+            vip: boolean;
+            /** @description La configuración vigente, para el simulador. Sin VIP, null */
+            config: {
+                base: number;
+                mult_win_min: number;
+                mult_win_max: number;
+                mult_loss_min: number;
+                mult_loss_max: number;
+                team_cap: number;
+                min_delta: number;
+                elo_floor: number;
+                min_pct: number;
+                full_pct: number;
+            } | null;
+            items: {
+                /** Format: uuid */
+                match_id: string;
+                map: string | null;
+                at: string | null;
+                own_score: number | null;
+                other_score: number | null;
+                /** @enum {string} */
+                result: "win" | "loss" | "draw";
+                elo_before: number;
+                elo_after: number;
+                elo_delta: number;
+                /**
+                 * @description `old`: la fórmula anterior a la Temporada 2, sin desglose
+                 * @enum {string}
+                 */
+                formula: "match" | "old";
+                /** @description null sin VIP o con la fórmula anterior */
+                steps: {
+                    abandoned: boolean;
+                    /**
+                     * @description Cómo se contó (un abandono cuenta como derrota)
+                     * @enum {string}
+                     */
+                    counted_as: "win" | "loss" | "draw";
+                    /** @description Probabilidad de ganar de tu equipo (0 a 1) */
+                    win_prob: number;
+                    /** @description 2 × base × (resultado − probabilidad) */
+                    base: number;
+                    rating: number | null;
+                    /** @description Multiplicador por el rating */
+                    mult: number;
+                    rounds: number;
+                    total_rounds: number;
+                    /** @description Peso por las rondas jugadas (0 a 1) */
+                    weight: number;
+                    /** @description base × multiplicador × peso */
+                    raw: number;
+                    /** @description Con el ajuste por abandono o rendición (igual a `raw` si no hubo) */
+                    adjusted: number;
+                    /** @description Factor del tope por equipo (1 si no actuó) */
+                    scale: number;
+                    scaled: number;
+                    /** @description Mínimo de ese mix */
+                    min: number;
+                    after_min: number;
+                    /** @description El ELO quedó en el mínimo */
+                    floor_hit: boolean;
+                    /** @description false: un admin cambió la configuración después, y la cuenta de hoy no da el cambio guardado */
+                    exact: boolean;
+                } | null;
+            }[];
+            total: number;
+            page: number;
+            per: number;
         };
         PlayerList: {
             items: components["schemas"]["PlayerSummary"][];
@@ -32568,6 +33324,10 @@ export interface components {
         MmAutoAccept: {
             enabled: boolean;
         };
+        MmPreveto: {
+            mode: string;
+            map: string | null;
+        };
         MmConfigPatch: {
             [key: string]: unknown;
         };
@@ -32818,6 +33578,10 @@ export interface components {
             rating: number | null;
             /** @description K/D de los mixes de la temporada; `null` sin mixes */
             kd: number | null;
+            /** @description HS % de todas sus partidas. Solo viene con un filtro avanzado */
+            hs: number | null;
+            /** @description Su última partida. Solo viene con un filtro avanzado */
+            last_played_at: string | null;
         };
         PlayerSeasonList: {
             items: components["schemas"]["PlayerSeason"][];
@@ -33375,6 +34139,8 @@ export interface components {
         };
         MatchListItem: components["schemas"]["MatchSummary"] & {
             mvp: components["schemas"]["MixMvp"];
+            /** @description Si la marcó como favorita quien consulta (`false` sin sesión; replanteo 140) */
+            favorite: boolean;
         };
         MatchSide: {
             /** @description Nombre del equipo o del bando del mix */

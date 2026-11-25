@@ -117,6 +117,10 @@ const RETENTION: [string, string][] = [
     "Denuncias de tierlists y de sus comentarios (motivo, nota, quién la mandó y el texto denunciado)",
     "Mientras exista tu cuenta",
   ],
+  [
+    "Partidas favoritas y búsquedas guardadas",
+    "Hasta que las borres o borres tu cuenta",
+  ],
   ["Chat del grupo en Jugar", "Hasta que el grupo se deshace"],
   [
     "Mensaje denunciado desde el chat del grupo",
@@ -198,7 +202,13 @@ const SECTIONS: LegalSection[] = [
             denuncias que mandas.
           </li>
           <li>
-            Tus preferencias del matchmaking, como el autoaceptar partida (VIP).
+            Las partidas que marcas como favoritas y las búsquedas que guardas,
+            con su nombre y sus filtros (VIP).
+          </li>
+          <li>
+            Tus preferencias del matchmaking, como el autoaceptar partida y el
+            mapa que eliges prevetar (VIP). La sala muestra cuántos votos tuvo
+            cada mapa prevetado, no quién votó.
           </li>
           <li>
             Si la liga te aplica un ajuste interno para repartir los equipos del
@@ -406,6 +416,14 @@ const SECTIONS: LegalSection[] = [
           como en el ranking. Si alguien copia una tierlist, la copia muestra tu
           nick como autor de la original. Al borrar una tierlist o tu cuenta, se
           borran tus tierlists con sus comentarios y me gusta.
+        </p>
+        <p>
+          Tus partidas favoritas, tus búsquedas guardadas y el desglose de tu
+          ELO los ves solo tú. Con los filtros del ranking sales con lo que ya
+          es público: tu nick, tu foto, tu equipo, tus estadísticas, si eres
+          VIP, tu mapa más jugado y tu última partida; tu país, solo si tu
+          perfil no es privado. La tarjeta de stats se arma en tu navegador: no
+          la guardamos.
         </p>
         <p>
           En un torneo histórico (el registro de un torneo jugado antes o fuera

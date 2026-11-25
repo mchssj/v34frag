@@ -12,3 +12,6 @@ export type MatchSummary = Omit<Schemas["MatchSummary"], "side1" | "side2"> & {
   side1: Side
   side2: Side
 }
+
+/** Fila del listado: el resumen y si está entre tus favoritas (replanteo 140). */
+export type MatchItem = MatchSummary & { favorite: boolean }

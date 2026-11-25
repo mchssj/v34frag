@@ -18,6 +18,7 @@ import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as WidgetRouteImport } from './routes/widget'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppEloRouteImport } from './routes/_app/elo'
 import { Route as AppEquipoRouteImport } from './routes/_app/equipo'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AppInventoryRouteImport } from './routes/_app/inventory'
@@ -61,6 +62,7 @@ import { Route as AppPlayersIndexRouteImport } from './routes/_app/players.index
 import { Route as AppPlayersCompareRouteImport } from './routes/_app/players.compare'
 import { Route as AppProfileIndexRouteImport } from './routes/_app/profile.index'
 import { Route as AppProfileAccountRouteImport } from './routes/_app/profile.account'
+import { Route as AppProfileCardRouteImport } from './routes/_app/profile.card'
 import { Route as AppProfileClipsRouteImport } from './routes/_app/profile.clips'
 import { Route as AppProfileLinkRouteImport } from './routes/_app/profile.link'
 import { Route as AppProfilePreferencesRouteImport } from './routes/_app/profile.preferences'
@@ -119,6 +121,11 @@ const WidgetRoute = WidgetRouteImport.update({
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEloRoute = AppEloRouteImport.update({
+  id: '/elo',
+  path: '/elo',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEquipoRoute = AppEquipoRouteImport.update({
@@ -336,6 +343,11 @@ const AppProfileAccountRoute = AppProfileAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AppProfileRoute,
 } as any)
+const AppProfileCardRoute = AppProfileCardRouteImport.update({
+  id: '/card',
+  path: '/card',
+  getParentRoute: () => AppProfileRoute,
+} as any)
 const AppProfileClipsRoute = AppProfileClipsRouteImport.update({
   id: '/clips',
   path: '/clips',
@@ -426,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof WelcomeRoute
   '/widget': typeof WidgetRoute
   '/admin': typeof AppAdminRouteWithChildren
+  '/elo': typeof AppEloRoute
   '/equipo': typeof AppEquipoRoute
   '/home': typeof AppHomeRoute
   '/inventory': typeof AppInventoryRoute
@@ -463,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/player/$nick': typeof AppPlayerNickRoute
   '/players/compare': typeof AppPlayersCompareRoute
   '/profile/account': typeof AppProfileAccountRoute
+  '/profile/card': typeof AppProfileCardRoute
   '/profile/clips': typeof AppProfileClipsRoute
   '/profile/link': typeof AppProfileLinkRoute
   '/profile/preferences': typeof AppProfilePreferencesRoute
@@ -494,6 +508,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof WelcomeRoute
   '/widget': typeof WidgetRoute
   '/admin': typeof AppAdminRouteWithChildren
+  '/elo': typeof AppEloRoute
   '/equipo': typeof AppEquipoRoute
   '/home': typeof AppHomeRoute
   '/inventory': typeof AppInventoryRoute
@@ -530,6 +545,7 @@ export interface FileRoutesByTo {
   '/player/$nick': typeof AppPlayerNickRoute
   '/players/compare': typeof AppPlayersCompareRoute
   '/profile/account': typeof AppProfileAccountRoute
+  '/profile/card': typeof AppProfileCardRoute
   '/profile/clips': typeof AppProfileClipsRoute
   '/profile/link': typeof AppProfileLinkRoute
   '/profile/preferences': typeof AppProfilePreferencesRoute
@@ -564,6 +580,7 @@ export interface FileRoutesById {
   '/welcome': typeof WelcomeRoute
   '/widget': typeof WidgetRoute
   '/_app/admin': typeof AppAdminRouteWithChildren
+  '/_app/elo': typeof AppEloRoute
   '/_app/equipo': typeof AppEquipoRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/inventory': typeof AppInventoryRoute
@@ -601,6 +618,7 @@ export interface FileRoutesById {
   '/_app/player/$nick': typeof AppPlayerNickRoute
   '/_app/players/compare': typeof AppPlayersCompareRoute
   '/_app/profile/account': typeof AppProfileAccountRoute
+  '/_app/profile/card': typeof AppProfileCardRoute
   '/_app/profile/clips': typeof AppProfileClipsRoute
   '/_app/profile/link': typeof AppProfileLinkRoute
   '/_app/profile/preferences': typeof AppProfilePreferencesRoute
@@ -634,6 +652,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/widget'
     | '/admin'
+    | '/elo'
     | '/equipo'
     | '/home'
     | '/inventory'
@@ -671,6 +690,7 @@ export interface FileRouteTypes {
     | '/player/$nick'
     | '/players/compare'
     | '/profile/account'
+    | '/profile/card'
     | '/profile/clips'
     | '/profile/link'
     | '/profile/preferences'
@@ -702,6 +722,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/widget'
     | '/admin'
+    | '/elo'
     | '/equipo'
     | '/home'
     | '/inventory'
@@ -738,6 +759,7 @@ export interface FileRouteTypes {
     | '/player/$nick'
     | '/players/compare'
     | '/profile/account'
+    | '/profile/card'
     | '/profile/clips'
     | '/profile/link'
     | '/profile/preferences'
@@ -771,6 +793,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/widget'
     | '/_app/admin'
+    | '/_app/elo'
     | '/_app/equipo'
     | '/_app/home'
     | '/_app/inventory'
@@ -808,6 +831,7 @@ export interface FileRouteTypes {
     | '/_app/player/$nick'
     | '/_app/players/compare'
     | '/_app/profile/account'
+    | '/_app/profile/card'
     | '/_app/profile/clips'
     | '/_app/profile/link'
     | '/_app/profile/preferences'
@@ -914,6 +938,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/elo': {
+      id: '/_app/elo'
+      path: '/elo'
+      fullPath: '/elo'
+      preLoaderRoute: typeof AppEloRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/equipo': {
@@ -1217,6 +1248,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileAccountRouteImport
       parentRoute: typeof AppProfileRoute
     }
+    '/_app/profile/card': {
+      id: '/_app/profile/card'
+      path: '/card'
+      fullPath: '/profile/card'
+      preLoaderRoute: typeof AppProfileCardRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
     '/_app/profile/clips': {
       id: '/_app/profile/clips'
       path: '/clips'
@@ -1374,6 +1412,7 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 
 interface AppProfileRouteChildren {
   AppProfileAccountRoute: typeof AppProfileAccountRoute
+  AppProfileCardRoute: typeof AppProfileCardRoute
   AppProfileClipsRoute: typeof AppProfileClipsRoute
   AppProfileLinkRoute: typeof AppProfileLinkRoute
   AppProfilePreferencesRoute: typeof AppProfilePreferencesRoute
@@ -1383,6 +1422,7 @@ interface AppProfileRouteChildren {
 
 const AppProfileRouteChildren: AppProfileRouteChildren = {
   AppProfileAccountRoute: AppProfileAccountRoute,
+  AppProfileCardRoute: AppProfileCardRoute,
   AppProfileClipsRoute: AppProfileClipsRoute,
   AppProfileLinkRoute: AppProfileLinkRoute,
   AppProfilePreferencesRoute: AppProfilePreferencesRoute,
@@ -1396,6 +1436,7 @@ const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
+  AppEloRoute: typeof AppEloRoute
   AppEquipoRoute: typeof AppEquipoRoute
   AppHomeRoute: typeof AppHomeRoute
   AppInventoryRoute: typeof AppInventoryRoute
@@ -1427,6 +1468,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
+  AppEloRoute: AppEloRoute,
   AppEquipoRoute: AppEquipoRoute,
   AppHomeRoute: AppHomeRoute,
   AppInventoryRoute: AppInventoryRoute,

@@ -3,6 +3,7 @@ import { BanIcon, CrownIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -10,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { secondsLeft, sideLabel } from "./labels"
+import { prevetoLabel, secondsLeft, sideLabel } from "./labels"
 import { suggestBan } from "./room/roomData"
 import { banOptimistic, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
@@ -39,6 +40,7 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
   const turnCaptain = veto.turn ? captainOf(veto.turn) : null
   // En una PCW BO3 o BO5 también se eligen mapas; el matchmaking solo banea.
   const picking = veto.next_kind === "pick"
+  const prevetoed = veto.bans.filter((b) => b.vip_votes).length
   const picks = veto.bans.filter((b) => b.kind === "pick").map((b) => b.map)
   const name = (t: 1 | 2) => sideLabel(lobby, t)
 
@@ -84,6 +86,14 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
         </div>
       </CardHeader>
       <CardContent>
+        {prevetoed > 0 && (
+          <p className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant="vip">VIP</Badge>
+            {prevetoed === 1
+              ? "1 mapa quedó fuera por el preveto de los VIP."
+              : `${prevetoed} mapas quedaron fuera por el preveto de los VIP.`}
+          </p>
+        )}
         {me && veto.turn === me.team && !picking && suggestion && (
           <p className="mb-2 rounded-lg bg-primary/10 px-3 py-1.5 text-xs">
             Te conviene banear <strong>{suggestion.label}</strong>: tu equipo
@@ -113,6 +123,9 @@ export function VetoBoard({ lobby }: { lobby: MmLobby }) {
     </Card>
   )
 }
+
+const banText = (ban: MmVetoBan, name: (t: 1 | 2) => string) =>
+  ban.team ? `baneado por ${name(ban.team)}` : prevetoLabel(ban)
 
 function MapTile({
   map,
@@ -146,9 +159,9 @@ function MapTile({
         onClick={onBan}
         aria-label={
           ban
-            ? `${label}, baneado por ${name(ban.team)}`
+            ? `${label}, ${banText(ban, name)}`
             : pick
-              ? `${label}, mapa ${order + 1}, elegido por ${name(pick.team)}`
+              ? `${label}, mapa ${order + 1}, elegido por ${pick.team ? name(pick.team) : "nadie"}`
               : canBan
                 ? `${verb} ${label}`
                 : label
@@ -184,13 +197,14 @@ function MapTile({
         {ban && (
           <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
             <BanIcon aria-hidden className="size-3" />
-            {name(ban.team)}
+            {ban.team ? name(ban.team) : prevetoLabel(ban)}
             {ban.auto && " · auto"}
           </span>
         )}
         {pick && (
           <span className="ml-auto text-xs font-semibold text-primary">
-            Mapa {order + 1} · {name(pick.team)}
+            Mapa {order + 1}
+            {pick.team && ` · ${name(pick.team)}`}
             {pick.auto && " · auto"}
           </span>
         )}

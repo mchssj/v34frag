@@ -85,6 +85,7 @@ const ChatIdParam = z.object({ id: z.coerce.number().int().positive().openapi({ 
 const ChatReport = z.object({ reason: z.enum(['afk', 'toxic', 'cheat', 'abandon', 'other']), note: z.string().max(500).optional() }).openapi('MmChatReport');
 const Sound = z.object({ sound_id: Id.nullable() }).openapi('MmSoundChoice');
 const AutoAccept = z.object({ enabled: z.boolean() }).openapi('MmAutoAccept');
+const Preveto = z.object({ mode: z.string().max(10), map: z.string().min(1).max(64).nullable() }).openapi('MmPreveto');
 const BlockSuper = z.object({ enabled: z.boolean() }).openapi('MmBlockSuper');
 const Resolve = z.object({ action: z.enum(['dismiss', 'warn', 'mm_ban', 'ban', 'server_ban']), days: z.number().int().positive().max(3650).optional() }).openapi('MmResolve');
 const Lift = z.object({ reason: z.string().trim().min(3).max(300) }).openapi('MmPenaltyLift');
@@ -246,6 +247,12 @@ add(route('put', '/api/v1/mm/sounds/selected', { summary: 'Elegir el sonido de p
 // Autoaceptar partida (replanteo 89): prenderlo es solo para VIP (403); apagarlo, para cualquiera.
 add(route('put', '/api/v1/mm/auto-accept', { summary: 'Autoaceptar partida (VIP)', request: jsonBody(AutoAccept) }),
   action('mm_set_auto_accept', (c) => ({ p_on: body<{ enabled: boolean }>(c).enabled })));
+// Preveto de mapas (replanteo 146): elegir es solo para VIP (403); sacarlo (map: null), para cualquiera.
+add(route('put', '/api/v1/mm/preveto', { summary: 'El mapa que preveto en un modo (VIP); null para sacarlo', request: jsonBody(Preveto) }),
+  action('mm_set_preveto', (c) => {
+    const b = body<{ mode: string; map: string | null }>(c);
+    return { p_mode: b.mode, p_map: b.map };
+  }));
 add(route('post', '/api/v1/mm/sounds/mine', { summary: 'Subir mi sonido (VIP)', request: { body: multipart(AudioForm) } }), async (c) => {
   const file = form(c).file;
   // Se valida antes de subir: sin VIP no se guarda nada.

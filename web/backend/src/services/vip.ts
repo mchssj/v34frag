@@ -1,5 +1,9 @@
+import type { Context } from 'hono';
+import { currentUser } from '../lib/auth';
 import { must, mustHave } from '../lib/db';
+import { AppError } from '../lib/errors';
 import type { Db } from '../lib/supabase';
+import type { AppEnv } from '../lib/types';
 
 // VIP (plan docs/bitacora/2026-10-28-vip-fase-0): filas de vip_status a la respuesta de la API y el `vip` público.
 
@@ -38,4 +42,10 @@ export async function vipPlayers(sb: Db, players: string[]) {
 /** Si la cuenta existe (para el 404 antes de llamar a las funciones). */
 export async function userExists(sb: Db, id: string) {
   return !!must(await sb.from('admin_user_list').select('id').eq('id', id).limit(1).maybeSingle());
+}
+
+/** Exige VIP para lo que la base no controla por su cuenta (filtros y topes de lectura): 401 sin sesión, 403 sin VIP. */
+export async function requireVip(c: Context<AppEnv>, message: string) {
+  if (!currentUser(c)) throw new AppError(401, 'UNAUTHORIZED', 'Para usar esto tienes que iniciar sesión.');
+  if (!must(await c.var.sb.rpc('is_vip'))) throw new AppError(403, 'VIP_REQUIRED', message);
 }

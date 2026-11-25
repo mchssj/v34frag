@@ -660,6 +660,66 @@ describe("PlayPage (con la demo)", () => {
     expect((await source.state()).sounds.selected).toBeNull()
   })
 
+  it("preveto de mapas: el VIP elige uno y los más votados caen antes del veto", async () => {
+    const { user, controls, source } = setup()
+    await user.click(
+      await screen.findByRole("button", { name: "Elegir mapa a prevetar" })
+    )
+    const dialog = await screen.findByRole("dialog")
+    expect(dialog).toHaveTextContent("caen hasta 2 mapas")
+    await user.click(within(dialog).getByRole("button", { name: "Cache" }))
+    await flush()
+    expect(
+      await screen.findByRole("button", { name: "Preveto de mapas: Cache" })
+    ).toBeInTheDocument()
+    expect((await source.state()).preveto!.modes[0]!.map).toBe("de_cache")
+
+    await user.click(await searchButton())
+    for (let i = 0; i < 3; i++) {
+      if ((await source.state()).lobby?.status === "veto") break
+      await act(async () => controls.skip())
+      await flush()
+    }
+    const { bans, turn } = (await source.state()).lobby!.veto!
+    expect(bans).toHaveLength(2)
+    expect(bans[0]).toMatchObject({ team: null, vip_votes: 2, auto: false })
+    expect(turn).not.toBeNull()
+    expect(
+      await screen.findByText(
+        "2 mapas quedaron fuera por el preveto de los VIP."
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /Preveto VIP · 2 votos/ })
+    ).toBeDisabled()
+  })
+
+  it("preveto de mapas: sin VIP abre Cómo ser VIP, y en 0 no se muestra", async () => {
+    const { user, controls, source } = setup()
+    await screen.findByText("tu.nick")
+    await act(async () => controls.setFlag("notVip", true))
+    await flush()
+    await user.click(
+      screen.getByRole("button", { name: "Elegir mapa a prevetar" })
+    )
+    expect(await screen.findByText("Cómo ser VIP")).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+
+    await act(async () => {
+      await source.saveConfig({
+        ...(await source.adminConfig()),
+        vip_preveto_max: 0,
+      })
+    })
+    await flush()
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: "Elegir mapa a prevetar" })
+      ).toBeNull()
+    )
+    await expect(source.setPreveto("5v5", "de_cache")).rejects.toThrow()
+  })
+
   it("si otro no acepta, avisa que se canceló y que volviste a la cola", async () => {
     const { user, controls } = setup()
     await user.click(await searchButton())

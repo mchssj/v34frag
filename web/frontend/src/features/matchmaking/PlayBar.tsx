@@ -35,6 +35,7 @@ import {
 import { askNotificationPermission } from "./alert"
 import { EloMeter } from "./EloMeter"
 import { fmtClock, isCountry } from "./labels"
+import { PrevetoPicker } from "./PrevetoPicker"
 import { mmKeys, useMmAction, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { InvitePref, MmState } from "./types"
@@ -93,6 +94,7 @@ export function PlayBar({
           </span>
         )}
       </Column>
+      <PrevetoPicker preveto={state.preveto} mode={mode} />
       <Column title="Últimas">
         <ul aria-label="Últimos resultados" className="flex gap-1">
           {state.me.recent.map((r, i) => (

@@ -31,6 +31,7 @@ import type {
   MmRecent,
   MmState,
   MmStatsDay,
+  MmVetoBan,
 } from "./types"
 
 // Simulación en memoria para la demo (`/demo/matchmaking`) y las pruebas: recorre el dúo, la cola,
@@ -103,6 +104,7 @@ const DEFAULT_CONFIG: MmAdminConfig = {
   party_max_elo_gap: 500,
   accept_seconds: 20,
   veto_seconds: 15,
+  vip_preveto_max: 2,
   connect_minutes: 5,
   server_wait_minutes: 3,
   elo_window_start: 150,
@@ -287,6 +289,8 @@ export function createDemoSource({
   let selectedSound: string | null = null
   let mySound: MmSound | null = null
   let autoAccept = false
+  /** El mapa que preveto en cada modo. */
+  let preveto: Record<string, string> = {}
   let sanctions = seedSanctions(now())
   let teamSize = 5
   let lobbyCreatedAt = ""
@@ -554,19 +558,20 @@ export function createDemoSource({
         .reduce((s, p) => s + p.elo, 0) / teamSize
     // Empieza el equipo con menor ELO promedio.
     const first = avg(1) <= avg(2) ? 1 : 2
+    const pool = modeMaps[lobby.mode] ?? DEMO_POOL
     lobby = {
       ...lobby,
       status: "veto",
       match_id: id("match"),
       veto: {
-        pool: (modeMaps[lobby.mode] ?? DEMO_POOL).map((name) => ({
+        pool: pool.map((name) => ({
           name,
           label: mapLabel(name),
           image_url: imageOf(name),
           team1_win_pct: 35 + (seed(`mi-equipo-${name}`) % 35),
           team2_win_pct: 35 + (seed(`${name}-el-rival`) % 35),
         })),
-        bans: [],
+        bans: prevetoBans(lobby.mode, pool),
         turn: first,
         deadline: iso(t + config.veto_seconds * SECOND),
       },
@@ -575,6 +580,32 @@ export function createDemoSource({
     emit("lobby.veto")
     const rival = lobby.players.find((p) => p.is_captain && p.team !== myTeam())
     if (rival) say(rival.nick, "gl hf")
+  }
+
+  const prevetoSlots = (mode: string) =>
+    Math.max(
+      0,
+      Math.min(config.vip_preveto_max, (modeMaps[mode] ?? DEMO_POOL).length - 2)
+    )
+
+  // El mío (si sigo siendo VIP) y el de tres VIP de mentira: dos votan el último mapa y uno el anterior.
+  function prevetoBans(mode: string, pool: string[]): MmVetoBan[] {
+    const mine = flags.notVip ? undefined : preveto[mode]
+    const votes = new Map<string, number>()
+    if (mine)
+      for (const m of [mine, pool.at(-1)!, pool.at(-1)!, pool.at(-2)!])
+        if (pool.includes(m)) votes.set(m, (votes.get(m) ?? 0) + 1)
+    return [...votes]
+      .map(([map, n]) => ({ map, n, r: random() }))
+      .sort((a, b) => b.n - a.n || a.r - b.r)
+      .slice(0, prevetoSlots(mode))
+      .map(({ map, n }, i) => ({
+        seq: i + 1,
+        team: null,
+        map,
+        auto: false,
+        vip_votes: n,
+      }))
   }
 
   const myTeam = () => lobby?.players.find((p) => p.is_me)?.team
@@ -1020,6 +1051,25 @@ export function createDemoSource({
       changes: blockChanges(),
     },
     auto_accept: { enabled: autoAccept, allowed: !flags.notVip },
+    preveto: config.vip_preveto_max
+      ? {
+          allowed: !flags.notVip,
+          modes: flags.notVip
+            ? []
+            : config.modes
+                .filter((m) => m.enabled)
+                .map(({ mode }) => ({
+                  mode,
+                  max: prevetoSlots(mode),
+                  map: preveto[mode] ?? null,
+                  pool: (modeMaps[mode] ?? DEMO_POOL).map((name) => ({
+                    name,
+                    label: mapLabel(name),
+                    image_url: imageOf(name),
+                  })),
+                })),
+        }
+      : null,
     sounds: soundsState(),
     queue_activity: queueActivity(),
     friends: structuredClone(friends),
@@ -1229,6 +1279,15 @@ export function createDemoSource({
       if (enabled && flags.notVip)
         throw new DemoError("Autoaceptar es exclusivo para VIP")
       autoAccept = enabled
+      emit("state")
+      return snapshot()
+    },
+    async setPreveto(mode, map) {
+      if (map && flags.notVip)
+        throw new DemoError("Prevetar mapas es exclusivo para VIP")
+      const rest = { ...preveto }
+      delete rest[mode]
+      preveto = map ? { ...rest, [mode]: map } : rest
       emit("state")
       return snapshot()
     },

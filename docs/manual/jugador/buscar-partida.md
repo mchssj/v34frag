@@ -62,6 +62,18 @@ Cada equipo tiene un capitán: el jugador con más ELO del equipo. Los capitanes
 - Cada turno dura **{{mm.veto}}**. Si el capitán no elige, se banea un mapa al azar.
 - Si eres capitán, la sala te dice **Tu turno: banea un mapa.**
 
+### Preveto de mapas (VIP)
+
+Si eres VIP, en [Jugar](/play), debajo del modo, toca **Elegir mapa** y elige el que no quieras jugar. Son los mapas que están hoy en el matchmaking de ese modo.
+
+- Antes del primer turno de los capitanes se cuentan los prevetos de los VIP de la sala, de los dos equipos, y quedan fuera los mapas con más votos: hasta **{{mm.preveto_max}}** por partida. Si empatan, se elige al azar.
+- Si nadie prevetó, el veto es el de siempre. Siempre quedan al menos 2 mapas para los capitanes, y el equipo que empieza a banear es el mismo.
+- Tu elección queda guardada para las próximas partidas, una por modo. Para sacarla, abre la misma ventana y toca **Sin preveto**. Los cambios valen para la próxima sala que empiece el veto.
+- La sala muestra qué mapas cayeron y con cuántos votos, no quién votó.
+- Si se te vence el VIP, o el mapa sale del matchmaking, tu preveto deja de contar.
+
+Si no ves la opción, la liga la tiene apagada.
+
 ## 4. Conectarte al servidor
 
 Cuando termina el veto, buscamos un servidor libre. Si están todos ocupados, la sala dice que la partida se arma cuando se libere uno; si en {{mm.espera_servidor}} no hay ninguno, la partida se cancela sin sanción para nadie.

@@ -242,6 +242,8 @@ export const MARCADORES: Record<string, { clave?: string; formato: Formato; defe
   'mm.grupo_dif_elo': { formato: { tipo: 'numero' }, defecto: 500 },
   'mm.aceptar': { formato: SEGUNDOS, defecto: 15 },
   'mm.veto': { formato: SEGUNDOS, defecto: 15 },
+  // (replanteo 146) Mapas que los VIP prevetan por partida.
+  'mm.preveto_max': { formato: { tipo: 'cantidad', singular: 'mapa', plural: 'mapas' }, defecto: 2 },
   'mm.conectar': { formato: MINUTOS, defecto: 5 },
   'mm.espera_servidor': { formato: MINUTOS, defecto: 3 },
   'mm.volver': { formato: MINUTOS, defecto: 3 },

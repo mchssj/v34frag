@@ -4,6 +4,7 @@ import { cn } from "cn"
 import {
   ChevronRightIcon,
   FilterXIcon,
+  StarIcon,
   SwordsIcon,
   TriangleAlertIcon,
 } from "lucide-react"
@@ -22,8 +23,15 @@ import {
 import { cancelReasonLabel, fmtDay, fmtTime } from "@/features/mixes/lib/labels"
 import { CancelChip, DemoStatus } from "@/features/mixes/components/parts"
 import { matchesListOptions } from "../api/queries"
-import type { MatchSummary } from "../types"
-import { DEFAULT_PER, PER_OPTIONS, type MatchesSearch } from "../lib/search"
+import type { MatchItem, MatchSummary } from "../types"
+import {
+  DEFAULT_PER,
+  matchChips,
+  PER_OPTIONS,
+  type MatchesSearch,
+} from "../lib/search"
+import { useVip } from "@/features/vip/useVip"
+import { FavoriteStar } from "./FavoriteStar"
 import type { Patch } from "./MatchFilters"
 
 const sideName = (s: MatchSummary["side1"], n: 1 | 2) =>
@@ -39,12 +47,20 @@ const resultOf = (m: MatchSummary, side: 1 | 2) =>
       ? "win"
       : "loss"
 
-const COLUMNS: DataColumn<MatchSummary>[] = [
+const COLUMNS: DataColumn<MatchItem>[] = [
+  {
+    id: "favorite",
+    header: () => <span className="sr-only">Favorita</span>,
+    headClassName: "w-10 pl-3",
+    cellClassName: "py-1 pl-3",
+    cell: ({ row }) => (
+      <FavoriteStar id={row.original.id} on={row.original.favorite} />
+    ),
+  },
   {
     id: "date",
     header: "Fecha",
-    headClassName: "pl-4",
-    cellClassName: "py-2 pl-4",
+    cellClassName: "py-2",
     cell: ({ row }) => {
       const at = row.original.played_at ?? row.original.starts_at
       return at ? (
@@ -143,7 +159,12 @@ export function MatchesTable({
   search: MatchesSearch
   onChange: (patch: Patch) => void
 }) {
-  const list = useQuery(matchesListOptions(search))
+  const { vip, ready } = useVip()
+  const list = useQuery({
+    ...matchesListOptions(search, vip),
+    // Con filtros avanzados en la URL se espera a saber si es VIP, para no buscar dos veces.
+    enabled: ready || matchChips(search).length === 0,
+  })
   const navigate = useNavigate()
   const table = useServerTable({
     columns: COLUMNS,
@@ -160,7 +181,7 @@ export function MatchesTable({
         <DataTable
           table={table}
           query={list}
-          className="min-w-[900px] text-sm"
+          className="min-w-[940px] text-sm"
           stateAs="block"
           skeletonCellClassName="px-4 py-2.5"
           error={
@@ -172,7 +193,7 @@ export function MatchesTable({
               {errorMessage(list.error)}
             </EmptyState>
           }
-          empty={<NoMatches search={search} onChange={onChange} />}
+          empty={<NoMatches search={search} vip={vip} onChange={onChange} />}
           rowClassName={(m) =>
             cn("h-12", cancelledOf(m) && "text-muted-foreground")
           }
@@ -203,12 +224,23 @@ export function MatchesTable({
 /** Sin resultados: con búsqueda o mapa, "Quitar filtros"; si no, el vacío del tipo elegido. */
 function NoMatches({
   search,
+  vip,
   onChange,
 }: {
   search: MatchesSearch
+  vip: boolean
   onChange: (patch: Patch) => void
 }) {
-  if (search.q || search.map)
+  const chips = vip ? matchChips(search) : []
+  if (search.fav && !search.q && !search.map && !chips.length)
+    return (
+      <EmptyState icon={StarIcon} title="Todavía no tienes favoritas">
+        {vip
+          ? "Toca la estrella de una partida para guardarla acá."
+          : "Con VIP puedes guardar las partidas que quieras con la estrella."}
+      </EmptyState>
+    )
+  if (search.q || search.map || chips.length)
     return (
       <EmptyState
         icon={FilterXIcon}
@@ -218,14 +250,21 @@ function NoMatches({
             variant="outline"
             size="sm"
             onClick={() =>
-              onChange({ q: undefined, map: undefined, page: undefined })
+              onChange({
+                q: undefined,
+                map: undefined,
+                page: undefined,
+                ...Object.fromEntries(
+                  chips.flatMap((c) => c.clear).map((k) => [k, undefined])
+                ),
+              })
             }
           >
             Quitar filtros
           </Button>
         }
       >
-        Prueba con otra búsqueda u otro mapa.
+        Prueba con otra búsqueda o quita algún filtro.
       </EmptyState>
     )
   if (search.kind === "pcw")

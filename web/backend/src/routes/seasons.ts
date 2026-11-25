@@ -9,6 +9,7 @@ import type { AppEnv } from '../lib/types';
 import { bearer, errorResponses, json } from '../schemas/common';
 import { IdParam, type TeamRef } from '../schemas/players';
 import { designOf, loadDefinitionsByKey, tierDefinition } from '../services/medals';
+import { applyPlayerFilters, FOUND, type FoundRow, toFound, wantsPlayerFilters } from '../services/playerFilters';
 import { resolvePlayer } from '../services/players';
 import { featuredItems } from './clips';
 import {
@@ -133,9 +134,10 @@ const standings = createRoute({
   summary: 'Ranking de una temporada',
   description:
     'En vivo si está activa; la foto del cierre si está cerrada (no cambia aunque después se recalcule el ELO). ' +
-    'Por defecto, por puesto: primero los que llegan al mínimo de mixes y después el resto por ELO.',
+    'Por defecto, por puesto: primero los que llegan al mínimo de mixes y después el resto por ELO. ' +
+    'Los filtros marcados VIP piden sesión (401) y VIP (403 `VIP_REQUIRED`).',
   request: { params: SeasonIdParam, query: StandingQuery },
-  responses: { 200: { description: 'Ranking', ...json(StandingList) }, ...errorResponses(400, 401, 404) },
+  responses: { 200: { description: 'Ranking', ...json(StandingList) }, ...errorResponses(400, 401, 403, 404) },
 });
 const playerSeasons = createRoute({
   method: 'get', path: '/api/v1/players/{id}/seasons', tags: ['Jugadores'], middleware: [optionalUser] as const,
@@ -261,7 +263,13 @@ export const seasons = createRouter()
     const { id } = c.req.valid('param');
     const p = c.req.valid('query');
     const season = await readSeason(c, id);
-    let q = c.var.sb.from('season_standings_list').select(STANDING, { count: 'exact' }).eq('season_id', id);
+    // (replanteo 141) Con un filtro avanzado (VIP), la vista que trae esas columnas; no está en los tipos generados.
+    const advanced = await wantsPlayerFilters(c, p);
+    let q = c.var.sb
+      .from((advanced ? 'season_standings_search' : 'season_standings_list') as 'season_standings_list')
+      .select((advanced ? `${STANDING}, ${FOUND}` : STANDING) as '*', { count: 'exact' })
+      .eq('season_id', id);
+    if (advanced) q = applyPlayerFilters(q as never, p, 'matches');
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     if (p.eligible !== undefined) q = q.eq('eligible', p.eligible);
@@ -269,17 +277,18 @@ export const seasons = createRouter()
     if (lv.gte !== undefined) q = q.gte('elo', lv.gte);
     if (lv.lt !== undefined) q = q.lt('elo', lv.lt);
     if (p.team) q = q.contains('teams', JSON.stringify([{ id: p.team }]));
-    type Row = StandingRow & { teams: unknown; rating: number | null; kd: number | null };
+    type Row = StandingRow & FoundRow & { teams: unknown; rating: number | null; kd: number | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, { rank: ['rank', 'elo:desc'], alias: 'nick' }, 'player_id');
     const ds = await designs(c, rows.map((r) => ({ ...season, rank: r.rank, tier: r.tier })));
     return c.json(
       envelope(
-        rows.map(({ player_id, nick, photo_url, teams, rating, kd, ...r }, i) => ({
+        rows.map(({ player_id, nick, photo_url, teams, rating, kd, hs, last_played_at, ...r }, i) => ({
           player: { id: player_id!, alias: nick ?? '', photo_url },
           ...stats(r, ds[i]),
           teams: Array.isArray(teams) ? (teams as z.infer<typeof TeamRef>[]) : [],
           rating: rating === null ? null : Number(rating),
           kd: kd === null ? null : Number(kd),
+          ...toFound({ hs, last_played_at }),
         })),
         total,
         p,

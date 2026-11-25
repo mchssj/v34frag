@@ -9,6 +9,7 @@ import {
   CopyIcon,
   CrosshairIcon,
   GitCompareIcon,
+  ImageIcon,
   LockIcon,
   ShieldIcon,
   SparklesIcon,
@@ -126,6 +127,7 @@ export function PlayerProfile({ nick, search, onChange }: Props) {
         <LevelCard p={p} />
         <EloCard
           nick={nick}
+          playerId={p.id}
           level={p.level}
           range={search.range ?? 30}
           onRange={(r) => onChange({ range: r === 30 ? undefined : r })}
@@ -409,15 +411,27 @@ function PlayerHeader({ p }: { p: PlayerDetail }) {
             />
           )}
           {owner ? (
-            <Link
-              to="/profile"
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "h-8 px-3 text-[13px]"
-              )}
-            >
-              Editar perfil
-            </Link>
+            <>
+              <Link
+                to="/profile/card"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-8 gap-1.5 px-3 text-[13px]"
+                )}
+              >
+                <ImageIcon aria-hidden className="size-3.5" />
+                Exportar stats
+              </Link>
+              <Link
+                to="/profile"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-8 px-3 text-[13px]"
+                )}
+              >
+                Editar perfil
+              </Link>
+            </>
           ) : (
             <>
               {signedIn && <FriendButton playerId={p.id} nick={p.alias} />}
@@ -594,20 +608,34 @@ function LevelCard({ p }: { p: PlayerDetail }) {
 
 function EloCard({
   nick,
+  playerId,
   level,
   range,
   onRange,
 }: {
   nick: string
+  playerId: string
   level: number | null
   range: 10 | 20 | 30
   onRange: (r: 10 | 20 | 30) => void
 }) {
   const q = useQuery(eloHistoryOptions(nick, range))
+  const owner = useMine().playerId === playerId
   return (
     <Card variant="outline" className="flex min-w-0 flex-col gap-2.5 px-5 py-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex-1 text-sm font-semibold">Evolución de ELO</span>
+        {owner && (
+          <Link
+            to="/elo"
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-7 px-2.5 text-xs"
+            )}
+          >
+            Ver desglose
+          </Link>
+        )}
         <Segmented
           size="sm"
           label="Partidas del gráfico"

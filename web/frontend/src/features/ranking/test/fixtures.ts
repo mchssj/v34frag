@@ -57,6 +57,8 @@ export const standing = (alias: string, o: Record<string, unknown> = {}) => ({
   teams: [],
   rating: 1.21,
   kd: 1.15,
+  hs: null,
+  last_played_at: null,
   ...o,
 })
 
@@ -73,6 +75,8 @@ export const ranked = (alias: string, o: Record<string, unknown> = {}) => ({
   country: "Argentina",
   game_role: "AWPer",
   elo_trend: [1000, 1050, 1182],
+  hs: null,
+  last_played_at: null,
   ...o,
 })
 
@@ -97,6 +101,7 @@ export const profile = {
 export function common() {
   server.use(
     http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(profile)),
-    http.get(`${API}/api/v1/seasons`, () => HttpResponse.json(page([beta])))
+    http.get(`${API}/api/v1/seasons`, () => HttpResponse.json(page([beta]))),
+    http.get(`${API}/api/v1/me/searches`, () => HttpResponse.json(page([])))
   )
 }

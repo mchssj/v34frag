@@ -136,8 +136,11 @@ export type MmVetoMap = {
 
 export type MmVetoBan = {
   seq: number
-  team: 1 | 2
+  /** null: preveto de los VIP, sin bando. */
+  team: 1 | 2 | null
   map: string
+  /** (replanteo 146) Cuántos VIP prevetaron el mapa; null o sin el campo, un baneo del veto. */
+  vip_votes?: number | null
   /** El capitán no baneó a tiempo y se baneó uno al azar. */
   auto: boolean
   /** "pick": el mapa se eligió para jugarse (PCW BO3 y BO5). Sin el campo, ban. */
@@ -384,6 +387,22 @@ export type MmState = {
     /** Si esta cuenta puede usarlo (VIP). */
     allowed: boolean
   }
+  /**
+   * (replanteo 146) Preveto de mapas: el mapa que los VIP banean antes del veto. null: apagado en la configuración.
+   * Sin VIP, `modes` viene vacío.
+   */
+  preveto?: {
+    /** Si esta cuenta puede elegir (VIP). */
+    allowed: boolean
+    modes: {
+      mode: string
+      /** Cuántos mapas se prevetan como máximo por partida en este modo. */
+      max: number
+      /** El mapa elegido; null si ninguno. */
+      map: string | null
+      pool: { name: string; label: string; image_url: string | null }[]
+    }[]
+  } | null
   /** Sonido de partida encontrada. */
   sounds: {
     /** Los que subieron los admins. */
@@ -497,6 +516,8 @@ export type MmAdminConfig = {
   party_max_elo_gap: number
   accept_seconds: number
   veto_seconds: number
+  /** (replanteo 146) Mapas que los VIP prevetan como máximo por partida (0: apagado). */
+  vip_preveto_max: number
   connect_minutes: number
   server_wait_minutes: number
   elo_window_start: number

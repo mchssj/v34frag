@@ -1,0 +1,9 @@
+CMLeague 2.9.67 --  Changelog
+
+Comparador
+- Con VIP comparas hasta 5 jugadores a la vez: una columna por jugador, el ELO de todos en el mismo gráfico y cuántos mixes jugaste con cada uno o contra cada uno.
+- Para todos sigue igual: dos jugadores lado a lado.
+
+Partidas favoritas
+- En Partidas, toca la estrella para guardar las que quieras tener a mano. Guardar es para los VIP y no tiene límite.
+- Con el filtro Favoritas ves solo las tuyas. No las ve nadie más.

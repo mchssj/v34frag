@@ -16,7 +16,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import type { MixItem } from "@/features/mixes/types"
 import { renderWithQuery } from "@/test/render"
 import { MatchesList } from "./MatchesList"
-import type { MatchSummary } from "../types"
+import type { MatchItem } from "../types"
 import type { MatchesSearch } from "../lib/search"
 
 const navigate = vi.hoisted(() => vi.fn())
@@ -40,7 +40,7 @@ afterEach(() => {
 })
 afterAll(() => server.close())
 
-const mix: MatchSummary = {
+const mix: MatchItem = {
   id: "m-1",
   kind: "mix",
   status: "finished",
@@ -58,8 +58,9 @@ const mix: MatchSummary = {
   review: null,
   demo_status: "uploaded",
   parent_match_id: null,
+  favorite: false,
 }
-const series: MatchSummary = {
+const series: MatchItem = {
   ...mix,
   id: "m-2",
   kind: "official",
@@ -104,7 +105,7 @@ const live: MixItem = {
 }
 
 function answer(
-  items: MatchSummary[],
+  items: MatchItem[],
   o: { total?: number; live?: MixItem[] } = {}
 ) {
   server.use(
@@ -180,6 +181,30 @@ function answer(
     )
   )
 }
+
+/** La cuenta de la sesión, VIP o no. */
+const asVip = (active: boolean) =>
+  server.use(
+    http.get(`${API}/api/v1/me/profile`, () =>
+      HttpResponse.json({
+        player: null,
+        teams: [],
+        vip: active
+          ? { active, lifetime: true, until: null, since: "x" }
+          : null,
+      })
+    ),
+    http.get(`${API}/api/v1/me/searches`, () =>
+      HttpResponse.json({
+        items: [],
+        total: 0,
+        page: 1,
+        per: 5,
+        sort: "created_at",
+        order: "desc",
+      })
+    )
+  )
 
 function renderList(search: MatchesSearch = {}, onChange = vi.fn()) {
   const wrap = (ui: ReactNode) => <TooltipProvider>{ui}</TooltipProvider>
@@ -348,5 +373,75 @@ describe("MatchesList", () => {
     expect(await screen.findByText("Mostrando 16–30 de 40")).toBeVisible()
     await user.click(screen.getByRole("button", { name: "Página siguiente" }))
     expect(onChange).toHaveBeenLastCalledWith({ page: 3 })
+  })
+
+  it("VIP: la estrella marca la favorita sin abrir la partida", async () => {
+    answer([mix])
+    asVip(true)
+    const put = vi.fn()
+    server.use(
+      http.put(`${API}/api/v1/me/favorites/:id`, ({ params }) => {
+        put(params.id)
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+    const { user } = renderList()
+    const star = await screen.findByRole("button", {
+      name: "Marcar como favorita",
+    })
+    await waitFor(() => expect(star).toBeEnabled())
+    await user.click(star)
+    await waitFor(() => expect(put).toHaveBeenCalledWith("m-1"))
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it("sin VIP: la estrella abre Cómo ser VIP; una ya marcada se puede sacar", async () => {
+    answer([mix, { ...series, favorite: true }])
+    asVip(false)
+    const del = vi.fn()
+    server.use(
+      http.delete(`${API}/api/v1/me/favorites/:id`, ({ params }) => {
+        del(params.id)
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+    const { user } = renderList()
+    const on = await screen.findByRole("button", { name: "Sacar de favoritas" })
+    await waitFor(() => expect(on).toBeEnabled())
+    await user.click(on)
+    await waitFor(() => expect(del).toHaveBeenCalledWith("m-2"))
+    await user.click(
+      (
+        await screen.findAllByRole("button", { name: "Marcar como favorita" })
+      )[0]
+    )
+    expect(
+      await screen.findByRole("dialog", { name: "Cómo ser VIP" })
+    ).toBeVisible()
+  })
+
+  it("filtros avanzados: con VIP se piden; sin VIP van tachados y no se mandan", async () => {
+    answer([mix])
+    asVip(true)
+    const search = { player: "fako", vs: "kova", diff: 3 }
+    const vip = renderList(search)
+    await waitFor(() =>
+      expect(asked).toHaveBeenCalledWith(
+        expect.objectContaining({
+          player: "fako",
+          against: "kova",
+          max_diff: "3",
+        })
+      )
+    )
+    expect(asked).toHaveBeenCalledTimes(1)
+    vip.unmount()
+
+    asked.mockClear()
+    asVip(false)
+    renderList(search)
+    expect(await screen.findByText("No se aplican sin VIP.")).toBeVisible()
+    await waitFor(() => expect(asked).toHaveBeenCalled())
+    expect(asked.mock.calls[0]![0]).not.toHaveProperty("player")
   })
 })

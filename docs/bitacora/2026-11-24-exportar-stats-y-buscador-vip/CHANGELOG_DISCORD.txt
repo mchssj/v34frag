@@ -1,0 +1,12 @@
+CMLeague 2.9.68 --  Changelog
+
+Tu tarjeta de stats
+- Arma una imagen con tus números de los mixes para subir a tus redes: cuadrada, vertical para historias u horizontal, por temporada, 30 días o histórico.
+- Está en Mi perfil, en Tarjeta. Todos ven la vista previa; con VIP la descargas en imagen o PDF y tienes el estilo dorado.
+
+Filtros del ranking
+- Con VIP, en Ranking filtras a los jugadores por nivel, ELO, stats, país, mapa más jugado, equipo y cuándo jugaron, en cada temporada y en el Histórico.
+
+Buscar partidas
+- Con VIP filtras Partidas por jugador, con quién o contra quién jugó, fechas, diferencia de rondas y si tiene demo, y las ordenas por las más parejas o el mejor MVP.
+- Los VIP guardan hasta 5 búsquedas de jugadores y 5 de partidas para abrirlas con un toque.

@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router"
 import {
+  ChartNoAxesColumnIcon,
   GitCompareIcon,
+  ImageIcon,
   LoaderCircleIcon,
   LogOutIcon,
   TrophyIcon,
@@ -54,6 +56,18 @@ const EXTRA_PAGES: Page[] = [
     to: "/players/compare",
     icon: GitCompareIcon,
     hint: "Ranking",
+  },
+  {
+    label: "Desglose de ELO",
+    to: "/elo",
+    icon: ChartNoAxesColumnIcon,
+    hint: "Cuenta",
+  },
+  {
+    label: "Tarjeta de stats",
+    to: "/profile/card",
+    icon: ImageIcon,
+    hint: "Cuenta",
   },
   { label: "Mi perfil", to: "/profile", icon: UserRoundIcon, hint: "Cuenta" },
 ]

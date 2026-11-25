@@ -487,19 +487,29 @@ const SECTIONS: LegalSection[] = [
             exista CMLeague y tu cuenta.
           </li>
           <li>
-            Al vencer hay unos días de gracia. Después se apagan las ventajas:
-            los cosméticos y las monedas VIP quedan congelados y vuelven si
-            renuevas.
+            Al vencer se apagan las ventajas: los cosméticos y las monedas VIP
+            quedan congelados y vuelven si renuevas. Las partidas favoritas y
+            las búsquedas que guardaste se siguen viendo y las puedes borrar,
+            pero no sumas nuevas.
           </li>
           <li>
-            El VIP da ventajas de comodidad y estética (cosméticos, estadísticas
-            avanzadas, comparador, favoritas, configs, créditos, ver quién
-            visitó tu perfil y visitar hasta 15 perfiles por semana sin dejar
-            rastro, autoaceptar las partidas del matchmaking, bloquear a un
-            jugador para que no te toque en tu equipo, como preferencia, y
-            similares). <strong>Nunca da ventaja dentro de la partida</strong>{" "}
-            ni sobre el ELO ni sobre las sanciones: con el autoaceptar, si no te
-            conectas a tiempo, la sanción es la misma.
+            El VIP da ventajas de comodidad y estética (cosméticos, el desglose
+            de tu ELO, comparar hasta 5 jugadores, partidas favoritas, filtros
+            avanzados y búsquedas guardadas, descargar tu tarjeta de stats,
+            configs, créditos, ver quién visitó tu perfil y visitar hasta 15
+            perfiles por semana sin dejar rastro, autoaceptar las partidas del
+            matchmaking, prevetar mapas, bloquear a un jugador para que no te
+            toque en tu equipo, como preferencia, y similares).{" "}
+            <strong>Nunca da ventaja dentro de la partida</strong> ni sobre el
+            ELO ni sobre las sanciones: con el autoaceptar, si no te conectas a
+            tiempo, la sanción es la misma.
+          </li>
+          <li>
+            Prevetar mapas: cada VIP elige un mapa y, antes del veto de los
+            capitanes, quedan fuera los más votados por los VIP de los dos
+            equipos, hasta el máximo que fija la liga (puede ser ninguno).
+            Influye en qué mapa se juega, no en lo que pasa dentro de la
+            partida. Si el mapa elegido no está en el matchmaking, no cuenta.
           </li>
           <li>
             Podemos cambiar, sumar o quitar ventajas del VIP. Si quitamos una

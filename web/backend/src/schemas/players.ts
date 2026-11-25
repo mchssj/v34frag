@@ -1,6 +1,7 @@
 import { z } from '@hono/zod-openapi';
 import { MedalDesign } from './medals';
 import { boolParam, dateParam, Envelope, listQuery } from '../lib/list';
+import { foundShape, playerFilterShape } from '../services/playerFilters';
 import { Clutches } from './common';
 import { CosmeticsFull, CosmeticsLight } from './shop';
 
@@ -265,6 +266,7 @@ export const RankingPlayerQuery = listQuery(['position', 'rating', 'kd', 'matche
   q: z.string().max(60).optional().openapi({ description: 'Busca en el alias y en los equipos actuales' }),
   level: z.enum(LEVEL_RANGES).optional().openapi({ description: 'Nivel: `10`, `7-9` o `1-6`' }),
   team: z.uuid().optional().openapi({ description: 'Jugadores activos de un equipo oficial' }),
+  ...playerFilterShape,
 });
 export const RankingPlayer = z
   .object({
@@ -283,6 +285,7 @@ export const RankingPlayer = z
     country: z.string().nullable().openapi({ description: 'null si el perfil es privado o no tiene cuenta' }),
     game_role: z.string().nullable().openapi({ description: 'Puesto preferido; null si el perfil es privado o no tiene cuenta' }),
     elo_trend: z.array(z.number().int()).openapi({ description: 'ELO después de cada uno de sus últimos 30 mixes, del más viejo al más nuevo' }),
+    ...foundShape,
   })
   .openapi('RankingPlayer');
 export const RankingPlayerList = Envelope(RankingPlayer).openapi('RankingPlayerList');
@@ -290,6 +293,9 @@ export const RankingPlayerList = Envelope(RankingPlayer).openapi('RankingPlayerL
 export const CompareQuery = z.object({
   a: z.string().trim().min(1).max(40).openapi({ description: 'Jugador A: id o nick' }),
   b: z.string().trim().min(1).max(40).openapi({ description: 'Jugador B: id o nick' }),
+  c: z.string().trim().min(1).max(40).optional().openapi({ description: 'Tercer jugador (VIP)' }),
+  d: z.string().trim().min(1).max(40).optional().openapi({ description: 'Cuarto jugador (VIP)' }),
+  e: z.string().trim().min(1).max(40).optional().openapi({ description: 'Quinto jugador (VIP)' }),
 });
 export const ComparePlayer = z
   .object({
@@ -311,14 +317,18 @@ export const ComparePlayer = z
     elo_history: z.array(z.number().int()).openapi({ description: 'ELO después de cada uno de sus últimos 30 mixes, del más viejo al más nuevo' }),
   })
   .openapi('ComparePlayer');
+const CompareTogether = z.object({
+  same_team: z.object({ matches: z.number().int(), wins: z.number().int() }).openapi({ description: 'Mixes en el mismo bando y cuántos ganaron' }),
+  against: z.object({ matches: z.number().int(), a_wins: z.number().int() }).openapi({ description: 'Mixes como rivales y cuántos ganó A' }),
+});
 export const Compare = z
   .object({
     a: ComparePlayer,
     b: ComparePlayer,
-    together: z.object({
-      same_team: z.object({ matches: z.number().int(), wins: z.number().int() }).openapi({ description: 'Mixes en el mismo bando y cuántos ganaron' }),
-      against: z.object({ matches: z.number().int(), a_wins: z.number().int() }).openapi({ description: 'Mixes como rivales y cuántos ganó A' }),
-    }),
+    together: CompareTogether,
+    others: z
+      .array(z.object({ player: ComparePlayer, together: CompareTogether }))
+      .openapi({ description: 'El tercero, el cuarto y el quinto (VIP), en el orden pedido, con sus mixes contra y junto a A. Vacío con dos jugadores' }),
   })
   .openapi('Compare');
 

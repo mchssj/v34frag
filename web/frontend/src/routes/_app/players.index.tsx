@@ -1,11 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { Placeholder } from "@/features/shell/components/Placeholder"
-
+// Los jugadores se buscan en el ranking.
 export const Route = createFileRoute("/_app/players/")({
-  component: PlayersPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/ranking", replace: true })
+  },
 })
-
-function PlayersPage() {
-  return <Placeholder title="Jugadores" />
-}

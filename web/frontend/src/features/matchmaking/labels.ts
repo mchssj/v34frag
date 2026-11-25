@@ -83,6 +83,12 @@ export const sideLabel = (
   team: 1 | 2
 ) => lobby.sides?.[team] ?? teamName(team)
 
+/** "Preveto VIP · 3 votos": un mapa que los VIP banearon antes del veto. */
+export const prevetoLabel = (ban: { vip_votes?: number | null }) => {
+  const n = ban.vip_votes ?? 0
+  return `Preveto VIP · ${n} ${n === 1 ? "voto" : "votos"}`
+}
+
 export const REASON_TEXT: Record<ReportReason, string> = {
   afk: "AFK",
   toxic: "Tóxico",

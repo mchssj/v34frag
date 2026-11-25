@@ -13,7 +13,7 @@ export const MatchStatus = z.enum(['upcoming', 'live', 'finished', 'cancelled'])
 /** Revisión de un mix interrumpido por una caída: pendiente, ELO aplicado o descartado. */
 export { ReviewStatus };
 
-export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'played_at', order: 'desc' }).extend({
+export const MatchListQuery = listQuery(['played_at', 'starts_at', 'round_diff', 'mvp_rating'], { sort: 'played_at', order: 'desc' }).extend({
   kind: MatchKind.optional().openapi({ description: '`official` (torneo), `pcw` o `mix`. Sin filtro: todas' }),
   status: z
     .string()
@@ -35,12 +35,17 @@ export const MatchListQuery = listQuery(['played_at', 'starts_at'], { sort: 'pla
   mine: boolParam('`true`: solo las partidas donde jugó el usuario (pide sesión; sin ficha, la lista viene vacía)'),
   event: z.uuid().optional().openapi({ description: 'Partidas de un torneo' }),
   team: z.uuid().optional().openapi({ description: 'Partidas de un equipo' }),
-  player: z.uuid().optional().openapi({ description: 'Partidas donde jugó un jugador (en una serie, en alguno de sus mapas)' }),
+  player: z.string().trim().min(1).max(40).optional().openapi({ description: 'Partidas donde jugó un jugador, por id o nick (en una serie, en alguno de sus mapas)' }),
+  with: z.string().trim().min(1).max(40).optional().openapi({ description: 'VIP. Con `player`: en las que este otro jugó en su mismo bando (id o nick)' }),
+  against: z.string().trim().min(1).max(40).optional().openapi({ description: 'VIP. Con `player`: en las que este otro jugó en el bando contrario (id o nick)' }),
+  max_diff: z.coerce.number().int().min(0).max(30).optional().openapi({ description: 'VIP. Diferencia de rondas máxima (en una serie, en todos sus mapas)' }),
+  demo: boolParam('VIP. `true`: solo con demo para descargar'),
+  favorites: boolParam('`true`: solo mis favoritas (pide sesión)'),
   server: z.uuid().optional().openapi({ description: 'Partidas de un servidor (`GET /api/v1/servers/status` da los ids)' }),
   map: z.string().max(40).optional().openapi({ description: 'Mapa (contiene)' }),
   from: dateParam('Desde (fecha jugada, o programada si no se jugó)'),
   to: dateParam('Hasta (fecha jugada, o programada si no se jugó)'),
-  q: z.string().max(60).optional().openapi({ description: 'Busca en equipos, bandos y torneo' }),
+  q: z.string().max(60).optional().openapi({ description: 'Busca en equipos, bandos, torneo y nombres de los jugadores' }),
   review: ReviewStatus.optional().openapi({ description: 'Mixes interrumpidos por una caída: `pending` (falta que un admin decida), `applied` o `discarded`' }),
 });
 
@@ -77,6 +82,7 @@ export const MatchSummary = z
 // (E17) Fila del listado de /matches: el resumen más el MVP de los mixes.
 export const MatchListItem = MatchSummary.extend({
   mvp: MixMvp.nullable().openapi({ description: 'Mix: el de mejor rating (como en `/mixes`); null en el resto' }),
+  favorite: z.boolean().openapi({ description: 'Si la marcó como favorita quien consulta (`false` sin sesión; replanteo 140)' }),
 }).openapi('MatchListItem');
 
 // (E16) Cuántas hay de cada tipo con los mismos filtros, salvo `kind`.

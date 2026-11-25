@@ -4,6 +4,7 @@ import { cn } from "cn"
 import {
   ClapperboardIcon,
   ExternalLinkIcon,
+  ImageIcon,
   LinkIcon,
   LockIcon,
   SettingsIcon,
@@ -26,6 +27,7 @@ export const PROFILE_SECTIONS: {
   { to: "/profile/privacy", label: "Privacidad", icon: LockIcon },
   { to: "/profile/link", label: "Vinculación", icon: LinkIcon },
   { to: "/profile/clips", label: "Clips", icon: ClapperboardIcon },
+  { to: "/profile/card", label: "Tarjeta", icon: ImageIcon },
   {
     to: "/profile/preferences",
     label: "Preferencias",
@@ -91,7 +93,13 @@ export function ProfileLayout() {
             )
           })}
         </nav>
-        <div className="flex max-w-[720px] min-w-0 flex-col gap-4">
+        <div
+          className={cn(
+            "flex min-w-0 flex-col gap-4",
+            // La tarjeta va al lado de sus opciones.
+            pathname === "/profile/card" ? "max-w-[960px]" : "max-w-[720px]"
+          )}
+        >
           <Outlet />
         </div>
       </div>

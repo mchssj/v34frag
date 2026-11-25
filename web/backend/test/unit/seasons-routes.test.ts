@@ -110,7 +110,7 @@ describe('temporadas: respuestas', () => {
     expect(body.items[0]).toEqual({
       rank: 1, player: { id: PLAYER, alias: 'Alfa', photo_url: null }, eligible: true, elo: 2540, level: 10, peak_elo: 2600,
       matches: 25, wins: 15, losses: 10, elo_after: 2055, medal: { name: 'Campeón', design: null },
-      teams: [{ id: SEASON, name: 'Equipo', tag: 'EQ' }], rating: 1.12, kd: 1.3,
+      teams: [{ id: SEASON, name: 'Equipo', tag: 'EQ' }], rating: 1.12, kd: 1.3, hs: null, last_played_at: null,
     });
     expect(body.items[1]).toMatchObject({ rank: null, player: { alias: '' }, level: 3, peak_elo: 900, matches: 0, elo_after: 900, medal: null,
       teams: [], rating: null, kd: null });

@@ -111,6 +111,8 @@ En tu perfil público (desde **Mi perfil** › **Ver perfil público**, o tocand
 - **Logros:** tus medallas y lo que te falta para las que todavía no tienes. Más en [Medallas y logros](/help/jugador/logros).
 - **Temporadas:** tu puesto y tus medallas en cada temporada, con tu **Recap** y las estadísticas de cada una.
 
-En [Ranking](/ranking) puedes filtrar por nivel y buscar a cualquier jugador. Con **Comparar** pones a dos jugadores lado a lado.
+En [Ranking](/ranking) puedes filtrar por nivel y buscar a cualquier jugador. Con **Comparar** pones a dos jugadores lado a lado, o hasta cinco con VIP ([Comparar jugadores](/help/jugador/comparar-jugadores)), y con **Filtros avanzados**, si eres VIP, los filtras por sus stats, país, mapa y más ([Filtros avanzados del ranking y de las partidas](/help/jugador/filtros-avanzados)).
+
+Con **Ver desglose**, en **Evolución de ELO** de tu perfil, ves cuánto ganaste o perdiste en cada mix y, con VIP, por qué ([Ver por qué cambió tu ELO](/help/jugador/desglose-de-elo)). Con **Exportar stats** armas tu tarjeta para redes ([Descargar tu tarjeta de stats](/help/jugador/tarjeta-de-stats)).
 
 > **Ojo:** si un admin corrige tu ELO a mano (por ejemplo, después de un problema con una partida), te avisamos en la campana con el motivo.

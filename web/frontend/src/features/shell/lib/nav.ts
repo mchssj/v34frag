@@ -220,6 +220,7 @@ const ADMIN_TITLES: Record<AdminSection, string> = {
 const PROFILE_TITLES: Record<string, string> = {
   privacy: "Privacidad",
   link: "Vinculación",
+  card: "Tarjeta",
   preferences: "Preferencias",
   account: "Cuenta",
 }
@@ -267,7 +268,7 @@ export function activeNavKey(
   if (first === "match" || first === "mixes") return "matches"
   if (["player", "players", "teams", "tierlists"].includes(first))
     return "ranking"
-  if (first === "profile") return "profile"
+  if (first === "profile" || first === "elo") return "profile"
   return ITEMS.find((i) => i.to === `/${first}`)?.key ?? null
 }
 
@@ -356,6 +357,11 @@ export function breadcrumbsFor(
               : []),
           ]
         : [{ label: "Ayuda" }]
+    case "elo":
+      return [
+        { label: "Mi perfil", to: "/profile" },
+        { label: "Desglose de ELO" },
+      ]
     case "profile": {
       const section = PROFILE_TITLES[second]
       return section
