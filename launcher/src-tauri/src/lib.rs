@@ -1,4 +1,6 @@
-//! Parte nativa del launcher (plan docs/bitacora/2026-11-24-launcher-escritorio, secciones 3 y 4).
+//! Launcher de escritorio: la web de CMLeague en una ventana propia (como el cliente de FACEIT), más lo que el
+//! navegador no puede hacer: abrir ClientMod conectado a la sala, traer la ventana al frente y la bandeja.
+//! La web llama a estos comandos solo desde https://cmleague.lat (capabilities/web.json).
 
 use std::path::Path;
 use std::process::Command;
@@ -35,12 +37,35 @@ fn inspect(dir: &Path) -> Option<GameInfo> {
     })
 }
 
-#[tauri::command]
-fn game_detect(dir: Option<String>) -> Option<GameInfo> {
-    if let Some(d) = dir.filter(|d| !d.trim().is_empty()) {
-        return inspect(Path::new(d.trim()));
+/// La carpeta que eligió el jugador, guardada en la carpeta de configuración del launcher.
+fn saved_dir_file(app: &tauri::AppHandle) -> Option<std::path::PathBuf> {
+    app.path().app_config_dir().ok().map(|d| d.join("clientmod_dir.txt"))
+}
+
+fn find_game(app: &tauri::AppHandle) -> Option<GameInfo> {
+    let saved = saved_dir_file(app).and_then(|f| std::fs::read_to_string(f).ok());
+    if let Some(info) = saved.as_deref().map(str::trim).filter(|d| !d.is_empty()).and_then(|d| inspect(Path::new(d))) {
+        return Some(info);
     }
     COMMON_DIRS.iter().find_map(|d| inspect(Path::new(d)))
+}
+
+/// Dónde está ClientMod: la carpeta guardada o, si no hay, la primera de las comunes que tenga CMLauncher.exe.
+#[tauri::command]
+fn game_detect(app: tauri::AppHandle) -> Option<GameInfo> {
+    find_game(&app)
+}
+
+/// Guarda la carpeta de ClientMod que eligió el jugador (tiene que tener CMLauncher.exe).
+#[tauri::command]
+fn game_set_dir(app: tauri::AppHandle, dir: String) -> Result<GameInfo, String> {
+    let info = inspect(Path::new(dir.trim())).ok_or("No encontré CMLauncher.exe en esa carpeta.")?;
+    let file = saved_dir_file(&app).ok_or("No pude guardar la carpeta.")?;
+    if let Some(parent) = file.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| format!("No pude guardar la carpeta: {e}."))?;
+    }
+    std::fs::write(&file, &info.dir).map_err(|e| format!("No pude guardar la carpeta: {e}."))?;
+    Ok(info)
 }
 
 /// `ip:puerto` o `host:puerto`. Lo que va a la línea de comandos del juego no puede traer espacios, `;` ni comillas:
@@ -137,19 +162,19 @@ fn run_elevated(_exe: &str, _dir: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn game_launch(dir: String, address: String, password: String) -> Result<String, String> {
+fn game_launch(app: tauri::AppHandle, address: String, password: String) -> Result<String, String> {
     if !valid_address(&address) {
         return Err("La dirección del servidor no es válida.".into());
     }
     if !valid_password(&password) {
         return Err("La contraseña de la sala tiene caracteres que no se pueden pasar al juego.".into());
     }
-    let info = inspect(Path::new(&dir)).ok_or("No encontré CMLauncher.exe en la carpeta configurada.")?;
+    let info = find_game(&app).ok_or("NO_GAME")?;
 
     // Con el juego abierto no hay cómo pasarle el connect desde afuera (el juego corre con EasyAntiCheat):
     // queda copiado y se pega en la consola.
     if game_running() {
-        return Ok("El juego ya está abierto: pegá el connect en la consola (º), ya está copiado.".into());
+        return Ok("El juego ya está abierto: pegá el connect en la consola (º).".into());
     }
 
     // El connect va en Params= de clientmod.ini y se restaura cuando aparece el juego.
@@ -174,20 +199,15 @@ fn game_launch(dir: String, address: String, password: String) -> Result<String,
     Ok("Abrí ClientMod: apretá PLAY y entra solo al servidor.".into())
 }
 
-/// Partida encontrada: la ventana vuelve, pasa al frente y queda encima de todo hasta aceptar o vencer.
+/// Partida encontrada o servidor listo: la ventana vuelve de la bandeja o de minimizada, pasa al frente y parpadea
+/// en la barra de tareas.
 #[tauri::command]
-fn window_attention(app: tauri::AppHandle, on: bool) -> Result<(), String> {
+fn window_attention(app: tauri::AppHandle) -> Result<(), String> {
     let w = app.get_webview_window("main").ok_or("sin ventana")?;
-    if on {
-        let _ = w.show();
-        let _ = w.unminimize();
-        let _ = w.set_always_on_top(true);
-        let _ = w.set_focus();
-        let _ = w.request_user_attention(Some(UserAttentionType::Critical));
-    } else {
-        let _ = w.set_always_on_top(false);
-        let _ = w.request_user_attention(None);
-    }
+    let _ = w.show();
+    let _ = w.unminimize();
+    let _ = w.set_focus();
+    let _ = w.request_user_attention(Some(UserAttentionType::Critical));
     Ok(())
 }
 
@@ -223,7 +243,7 @@ pub fn run() {
                 let _ = window.hide();
             }
         })
-        .invoke_handler(tauri::generate_handler![game_detect, game_launch, window_attention])
+        .invoke_handler(tauri::generate_handler![game_detect, game_set_dir, game_launch, window_attention])
         .run(tauri::generate_context!())
         .expect("no se pudo iniciar el launcher");
 }

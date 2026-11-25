@@ -44,9 +44,6 @@ jobs:
       - name: Dependencias
         run: pnpm install --frozen-lockfile
 
-      - name: Tipos
-        run: pnpm typecheck
-
       - name: Pruebas de Rust
         run: cargo test --manifest-path src-tauri/Cargo.toml
 

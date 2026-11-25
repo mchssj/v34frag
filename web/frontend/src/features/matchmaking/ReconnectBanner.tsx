@@ -3,6 +3,7 @@ import { cn } from "cn"
 import { PlayIcon, WifiOffIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
+import { launchOnClick } from "@/lib/launcher"
 import { fmtClock, steamConnectUrl } from "./labels"
 import { mmStateOptions, useMmSocket } from "./queries"
 import { useMmSource } from "./source"
@@ -37,6 +38,7 @@ export function ReconnectBanner() {
       </div>
       <a
         href={steamConnectUrl(lobby.server.address, lobby.server.password)}
+        onClick={launchOnClick(lobby.server.address, lobby.server.password)}
         className={cn(buttonVariants({ size: "md" }))}
       >
         <PlayIcon aria-hidden />

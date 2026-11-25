@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 
+import { launcherAttention } from "@/lib/launcher"
+
 // Avisos con sonido y notificación del navegador (si la pestaña está en segundo plano): partida
 // encontrada e invitación al grupo.
 //
@@ -69,6 +71,7 @@ export function previewSound(url: string | null) {
 }
 
 export function alertMatchFound(soundUrl?: string | null) {
+  launcherAttention()
   playSound(soundUrl)
   notify("Partida encontrada", "Tienes 20 segundos para aceptar.", "mm-found")
 }
@@ -107,6 +110,7 @@ function tones(freqs: number[], step: number) {
 }
 
 export function alertServerReady() {
+  launcherAttention()
   tones([520, 780, 1040], 0.16)
   notify(
     "Tu servidor está listo",

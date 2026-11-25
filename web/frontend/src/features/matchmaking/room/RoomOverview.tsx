@@ -16,6 +16,8 @@ import {
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 
+import { launchOnClick } from "@/lib/launcher"
+
 import { ListSeal } from "@/components/brand/VerifiedBadge"
 import { playersCosmeticsOptions } from "@/features/shop/api"
 import { AvatarThumb, NameFx } from "@/features/shop/cosmetics"
@@ -673,6 +675,10 @@ function Center({
               />
               <a
                 href={steamConnectUrl(
+                  lobby.server.address,
+                  lobby.server.password
+                )}
+                onClick={launchOnClick(
                   lobby.server.address,
                   lobby.server.password
                 )}
