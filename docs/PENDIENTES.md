@@ -12,6 +12,16 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
 - **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
 
+## Aviso de partida encontrada y agregar SteamID a mano (2026-11-23 y 2026-11-25): web desplegada el 2026-11-26
+
+- **Qué es:** el aviso de partida encontrada se repite hasta aceptar ([`2026-11-23-aviso-partida-encontrada`](bitacora/2026-11-23-aviso-partida-encontrada/)) y el botón **Agregar SteamID** en la ficha ([`2026-11-25-admin-agregar-steamid`](bitacora/2026-11-25-admin-agregar-steamid/)).
+- **Hecho:** commits `27261262` y `6982d3ec` en `main`; web `6982d3ec6ac5` en producción el 2026-11-26 (03:50 UTC). Sin la API ni la base.
+- **Falta:**
+  1. El manual (`jugador/buscar-partida.md` y `admin/usuarios-y-fichas.md`) lo sirve la API: sale en `/help` con el próximo `desplegar.sh api`.
+  2. Commit en `feat/frontend-fase-1`.
+  3. Probar el aviso con una partida real (ventana sin foco y otro monitor) y agregar un SteamID real.
+  4. Publicar el changelog del aviso.
+
 ## Banear una ficha sin SteamID (2026-11-25): desplegado el 2026-11-26
 
 - **Qué es:** no se podía banear a aura67 porque su ficha no tiene SteamID; el baneo tiene que sacarlo del matchmaking igual. Detalle: [`2026-11-25-banear-ficha-sin-steamid`](bitacora/2026-11-25-banear-ficha-sin-steamid/).

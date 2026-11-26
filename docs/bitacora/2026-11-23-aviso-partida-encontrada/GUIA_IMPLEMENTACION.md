@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado y probado con Vitest el 2026-11-23. Todavía no se probó en un navegador real ni se desplegó.
+Implementado y probado con Vitest el 2026-11-23. Web desplegada el 2026-11-26 (03:50 UTC) en `6982d3ec6ac5`; el manual sale con el próximo despliegue de la API. Falta probarlo con una partida real.
 
 ## Archivos
 

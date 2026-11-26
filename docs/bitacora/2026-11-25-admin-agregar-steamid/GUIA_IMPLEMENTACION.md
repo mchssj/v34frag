@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho en local el 2026-11-25. **Sin commit ni despliegue.** Solo la web: la API y la base no cambian.
+Hecho el 2026-11-25. Web desplegada el 2026-11-26 (03:50 UTC) en `6982d3ec6ac5`; el manual sale con el próximo despliegue de la API. Solo la web: la API y la base no cambian.
 
 ## Pruebas
 
