@@ -4,6 +4,14 @@
 
 Subido a **#1**, **#2** y **#3** el 2026-11-25 (16:08 UTC) y en `main`. Entra en el próximo cambio de mapa de cada uno. **Falta** verificar que cargó, probarlo con una persona y aplicar la `134`.
 
+## Revisión del 2026-11-26 (18:15 UTC)
+
+- **Cargado en los tres:** `sm plugins info` por la consola del panel: #1, #2 y #3 corren el reporter **2.10.3** y `csstv_qol` **1.6.0** (mismo md5 de la tabla de abajo).
+- **Estaba apagado:** `csstv_web_names` y `csstv_lock_names` valían **0** en los tres, puestos a mano por consola (ningún `.cfg` de `cfg/`, `cfg/sourcemod/` ni `cfg/csstv/` los tiene; no quedó anotado quién ni cuándo). Los últimos "Nombre de la web" de los logs son del 2026-11-25.
+- **Prendido** por pedido de Daniel, sin nadie en los servidores: `csstv_web_names 1` y `csstv_lock_names 1` por consola en los tres. Es el valor de fábrica: queda así aunque se reinicien.
+- Los `PGRST202` de `csstv_web_nick` en los logs de errores son todos de antes de aplicar la `134` (el último, 16:12 UTC del 2026-11-25).
+- **Falta:** el manual (`jugador/comandos-en-el-servidor.md`) todavía no cuenta lo del nombre; el texto sin commit de la carpeta de Daniel es del 2.11.0 (código viejo, sin desplegar), no del 2.10.3. `/privacidad` y `/terminos` ya lo cuentan (web `9f41fd836a16`).
+
 ## Archivos
 
 | Archivo | Cambio |
