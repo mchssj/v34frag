@@ -131,6 +131,10 @@ Sin la clave, el plugin no se registra. Además, `tauri.conf.json` lleva `plugin
 
 `tauri-plugin-deep-link` con el esquema `cmleague`. `cmleague://play` o `cmleague://match/<id>` abren esa página de la web. Solo se aceptan letras, números, `/`, `-` y `_`; la consulta y el fragmento se ignoran. Con el launcher ya abierto, el link le llega a la misma ventana (`single-instance`).
 
+## Links de afuera y descargas
+
+La ventana solo navega por `https://cmleague.lat` (y `www`). Cualquier otro link, incluidos los de "Ver demo" y "Descargar demo" (el `.dem` está en otro dominio), Discord, Steam o YouTube, se abre en el navegador predeterminado (`tauri-plugin-opener`), que descarga la demo como siempre. Así la ventana no sale de la web. Los links que abren otra pestaña van al navegador, salvo que sean de `cmleague.lat`, que se abren en la misma ventana. Las descargas de la propia web (por ejemplo, un recap) van a la carpeta **Descargas**, con un aviso de Windows al terminar. Solo se abren afuera `https`, `http`, `mailto`, `steam` y `discord`: nunca `file:` ni programas.
+
 ## Página de descarga
 
 `/launcher` es pública. Lee `latest.json` del mismo lugar que el actualizador y ofrece **Descargar para Windows**, que solo acepta instaladores de `cmleague.lat/descargas/launcher/`, y **Ya lo tengo: abrirlo**. Sin publicar, dice "Todavía no está publicado". **Jugar** la enlaza ("Launcher para Windows") cuando no estás en el launcher.

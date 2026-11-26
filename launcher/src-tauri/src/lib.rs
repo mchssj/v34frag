@@ -29,6 +29,25 @@ fn link_path(url: &tauri::Url) -> Option<String> {
     ok.then(|| if path.is_empty() { "/play".to_string() } else { path.to_string() })
 }
 
+/// Si la ventana puede navegar a esa URL: solo la web de CMLeague (y las páginas internas). Lo demás (demos, Discord,
+/// Steam, YouTube…) se abre en el navegador: así las demos se descargan como siempre y la ventana no sale de la web.
+fn stays_in_app(url: &tauri::Url) -> bool {
+    match url.scheme() {
+        "https" => matches!(url.host_str(), Some("cmleague.lat" | "www.cmleague.lat")),
+        "about" | "blob" | "data" | "tauri" => true,
+        "http" => matches!(url.host_str(), Some("tauri.localhost" | "ipc.localhost")),
+        _ => false,
+    }
+}
+
+fn open_outside(app: &tauri::AppHandle, url: &tauri::Url) {
+    use tauri_plugin_opener::OpenerExt;
+    // Solo direcciones web: nada de file:, ni programas.
+    if matches!(url.scheme(), "https" | "http" | "mailto" | "steam" | "discord") {
+        let _ = app.opener().open_url(url.as_str(), None::<&str>);
+    }
+}
+
 fn open_link(app: &tauri::AppHandle, url: &tauri::Url) {
     let Some(path) = link_path(url) else { return };
     if let (Some(w), Ok(target)) = (app.get_webview_window("main"), format!("{WEB_ORIGIN}{path}").parse()) {
@@ -160,6 +179,7 @@ pub fn run() {
             }
         }))
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::Builder::new().args([AUTOSTART_ARG]).build())
         .manage(Shared::default())
@@ -173,6 +193,63 @@ pub fn run() {
                 .theme(Some(tauri::Theme::Dark))
                 .background_color(tauri::window::Color(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255))
                 .initialization_script(SCROLL_STYLE)
+                .on_navigation({
+                    let app = app.handle().clone();
+                    move |url| {
+                        if stays_in_app(url) {
+                            return true;
+                        }
+                        open_outside(&app, url);
+                        false
+                    }
+                })
+                // Links con target="_blank" (o window.open): al navegador.
+                .on_new_window({
+                    let app = app.handle().clone();
+                    move |url, _| {
+                        if stays_in_app(&url) && url.host_str().is_some_and(|h| h.ends_with("cmleague.lat")) {
+                            // Una página de la web en otra pestaña: se abre en la misma ventana.
+                            if let Some(w) = app.get_webview_window("main") {
+                                let _ = w.navigate(url);
+                            }
+                        } else {
+                            open_outside(&app, &url);
+                        }
+                        tauri::webview::NewWindowResponse::Deny
+                    }
+                })
+                // Descargas de la propia web (por ejemplo, exportar un recap): a Descargas, con aviso al terminar.
+                .on_download({
+                    let app = app.handle().clone();
+                    move |_, event| {
+                        match event {
+                            tauri::webview::DownloadEvent::Requested { url, destination } => {
+                                if let Ok(dir) = app.path().download_dir() {
+                                    let name = destination
+                                        .file_name()
+                                        .map(|n| n.to_os_string())
+                                        .or_else(|| url.path_segments().and_then(|mut s| s.next_back()).map(Into::into))
+                                        .unwrap_or_else(|| "descarga".into());
+                                    *destination = dir.join(name);
+                                }
+                            }
+                            tauri::webview::DownloadEvent::Finished { path, success, .. } => {
+                                if success {
+                                    let name = path
+                                        .as_ref()
+                                        .and_then(|p| p.file_name())
+                                        .map(|n| n.to_string_lossy().into_owned())
+                                        .unwrap_or_default();
+                                    status::notify(&app, "Descarga lista", &format!("{name} está en tu carpeta Descargas."));
+                                } else {
+                                    status::notify(&app, "No se pudo descargar", "Prueba de nuevo desde el navegador.");
+                                }
+                            }
+                            _ => {}
+                        }
+                        true
+                    }
+                })
                 .visible(!(at_boot && prefs.start_minimized))
                 .build()?;
             if let Some(icon) = app.default_window_icon() {
@@ -284,5 +361,18 @@ mod tests {
         assert_eq!(p("cmleague://play/a.b"), None);
         // El lector de URL resuelve ".." (también escrito %2e%2e) dentro de la ruta: nunca sale de la web.
         assert_eq!(p("cmleague://play/%2e%2e"), Some("/play".into()));
+    }
+
+    #[test]
+    fn navegacion() {
+        let ok = |s: &str| stays_in_app(&s.parse().unwrap());
+        assert!(ok("https://cmleague.lat/play"));
+        assert!(ok("https://www.cmleague.lat/match/1"));
+        // Las demos y los sitios de afuera van al navegador.
+        assert!(!ok("https://demos.cmleague.example/partida.dem"));
+        assert!(!ok("https://discord.gg/abc"));
+        assert!(!ok("https://cmleague.lat.otro.com/"));
+        assert!(!ok("http://cmleague.lat/"));
+        assert!(!ok("file:///C:/Windows"));
     }
 }

@@ -36,6 +36,10 @@ La primera vez, si tu ClientMod no está en una carpeta común, el launcher te p
 
 > **Ojo:** el tiempo para conectarte corre igual. Si algo falla, usa **Copiar connect** y pégalo en la consola.
 
+## Demos y links de afuera
+
+**Ver demo**, **Descargar demo** y los links a otros sitios (Discord, Steam, YouTube) se abren en tu navegador, que baja la demo como siempre. El launcher se queda en CMLeague. Lo que descargas desde la propia web queda en tu carpeta **Descargas**.
+
 ## La bandeja
 
 El ícono de CMLeague en la bandeja te dice qué estás haciendo («Buscando partida · 5v5», «Jugando 5v5 · de_dust2»). Con clic derecho tienes **Aceptar partida** (cuando aparece una), **Abrir CMLeague**, **Configuración** y **Salir**. Con doble clic abres la ventana.
