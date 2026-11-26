@@ -10,7 +10,12 @@
 #   3. cmleague.yml (los ajustes) en /srv/supabase y el comando `sb` en /usr/local/bin.
 #   4. El respaldo diario (cmleague-respaldo.timer, respaldar.sh); a R2 cuando exista /etc/cmleague/respaldo.env.
 #   5. `sb arrancar`: solo db, rest, auth, storage y Kong, todo en 127.0.0.1.
+#
+#   --en-espera: el respaldo diario queda instalado sin prender (VPS nuevo antes del corte,
+#                docs/bitacora/2026-11-26-migracion-vps-brasil). Se prende con systemctl enable --now cmleague-respaldo.timer.
 set -euo pipefail
+EN_ESPERA=0
+[[ "${1:-}" == "--en-espera" ]] && EN_ESPERA=1
 
 OFICIAL_COMMIT=cdba349de944dd7c1f206e304ec54729e0857563   # supabase/supabase, 2026-11-03 (Postgres 17.6, GoTrue v2.197.0, PostgREST v14.18, Kong 3.9.3)
 aqui="$(cd "$(dirname "$0")" && pwd)"
@@ -86,7 +91,7 @@ chmod 755 /usr/local/bin/sb
 install -m 755 "$aqui/respaldar.sh" /usr/local/bin/cmleague-respaldar
 install -m 644 "$aqui/cmleague-respaldo.service" "$aqui/cmleague-respaldo.timer" /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable --now cmleague-respaldo.timer >/dev/null
+if (( EN_ESPERA )); then echo "--en-espera: cmleague-respaldo.timer sin prender"; else systemctl enable --now cmleague-respaldo.timer >/dev/null; fi
 
 echo "== 5. Arranque"
 sb arrancar

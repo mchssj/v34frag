@@ -1,6 +1,6 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-26**.
 
 ## Beneficios VIP en la web y preveto de mapas (2026-11-24 y 2026-11-25): desplegado el 2026-11-25
 
@@ -11,6 +11,16 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
   2. Probar **Compartir** la tarjeta desde un teléfono y ver una sala real con prevetos.
 - **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
 - **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
+
+## Migración del VPS a São Paulo (2026-11-26): fase 1 en curso
+
+- **Qué es:** todo el VPS de OVH (Beauharnois, Canadá) pasa a uno más potente que compró Kyan en São Paulo (Halver: 3 vCPU, 5,8 GB, Ubuntu 24.04). Detalle: [`2026-11-26-migracion-vps-brasil`](bitacora/2026-11-26-migracion-vps-brasil/PLAN.md). Acceso: `NEW_VPS_*` del `.env`.
+- **Hecho el 2026-11-26:** `ubuntu` con la llave de Daniel y sudo; `preparar.sh --ssh-sin-cambios --en-espera` (root sigue con contraseña, por pedido de Daniel; ufw, fail2ban, Node 24, Caddy por IP, unidades instaladas y **todas apagadas**); fuentes del HUD copiadas (mismo sha256).
+- **Falta:**
+  1. Confirmar de quién es el usuario `resan` (sudo, lo dejó el proveedor) antes de copiar secretos.
+  2. Reiniciar el VPS nuevo (lo pide la actualización): había una sesión de root abierta de otra persona.
+  3. Copiar `/etc/cmleague/` y `acceso-web.caddy`, `instalar.sh --en-espera` y subir API, web y HUD desde el commit de producción.
+  4. Ensayo (fase 2) y corte (fase 3), con `relay.cmleague.lat` y `csstv_hud_host` en #1, #2 y #3, y `/privacidad` al día.
 
 ## Aviso de partida encontrada y agregar SteamID a mano (2026-11-23 y 2026-11-25): web desplegada el 2026-11-26
 

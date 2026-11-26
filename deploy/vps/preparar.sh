@@ -4,6 +4,8 @@
 #
 #   sudo CONSOLE_PASSWORD_HASH='<hash>' bash preparar.sh            servidor por IP ("en construcción")
 #   sudo bash preparar.sh --dominios                                  Caddy con cmleague.lat y sus subdominios
+#   --ssh-sin-cambios   no toca sshd (VPS de São Paulo: root sigue con contraseña; docs/bitacora/2026-11-26-migracion-vps-brasil)
+#   --en-espera         instala las unidades sin prender ninguna (VPS nuevo antes del corte: nada corre en dos VPS a la vez)
 #
 # Se puede volver a correr: cada paso revisa si ya está hecho. No carga secretos, no despliega la aplicación,
 # no toca el DNS y no reinicia el servidor.
@@ -20,7 +22,16 @@ ETC=/etc/$APP
 SSH_GROUP=$APP-ssh
 ADMIN=ubuntu
 DOMINIOS=0
-[[ "${1:-}" == "--dominios" ]] && DOMINIOS=1
+SSH_SIN_CAMBIOS=0
+EN_ESPERA=0
+for a in "$@"; do
+  case "$a" in
+    --dominios) DOMINIOS=1 ;;
+    --ssh-sin-cambios) SSH_SIN_CAMBIOS=1 ;;
+    --en-espera) EN_ESPERA=1 ;;
+    *) echo "opción desconocida: $a" >&2; exit 1 ;;
+  esac
+done
 
 paso() { printf '\n== %s\n' "$*"; }
 falla() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
@@ -34,7 +45,7 @@ id "$ADMIN" >/dev/null 2>&1 || falla "no existe el usuario $ADMIN"
 grep -qE '^(ssh-ed25519|ssh-rsa|ecdsa-sha2-)' "/home/$ADMIN/.ssh/authorized_keys" 2>/dev/null \
   || falla "$ADMIN no tiene ninguna llave SSH: sin llave, apagar las contraseñas deja el servidor sin acceso"
 for f in Caddyfile Caddyfile.ip cmleague-api.service cmleague-mm.service cmleague-season.service cmleague-season.timer cmleague-notify.service \
-         cmleague-notify.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer sudoers-deploy api.env.example season.env.example \
+         cmleague-notify.timer cmleague-medals.service cmleague-medals.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer sudoers-deploy api.env.example season.env.example \
          demos.env.example demos-sftp.json.example hud.json.example; do
   [[ -f "$DIR/$f" ]] || falla "falta $f al lado del script"
 done
@@ -49,11 +60,15 @@ apt-get install -y -q curl gnupg ca-certificates ufw fail2ban unattended-upgrade
 
 # --- 3.3 Swap de 2 GB -----------------------------------------------------------------------------------------------
 paso "3.3 Swap de 2 GB"
-if ! swapon --show=NAME --noheadings | grep -qx /swapfile; then
+# Si el proveedor ya trae swap de 2 GB o más (el de São Paulo trae /swap.img de 4 GB), no se suma otro.
+ya=$(swapon --show=SIZE --bytes --noheadings | awk '{s+=$1} END {print s+0}')
+if (( ya >= 2*1024*1024*1024 )) && ! swapon --show=NAME --noheadings | grep -qx /swapfile; then
+  echo "Ya hay $((ya / 1024 / 1024)) MB de swap: no se crea /swapfile"
+elif ! swapon --show=NAME --noheadings | grep -qx /swapfile; then
   [[ -f /swapfile ]] || { fallocate -l 2G /swapfile; chmod 600 /swapfile; mkswap /swapfile >/dev/null; }
   swapon /swapfile
 fi
-grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+[[ -f /swapfile ]] && { grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab; }
 echo 'vm.swappiness=10' > /etc/sysctl.d/90-$APP-swap.conf
 sysctl -q -p /etc/sysctl.d/90-$APP-swap.conf
 
@@ -83,6 +98,9 @@ fi
 
 # --- 3.5 SSH: solo llaves -------------------------------------------------------------------------------------------
 paso "3.5 SSH: solo llaves"
+if (( SSH_SIN_CAMBIOS )); then
+  echo "--ssh-sin-cambios: sshd queda como está ($(sshd -T | grep -E '^(passwordauthentication|permitrootlogin) ' | tr '\n' ' '))"
+else
 # 00- para ganarle a 50-cloud-init.conf: sshd se queda con el primer valor que lee.
 cat > /etc/ssh/sshd_config.d/00-$APP.conf <<EOF
 # CMLeague (deploy/vps/preparar.sh). Solo llaves, sin root, solo el grupo $SSH_GROUP.
@@ -98,6 +116,7 @@ echo "Efectivo: $efectivo"
 [[ "$efectivo" == *"passwordauthentication no"* ]] || falla "las contraseñas siguen prendidas: revisar /etc/ssh/sshd_config.d/"
 systemctl try-reload-or-restart ssh.service
 echo "OK. NO cerrar esta sesión hasta probar entrar desde otra."
+fi
 
 # --- 3.6 Firewall ---------------------------------------------------------------------------------------------------
 paso "3.6 Firewall (ufw)"
@@ -221,16 +240,21 @@ ls -la "$ETC"
 # --- 3.12 Servicios -------------------------------------------------------------------------------------------------
 paso "3.12 Servicios de systemd"
 for u in cmleague-api.service cmleague-mm.service cmleague-season.service cmleague-season.timer cmleague-notify.service cmleague-notify.timer \
-         cmleague-hud.service cmleague-demos.service cmleague-demos.timer cmleague-vigia.service cmleague-vigia.timer; do
+         cmleague-medals.service cmleague-medals.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer cmleague-vigia.service cmleague-vigia.timer; do
   install -m 644 "$DIR/$u" "/etc/systemd/system/$u"
 done
 systemctl daemon-reload
-systemctl enable cmleague-api.service cmleague-mm.service cmleague-season.timer cmleague-notify.timer >/dev/null 2>&1
-systemctl start cmleague-season.timer cmleague-notify.timer
-# Vigía de la web (docs/bitacora/2026-11-20-proteccion-ddos): avisa por Discord si se completa vigia.env.
 install -m 755 -o root -g root "$DIR/vigia.sh" "$SRV/vigia.sh"
 [[ -f "$ETC/vigia.env" ]] || install -m 600 -o root -g root "$DIR/vigia.env.example" "$ETC/vigia.env"
-systemctl enable --now cmleague-vigia.timer >/dev/null 2>&1
+if (( EN_ESPERA )); then
+  # En el corte: systemctl enable --now cmleague-api cmleague-mm y los timers (docs/bitacora/2026-11-26-migracion-vps-brasil).
+  echo "--en-espera: unidades instaladas, ninguna prendida"
+else
+  systemctl enable cmleague-api.service cmleague-mm.service cmleague-season.timer cmleague-notify.timer cmleague-medals.timer >/dev/null 2>&1
+  systemctl start cmleague-season.timer cmleague-notify.timer cmleague-medals.timer
+  # Vigía de la web (docs/bitacora/2026-11-20-proteccion-ddos): avisa por Discord si se completa vigia.env.
+  systemctl enable --now cmleague-vigia.timer >/dev/null 2>&1
+fi
 # cmleague-hud queda instalado y apagado: se prende a mano después de completar hud.json (token del relay) y copiar
 # las fuentes (systemctl enable --now cmleague-hud; ver docs/bitacora/2026-10-29-hud-relay-vps).
 # cmleague-demos.timer también queda apagado: se prende a mano después de completar demos.env y demos-sftp.json
@@ -259,18 +283,23 @@ systemctl restart systemd-journald
 # --- 3.15 Resumen ---------------------------------------------------------------------------------------------------
 paso "3.15 Resumen"
 ok() { if eval "$2" >/dev/null 2>&1; then printf '  [OK]  %s\n' "$1"; else printf '  [!!]  %s\n' "$1"; fi; }
+if (( SSH_SIN_CAMBIOS )); then echo "  [--]  SSH sin cambios (--ssh-sin-cambios)"; else
 ok "SSH sin contraseñas"                 "sshd -T -C user=$ADMIN,host=localhost,addr=127.0.0.1 | grep -x 'passwordauthentication no'"
 ok "SSH sin root"                        "sshd -T -C user=$ADMIN,host=localhost,addr=127.0.0.1 | grep -x 'permitrootlogin no'"
+fi
 ok "$ADMIN y deploy en $SSH_GROUP"       "id -nG $ADMIN | grep -qw $SSH_GROUP && id -nG deploy | grep -qw $SSH_GROUP"
 ok "Firewall activo"                     "ufw status | grep -q 'Status: active'"
 ok "fail2ban vigilando SSH"              "fail2ban-client status sshd"
 ok "Actualizaciones automáticas"         "systemctl is-active unattended-upgrades"
-ok "Swap activo"                         "swapon --show=NAME --noheadings | grep -qx /swapfile"
+ok "Swap activo"                         "swapon --show=NAME --noheadings | grep -q ."
 ok "Node 24"                             "node --version | grep -q '^v24\.'"
 ok "Caddy corriendo"                     "systemctl is-active caddy"
+if (( EN_ESPERA )); then echo "  [--]  Timers y vigía en espera (--en-espera)"; else
 ok "Timer de temporadas"                 "systemctl is-active cmleague-season.timer"
 ok "Timer de notificaciones"             "systemctl is-active cmleague-notify.timer"
+ok "Timer de medallas"                   "systemctl is-active cmleague-medals.timer"
 ok "Vigía de la web"                      "systemctl is-active cmleague-vigia.timer"
+fi
 ok "sudoers de deploy"                   "test -f /etc/sudoers.d/$APP-deploy"
 echo "  Node $(node --version), $(caddy version | cut -d' ' -f1)"
 if [[ -f /var/run/reboot-required ]]; then

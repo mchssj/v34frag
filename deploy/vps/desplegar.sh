@@ -4,7 +4,8 @@
 #
 # Uso: deploy/vps/desplegar.sh <api|web|hud> [--sin-pruebas]
 #   api: pruebas y build de web/backend; sube server.mjs, season-tick.mjs, medals-tick.mjs, demos-sftp.mjs, notify-tick.mjs, mm-worker.mjs y manual/; reinicia cmleague-api y chequea
-#        /api/health con el commit. Si el chequeo falla, vuelve sola a la versión anterior.
+#        /api/health con el commit. Si el chequeo falla, vuelve sola a la versión anterior. Si cmleague-api está apagado
+#        (VPS nuevo antes del corte), solo sube la versión.
 #   web: pruebas y build de web/frontend (VITE_API_URL, por defecto https://api.cmleague.lat); sube dist/.
 #        No reinicia nada: Caddy sirve web/current.
 #   hud: pruebas y build de hud/relay (relay.mjs y public/); reinicia cmleague-hud y chequea /healthz con el commit.
@@ -70,6 +71,11 @@ apuntar "$destino"
 
 chequear() {
   if [ "$parte" = api ]; then
+    # VPS nuevo antes del corte (docs/bitacora/2026-11-26-migracion-vps-brasil): restart lo prendería aunque esté apagado.
+    if [ "$(systemctl is-enabled cmleague-api 2>/dev/null)" != enabled ]; then
+      echo "cmleague-api está apagado: la versión queda subida (se prende con systemctl enable --now cmleague-api)."
+      return 0
+    fi
     sudo systemctl restart cmleague-api
     # Directo a la API, sin pasar por Caddy ni por el DNS. Tiene que responder ok y con esta versión.
     for i in $(seq 1 20); do
