@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "web",
+  "description": "La web de CMLeague (y nada más) puede abrir el juego y traer la ventana al frente. Sin acceso a archivos, procesos ni otras APIs de Tauri.",
+  "windows": ["main"],
+  "remote": { "urls": ["https://cmleague.lat/*", "https://www.cmleague.lat/*"] },
+  "permissions": ["allow-game-detect", "allow-game-pick-dir", "allow-game-launch", "allow-window-attention"]
+}

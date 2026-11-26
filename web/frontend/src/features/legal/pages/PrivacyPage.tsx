@@ -582,12 +582,24 @@ const SECTIONS: LegalSection[] = [
     id: "navegador",
     title: "Lo que guarda tu navegador",
     body: (
-      <p>
-        La web guarda en el almacenamiento local de tu navegador la sesión
-        iniciada, tu tema y algunas preferencias de la pantalla. Sirven solo
-        para que la web funcione: no te siguen por otros sitios. Si los borras,
-        se cierra la sesión.
-      </p>
+      <>
+        <p>
+          La web guarda en el almacenamiento local de tu navegador la sesión
+          iniciada, tu tema y algunas preferencias de la pantalla. Sirven solo
+          para que la web funcione: no te siguen por otros sitios. Si los
+          borras, se cierra la sesión.
+        </p>
+        <p>
+          La aplicación de escritorio de CMLeague <Wip /> es la misma web en una
+          ventana propia: guarda lo mismo en tu PC y, además, la carpeta donde
+          instalaste ClientMod. No nos manda ningún dato nuevo. Para conectarte
+          a una partida escribe por un momento la dirección del servidor y la
+          contraseña de la sala en el archivo <code>clientmod.ini</code> de
+          ClientMod, y lo deja como estaba cuando se abre el juego. Al abrirse,
+          consulta en nuestro almacenamiento de Cloudflare si hay una versión
+          nueva.
+        </p>
+      </>
     ),
   },
   {

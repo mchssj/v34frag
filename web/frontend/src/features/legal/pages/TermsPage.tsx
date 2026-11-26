@@ -222,8 +222,9 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           Un baneo alcanza a tu ficha, aunque todavía no tenga SteamID, y a
-          todos sus SteamID, también a los que sumes después. La lista de baneos <Wip /> va a ser pública y va a
-          mostrar a quién, desde cuándo, hasta cuándo y el motivo.
+          todos sus SteamID, también a los que sumes después. La lista de baneos{" "}
+          <Wip /> va a ser pública y va a mostrar a quién, desde cuándo, hasta
+          cuándo y el motivo.
         </li>
         <li>
           Si te banean mientras buscas partida en el matchmaking, sales de la
@@ -652,9 +653,10 @@ const SECTIONS: LegalSection[] = [
     body: (
       <p>
         El nombre y la marca CMLeague, la web, los diseños, los cosméticos, el
-        HUD, los plugins y la aplicación del anticheat son de CMLeague o de sus
-        autores. No puedes usarlos fuera de la liga sin permiso. Los mapas,
-        modelos y sonidos del juego son de sus respectivos dueños.
+        HUD, los plugins, la aplicación del anticheat y la aplicación de
+        escritorio son de CMLeague o de sus autores. No puedes usarlos fuera de
+        la liga sin permiso. Los mapas, modelos y sonidos del juego son de sus
+        respectivos dueños.
       </p>
     ),
   },
@@ -681,6 +683,15 @@ const SECTIONS: LegalSection[] = [
           de los proveedores de infraestructura, de conectividad o de ataques de
           terceros. Podemos modificar, suspender o discontinuar cualquier
           función, servidor o temporada, temporal o definitivamente.
+        </p>
+        <p>
+          La aplicación de escritorio de CMLeague <Wip /> es opcional y
+          gratuita, y se ofrece en las mismas condiciones. No es parte de
+          ClientMod ni de sus autores, y no es un anticheat. Para conectarte a
+          una partida modifica por un momento el archivo{" "}
+          <code>clientmod.ini</code> de ClientMod y lo deja como estaba, y abre
+          ClientMod con permisos de administrador porque ClientMod los pide:
+          Windows te lo pregunta cada vez.
         </p>
       </>
     ),
