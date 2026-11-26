@@ -297,3 +297,58 @@ export const EmailDomainAccount = z
   .openapi('EmailDomainAccount');
 export const EmailDomainAccountQuery = listQuery(['created_at', 'email'], { sort: 'created_at', order: 'desc' });
 export const EmailDomainAccountList = Envelope(EmailDomainAccount).openapi('EmailDomainAccountList');
+
+// ---------- baneo por IP (replanteo 149, docs/bitacora/2026-11-26-baneo-por-ip) ----------
+
+const Other = z.object({ player_id: z.uuid().nullable(), alias: z.string().nullable() });
+
+export const IpCandidate = z
+  .object({
+    ip: z.string(),
+    sources: z.array(z.enum(['servidor', 'web'])).openapi({ description: 'Dónde se vio: en los servidores (por sus SteamID) o en la web' }),
+    first_seen_at: z.string(),
+    last_seen_at: z.string(),
+    others: z.array(Other).openapi({ description: 'Otras fichas o cuentas que usaron la misma IP' }),
+    banned: z.boolean().openapi({ description: 'Ya está baneada (sola o dentro de un rango)' }),
+  })
+  .openapi('IpCandidate');
+export const IpCandidateQuery = listQuery(['last_seen_at'], { sort: 'last_seen_at', order: 'desc' }).extend({
+  player_id: z.uuid().optional(),
+  user_id: z.uuid().optional().openapi({ description: 'Para una cuenta sin ficha' }),
+});
+export const IpCandidateList = Envelope(IpCandidate).openapi('IpCandidateList');
+
+export const IpRangeAccount = z
+  .object({
+    player_id: z.uuid().nullable(),
+    alias: z.string().nullable(),
+    sources: z.array(z.enum(['servidor', 'web'])),
+    ips: z.number().int().openapi({ description: 'Cuántas IPs distintas del rango usó' }),
+    last_seen_at: z.string(),
+  })
+  .openapi('IpRangeAccount');
+export const IpRangeAccountQuery = listQuery(['last_seen_at'], { sort: 'last_seen_at', order: 'desc' }).extend({
+  range: z.string().trim().min(3).max(60).openapi({ description: 'IP o rango (`181.45.0.0/16`, `181.45.10.0/24`)' }),
+});
+export const IpRangeAccountList = Envelope(IpRangeAccount).openapi('IpRangeAccountList');
+
+export const BanIp = z
+  .object({
+    id: z.uuid(),
+    ip: z.string().openapi({ description: 'IP suelta (`1.2.3.4`) o rango (`1.2.3.0/24`)' }),
+    expires_at: z.string(),
+    created_at: z.string(),
+    created_by_alias: z.string().nullable(),
+    active: z.boolean(),
+  })
+  .openapi('BanIp');
+export const BanIpQuery = listQuery(['created_at'], { sort: 'created_at', order: 'asc' });
+export const BanIpList = Envelope(BanIp).openapi('BanIpList');
+export const BanIpsBody = z
+  .object({
+    ips: z.array(z.string().trim().min(3).max(60)).max(20).openapi({
+      description: 'Las IPs o rangos que quedan baneados con este baneo (reemplaza la lista). Rangos de hasta /16 en IPv4 o /32 en IPv6',
+    }),
+  })
+  .openapi('BanIpsBody');
+export const BanIpsResult = z.object({ count: z.number().int() }).openapi('BanIpsResult');

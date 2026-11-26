@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { fmtDate, fmtDateTime } from "../../lib/format"
 import { Chip, PanelSection } from "../../components/ui"
 import { BanDialog, type BanTarget } from "./BanDialog"
+import { BanIpsSection } from "./BanIpsSection"
 import {
   BAN_STATUS,
   banLabel,
@@ -237,6 +238,18 @@ export function BanPanel({
             </Button>
           ))}
       </div>
+
+      {/* Baneo por IP (replanteo 149): solo admins, en un baneo activo de una ficha. */}
+      {canPermanent &&
+        !supportUserId &&
+        ban.player &&
+        ban.status === "active" && (
+          <BanIpsSection
+            banId={ban.id}
+            playerId={ban.player.id}
+            playerAlias={ban.player.alias}
+          />
+        )}
 
       <PanelSection
         title={

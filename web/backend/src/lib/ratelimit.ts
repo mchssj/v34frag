@@ -70,6 +70,12 @@ export function clientIp(c: Context<AppEnv>): string {
   return ip ? ip.slice(0, 64) : 'unknown';
 }
 
+/** La IP del cliente para mandarle a la base (replanteo 149), o undefined si no se sabe. */
+export const forwardedIp = (c: Context<AppEnv>): string | undefined => {
+  const ip = clientIp(c);
+  return ip === 'unknown' ? undefined : ip;
+};
+
 /** Por defecto cuenta por IP; keyOf permite contar por otra cosa (por ejemplo, la cuenta, después de requireUser). */
 export const rateLimit =
   (rule: RateRule, keyOf: (c: Context<AppEnv>) => string = clientIp): MiddlewareHandler<AppEnv> =>

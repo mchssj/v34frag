@@ -3,7 +3,7 @@ import type { Context, MiddlewareHandler } from 'hono';
 import { requireAdmin, requireModerator, requireSupport, requireUser } from '../lib/auth';
 import { must, mustHave, notFound } from '../lib/db';
 import { RATE_RULES, rateLimit } from '../lib/ratelimit';
-import { AppError } from '../lib/errors';
+import { AppError, logError } from '../lib/errors';
 import { createRouter } from '../lib/router';
 import type { AppEnv } from '../lib/types';
 import { BANNER_MAX_BYTES, readAudio, storageError, SOUND_MAX_BYTES, type ImageShape } from '../lib/uploads';
@@ -58,6 +58,16 @@ const state = async (c: C) => {
 const body = <T>(c: C) => (c.req as unknown as { valid(t: 'json'): T }).valid('json');
 const param = (c: C) => (c.req as unknown as { valid(t: 'param'): { id: string } }).valid('param').id;
 const jsonBody = (schema: z.ZodTypeAny) => ({ body: { required: true, ...json(schema) } });
+
+/**
+ * Registra la IP de la cuenta (replanteo 149) antes de la acción. Si falla, la acción sigue: el freno por IP baneada
+ * no depende de esto (lo hacen los triggers de la base con la IP del pedido).
+ */
+const withIpSeen = (handler: (c: C) => Promise<Response>) => async (c: C) => {
+  const r = await c.var.sb.rpc('account_ip_seen' as never);
+  if (r.error) logError(c, new Error(`account_ip_seen: ${r.error.code} ${r.error.message}`));
+  return handler(c);
+};
 
 /** El estado liviano (mm_my_live): la cola, la sala, el grupo y los contadores. */
 const liveState = async (c: C) =>
@@ -147,10 +157,10 @@ add(route('get', '/api/v1/mm/games/{id}/room', { summary: 'La sala de una partid
   if (room?.match?.game_id) await withGame(c, room.match);
   return c.json((room ?? null) as never, 200);
 });
-add(route('post', '/api/v1/mm/queue', { summary: 'Entrar a la cola', request: jsonBody(Join) }), action('mm_join', (c) => {
+add(route('post', '/api/v1/mm/queue', { summary: 'Entrar a la cola', request: jsonBody(Join) }), withIpSeen(action('mm_join', (c) => {
   const b = body<{ mode: string; region?: string | null }>(c);
   return { p_mode: b.mode, p_region: b.region ?? null };
-}, 'live'));
+}, 'live')));
 add(route('delete', '/api/v1/mm/queue', { summary: 'Salir de la cola' }), action('mm_leave', undefined, 'live'));
 
 // Aviso de la cola en Discord (replanteo 57). La base decide si se puede (en la cola, uno cada 15 min; el staff siempre) y

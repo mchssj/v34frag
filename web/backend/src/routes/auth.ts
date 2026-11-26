@@ -5,7 +5,7 @@ import type { Config } from '../env';
 import { requireUser } from '../lib/auth';
 import { inBackground } from '../lib/background';
 import { AppError, fromAuthError, fromPostgrest, logError } from '../lib/errors';
-import { RATE_RULES, rateLimit } from '../lib/ratelimit';
+import { RATE_RULES, rateLimit, forwardedIp } from '../lib/ratelimit';
 import { createRouter } from '../lib/router';
 import { anonClient, userClient } from '../lib/supabase';
 import type { AppEnv } from '../lib/types';
@@ -193,26 +193,39 @@ const me = createRoute({
   },
 });
 
+/** La IP de la cuenta (replanteo 149), en segundo plano: si falla, el login sigue. */
+function seenIp(c: Context<AppEnv>, token: string) {
+  inBackground(c, Promise.resolve(userClient(c.var.config, token, forwardedIp(c)).rpc('account_ip_seen' as never)).then((r) => {
+    if (r.error) throw new Error(`account_ip_seen: ${r.error.code} ${r.error.message}`);
+  }));
+}
+
 export const auth = createRouter()
   .openapi(signup, async (c) => {
     const cfg = c.var.config;
     const { email, password, tag } = c.req.valid('json');
     // El alias se valida antes de crear la cuenta: si no, la base le pondría uno genérico.
-    const check = await anonClient(cfg).rpc('alias_check', { p_tag: tag });
+    const check = await anonClient(cfg, forwardedIp(c)).rpc('alias_check', { p_tag: tag });
     if (check.error) throw fromPostgrest(check.error);
     if (check.data === 'taken') throw new AppError(409, 'CONFLICT', 'Ese alias ya está en uso.', [{ path: 'tag', message: 'Ese alias ya está en uso.' }]);
     if (check.data !== 'ok') {
       const message = check.data === 'blocked' ? 'El alias contiene una palabra no permitida.' : 'El alias tiene caracteres no permitidos.';
       throw new AppError(400, 'VALIDATION_ERROR', message, [{ path: 'tag', message }]);
     }
+    // IP baneada (replanteo 149): desde esa conexión no se crean cuentas. Supabase Auth directo no ve la IP: va acá.
+    const ipBan = await anonClient(cfg, forwardedIp(c)).rpc('request_ip_banned' as never);
+    if (ipBan.error) throw fromPostgrest(ipBan.error);
+    if (ipBan.data === true) {
+      throw new AppError(403, 'FORBIDDEN', 'No puedes crear una cuenta desde esta conexión. Si crees que es un error, escríbenos por Discord.');
+    }
     // Correos temporales (replanteo 148): la base los rechaza igual (trigger en auth.users); esto da un error claro.
-    const blocked = await anonClient(cfg).rpc('email_domain_blocked' as never, { p_email: email } as never);
+    const blocked = await anonClient(cfg, forwardedIp(c)).rpc('email_domain_blocked' as never, { p_email: email } as never);
     if (blocked.error) throw fromPostgrest(blocked.error);
     if (blocked.data === true) {
       const message = 'No aceptamos correos temporales. Usa otro correo, por ejemplo Gmail u Outlook.';
       throw new AppError(400, 'VALIDATION_ERROR', message, [{ path: 'email', message }]);
     }
-    const { data, error } = await anonClient(cfg).auth.signUp({
+    const { data, error } = await anonClient(cfg, forwardedIp(c)).auth.signUp({
       email,
       password,
       options: { data: { tag }, emailRedirectTo: cfg.FRONTEND_URL },
@@ -236,18 +249,20 @@ export const auth = createRouter()
   .openapi(login, async (c) => {
     const cfg = c.var.config;
     const { email, password } = c.req.valid('json');
-    const { data, error } = await anonClient(cfg).auth.signInWithPassword({ email, password });
+    const { data, error } = await anonClient(cfg, forwardedIp(c)).auth.signInWithPassword({ email, password });
     if (error) throw fromAuthError(error);
     if (!data.session) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió la sesión.');
     touchLastSeen(c, data.session.access_token, data.user.id);
+    seenIp(c, data.session.access_token);
     return c.json(await toSession(cfg, data.session), 200);
   })
   .openapi(refresh, async (c) => {
     const cfg = c.var.config;
-    const { data, error } = await anonClient(cfg).auth.refreshSession(c.req.valid('json'));
+    const { data, error } = await anonClient(cfg, forwardedIp(c)).auth.refreshSession(c.req.valid('json'));
     // Un refresh_token mal formado llega como validation_failed: para el cliente es una sesión inválida.
     if (error && error.code !== 'validation_failed') throw fromAuthError(error);
     if (error || !data.session) throw new AppError(401, 'UNAUTHORIZED', 'La sesión no es válida o venció. Inicia sesión de nuevo.');
+    seenIp(c, data.session.access_token);
     return c.json(await toSession(cfg, data.session), 200);
   })
   .openapi(logout, async (c) => {
@@ -276,14 +291,14 @@ export const auth = createRouter()
     }
     let email = c.var.user.email;
     if (!email) {
-      const u = await anonClient(cfg).auth.getUser(c.var.user.token);
+      const u = await anonClient(cfg, forwardedIp(c)).auth.getUser(c.var.user.token);
       if (u.error || !u.data.user) throw fromAuthError(u.error ?? { message: 'sin usuario', status: 401 });
       email = u.data.user.email ?? null;
     }
     if (!email) throw new AppError(400, 'BUSINESS_RULE', 'La cuenta no tiene correo: no se puede cambiar la contraseña.');
 
     // Un login con la actual la comprueba y da una sesión recién creada, que cumple si Supabase exige una sesión reciente.
-    const fresh = await anonClient(cfg).auth.signInWithPassword({ email, password: current_password });
+    const fresh = await anonClient(cfg, forwardedIp(c)).auth.signInWithPassword({ email, password: current_password });
     if (fresh.error?.code === 'invalid_credentials') {
       throw new AppError(400, 'WRONG_PASSWORD', 'La contraseña actual no es correcta.', [{ path: 'current_password', message: 'No es correcta.' }]);
     }
@@ -300,7 +315,7 @@ export const auth = createRouter()
     inBackground(
       c,
       (async () => {
-        const { error } = await anonClient(cfg).auth.resetPasswordForEmail(email, { redirectTo: `${cfg.FRONTEND_URL}/reset-password` });
+        const { error } = await anonClient(cfg, forwardedIp(c)).auth.resetPasswordForEmail(email, { redirectTo: `${cfg.FRONTEND_URL}/reset-password` });
         if (error) throw new Error(`correo de recuperación: ${error.code ?? error.status} ${error.message}`);
       })(),
     );
@@ -309,20 +324,21 @@ export const auth = createRouter()
   .openapi(resetPassword, async (c) => {
     const cfg = c.var.config;
     const { token_hash, new_password } = c.req.valid('json');
-    const { data, error } = await anonClient(cfg).auth.verifyOtp({ type: 'recovery', token_hash });
+    const { data, error } = await anonClient(cfg, forwardedIp(c)).auth.verifyOtp({ type: 'recovery', token_hash });
     if (error && (INVALID_LINK_CODES.has(error.code ?? '') || error.status === 403 || error.status === 404)) {
       throw new AppError(400, 'INVALID_LINK', 'El enlace no es válido o venció. Pide otro correo.');
     }
     if (error) throw fromAuthError(error);
     if (!data.session) throw new AppError(500, 'INTERNAL', 'Supabase no devolvió la sesión.');
     await setPassword(c, data.session.access_token, new_password, 'La contraseña nueva tiene que ser distinta de la anterior. Pide otro correo para elegir una.');
+    seenIp(c, data.session.access_token);
     return c.json(await toSession(cfg, data.session), 200);
   })
   .openapi(me, async (c) => {
     const cfg = c.var.config;
     const { token, id } = c.var.user;
     // getUser consulta a Auth: además de los datos de la cuenta, confirma que el usuario sigue existiendo.
-    const { data, error } = await anonClient(cfg).auth.getUser(token);
+    const { data, error } = await anonClient(cfg, forwardedIp(c)).auth.getUser(token);
     if (error || !data.user) throw fromAuthError(error ?? { message: 'sin usuario', status: 401 });
     touchLastSeen(c, token, id);
     return c.json(await toAuthUser(cfg, token, data.user), 200);

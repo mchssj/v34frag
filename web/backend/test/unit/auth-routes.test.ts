@@ -23,6 +23,9 @@ function gotrue(route: Route) {
     if (url.includes('/rest/v1/rpc/alias_check')) return Response.json('ok');
     // Y el correo (replanteo 148): por defecto no es temporal.
     if (url.includes('/rest/v1/rpc/email_domain_blocked')) return Response.json(false);
+    // Y la IP (replanteo 149): no está baneada; registrar la IP de la cuenta no devuelve nada.
+    if (url.includes('/rest/v1/rpc/request_ip_banned')) return Response.json(false);
+    if (url.includes('/rest/v1/rpc/account_ip_seen')) return new Response(null, { status: 204 });
     return new Response('no simulado: ' + url, { status: 599 });
   });
   vi.stubGlobal('fetch', fn);
@@ -91,6 +94,14 @@ describe('POST /auth/signup', () => {
     const body = await json(res);
     expect(body.error.code).toBe(code);
     expect(body.error.details).toEqual([{ path: 'tag', message: expect.any(String) }]);
+    expect(fetch.mock.calls.some(([u]) => String(u).includes('/auth/v1/signup'))).toBe(false);
+  });
+
+  it('IP baneada (replanteo 149): 403 y no crea la cuenta', async () => {
+    const fetch = gotrue((url) => (url.includes('/rest/v1/rpc/request_ip_banned') ? Response.json(true) : undefined));
+    const res = await post('/auth/signup', { email: 'a@b.co', password: 'secreta1', tag: 'Tag1' });
+    expect(res.status).toBe(403);
+    expect((await json(res)).error.message).toContain('desde esta conexión');
     expect(fetch.mock.calls.some(([u]) => String(u).includes('/auth/v1/signup'))).toBe(false);
   });
 

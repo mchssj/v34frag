@@ -239,3 +239,82 @@ export function useLiftBan() {
     onSuccess: () => touchedBans(qc),
   })
 }
+
+// ---------- baneo por IP (replanteo 149, docs/bitacora/2026-11-26-baneo-por-ip) ----------
+
+const ipKeys = {
+  ban: (id: string) => ["admin", "ban-ips", id] as const,
+  candidates: (player: string) => ["admin", "ip-candidates", player] as const,
+  range: (range: string) => ["admin", "ip-range", range] as const,
+}
+
+export function banIpsOptions(banId: string) {
+  return queryOptions({
+    queryKey: ipKeys.ban(banId),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/bans/{id}/ips", {
+          params: { path: { id: banId }, query: { per: 50 } },
+          signal,
+        })
+      ),
+  })
+}
+
+export function ipCandidatesOptions(playerId: string) {
+  return queryOptions({
+    queryKey: ipKeys.candidates(playerId),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/ip-candidates", {
+          params: { query: { player_id: playerId, per: 50 } },
+          signal,
+        })
+      ),
+  })
+}
+
+/** Las fichas y cuentas que usaron alguna IP del rango: a quién afecta banearlo. */
+export function ipRangeAccountsOptions(range: string) {
+  return queryOptions({
+    queryKey: ipKeys.range(range),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/ip-ranges/accounts", {
+          params: { query: { range, per: 50 } },
+          signal,
+        })
+      ),
+    enabled: range.length > 0,
+  })
+}
+
+const touchedIps = (qc: ReturnType<typeof useQueryClient>) => {
+  void qc.invalidateQueries({ queryKey: ["admin", "ban-ips"] as const })
+  void qc.invalidateQueries({ queryKey: ["admin", "ip-candidates"] as const })
+}
+
+export function useSetBanIps(banId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (ips: string[]) =>
+      unwrap(
+        api.PUT("/api/v1/admin/bans/{id}/ips", {
+          params: { path: { id: banId } },
+          body: { ips },
+        })
+      ),
+    onSuccess: () => touchedIps(qc),
+  })
+}
+
+export function useLiftBanIp() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      unwrap(
+        api.DELETE("/api/v1/admin/ban-ips/{id}", { params: { path: { id } } })
+      ),
+    onSuccess: () => touchedIps(qc),
+  })
+}

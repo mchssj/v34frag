@@ -1,5 +1,6 @@
 import type { Context, MiddlewareHandler } from 'hono';
 import { AppError, fromPostgrest } from './errors';
+import { forwardedIp } from './ratelimit';
 import { anonClient, userClient, verifierClient } from './supabase';
 import type { AppEnv } from './types';
 
@@ -36,7 +37,7 @@ export const requireUser: MiddlewareHandler<AppEnv> = async (c, next) => {
 export const optionalUser: MiddlewareHandler<AppEnv> = async (c, next) => {
   const header = c.req.header('Authorization');
   if (!header) {
-    c.set('sb', anonClient(c.var.config));
+    c.set('sb', anonClient(c.var.config, forwardedIp(c)));
   } else {
     const token = bearer(header);
     if (!token) throw unauthorized('El header Authorization tiene que ser Bearer <access_token>.');
@@ -57,7 +58,7 @@ async function authenticate(c: Context<AppEnv>, token: string) {
     throw unauthorized('La sesión no es válida o venció.');
   }
   c.set('user', { id: claims.sub, email: typeof claims.email === 'string' ? claims.email : null, token });
-  c.set('sb', userClient(cfg, token));
+  c.set('sb', userClient(cfg, token, forwardedIp(c)));
 }
 
 /** Rol del usuario (lee profiles.role con su token), o null sin sesión. */

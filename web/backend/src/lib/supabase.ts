@@ -11,13 +11,18 @@ const options = { auth: { persistSession: false, autoRefreshToken: false, detect
  * Cliente con la clave pública y sin sesión. Sirve para login, registro y refresh.
  * Es uno nuevo cada vez porque esas operaciones guardan la sesión en memoria del cliente.
  */
-export const anonClient = (cfg: Config): Db => createClient<Database>(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, options);
+// La IP real del usuario (replanteo 149): Caddy la pasa a la base desde X-Forwarded-For cuando el pedido viene del
+// propio VPS, y la base la usa para el baneo por IP y para registrar las IPs de las cuentas.
+const ipHeaders = (ip?: string): Record<string, string> => (ip ? { 'X-Forwarded-For': ip } : {});
+
+export const anonClient = (cfg: Config, ip?: string): Db =>
+  createClient<Database>(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, { ...options, global: { headers: ipHeaders(ip) } });
 
 /** Cliente que actúa como el usuario: PostgREST, RPC y Storage aplican sus RLS. */
-export const userClient = (cfg: Config, token: string): Db =>
+export const userClient = (cfg: Config, token: string, ip?: string): Db =>
   createClient<Database>(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
     ...options,
-    global: { headers: { Authorization: `Bearer ${token}` } },
+    global: { headers: { Authorization: `Bearer ${token}`, ...ipHeaders(ip) } },
   });
 
 /**

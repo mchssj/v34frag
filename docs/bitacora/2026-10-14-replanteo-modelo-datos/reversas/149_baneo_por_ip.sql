@@ -1,0 +1,21 @@
+-- Inversa del replanteo 149 (baneo por IP). Borra las IPs de las cuentas y las IPs baneadas.
+begin;
+drop trigger if exists mm_queue_ip_guard on public.mm_queue;
+drop trigger if exists mm_party_members_ip_guard on public.mm_party_members;
+drop trigger if exists mm_lobby_players_ip_guard on public.mm_lobby_players;
+drop function if exists public.mm_ip_guard();
+drop function if exists public.admin_ban_ip_lift(uuid);
+drop function if exists public.admin_ip_range_accounts(text);
+drop function if exists public.admin_ban_ips(uuid);
+drop function if exists public.admin_ban_ips_set(uuid, text[]);
+drop function if exists public.admin_ban_ip_candidates(uuid, uuid);
+drop function if exists public.request_ip_banned();
+drop function if exists public.ban_ip_parse(text);
+drop function if exists public.ip_text(inet);
+drop function if exists public.ip_banned(inet);
+drop function if exists public.account_ip_seen();
+drop table if exists public.ban_ips;
+drop table if exists public.account_ips;
+drop function if exists public.request_ip();
+notify pgrst, 'reload schema';
+commit;

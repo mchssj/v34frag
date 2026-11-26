@@ -116,7 +116,8 @@ describe('respuesta de las acciones (mejora B)', () => {
         const url = decodeURIComponent(String(input instanceof Request ? input.url : input));
         calls.push(url);
         if (url.endsWith('/auth/v1/.well-known/jwks.json')) return Response.json({ keys: [key.jwk] });
-        if (url.includes('/rpc/mm_join') || url.includes('/rpc/mm_accept') || url.includes('/rpc/mm_block')) return new Response(null, { status: 204 });
+        // account_ip_seen (replanteo 149): entrar a la cola registra antes la IP de la cuenta.
+        if (url.includes('/rpc/account_ip_seen') || url.includes('/rpc/mm_join') || url.includes('/rpc/mm_accept') || url.includes('/rpc/mm_block')) return new Response(null, { status: 204 });
         if (url.includes('/rpc/mm_my_live')) return Response.json({ queue_size: 1, lobby: null });
         if (url.includes('/rpc/mm_my_state')) return Response.json({ queue_size: 1, lobby: null, me: { nick: 'kyan' } });
         return new Response('no simulado: ' + url, { status: 599 });
@@ -139,7 +140,7 @@ describe('respuesta de las acciones (mejora B)', () => {
       expect(await res.json()).toMatchObject({ queue_size: 1, lobby: null });
     }
     const rpcs = calls.filter((u) => u.includes('/rpc/')).map((u) => u.replace(/^.*\/rpc\/([a-z_]+).*$/, '$1'));
-    expect(rpcs).toEqual(['mm_join', 'mm_my_live', 'mm_accept', 'mm_my_live']);
+    expect(rpcs).toEqual(['account_ip_seen', 'mm_join', 'mm_my_live', 'mm_accept', 'mm_my_live']);
   });
 
   it('una acción social sigue con el estado completo', async () => {
