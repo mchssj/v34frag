@@ -24,6 +24,9 @@ pub struct Settings {
     /// Pintar el launcher con el tema de la tienda que tenés equipado en tu perfil (solo se pueden equipar los que
     /// tenés). Apagado de fábrica; no cambia la web en el navegador.
     pub shop_theme: bool,
+    /// Tema elegido para el launcher (id de la tienda); sin él, el equipado en el perfil. Lo elige la web en
+    /// Perfil › Preferencias, solo entre los que tenés.
+    pub shop_theme_id: Option<String>,
     /// Carpeta de ClientMod elegida a mano; sin ella se busca en las rutas comunes.
     pub clientmod_dir: Option<String>,
 }
@@ -39,6 +42,7 @@ impl Default for Settings {
             discord_presence: true,
             auto_update: true,
             shop_theme: false,
+            shop_theme_id: None,
             clientmod_dir: None,
         }
     }
@@ -90,11 +94,30 @@ pub fn settings_set(app: tauri::AppHandle, settings: Settings) -> Result<Setting
 #[derive(Serialize)]
 pub struct WebPrefs {
     pub shop_theme: bool,
+    pub shop_theme_id: Option<String>,
 }
 
 #[tauri::command]
 pub fn launcher_prefs(app: tauri::AppHandle) -> WebPrefs {
-    WebPrefs { shop_theme: load(&app).shop_theme }
+    let s = load(&app);
+    WebPrefs { shop_theme: s.shop_theme, shop_theme_id: s.shop_theme_id }
+}
+
+/// La web elige el tema del launcher: apagado (`on` false), el del perfil (`theme` None) o uno de la tienda. Es lo
+/// único de la configuración que la web puede cambiar.
+#[tauri::command]
+pub fn launcher_set_theme(app: tauri::AppHandle, on: bool, theme: Option<String>) -> Result<WebPrefs, String> {
+    let theme = theme.filter(|t| !t.is_empty());
+    if theme.as_deref().is_some_and(|t| t.len() > 64 || !t.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')) {
+        return Err("Tema inválido.".into());
+    }
+    let mut s = load(&app);
+    s.shop_theme = on;
+    if on {
+        s.shop_theme_id = theme;
+    }
+    save(&app, &s)?;
+    Ok(WebPrefs { shop_theme: s.shop_theme, shop_theme_id: s.shop_theme_id })
 }
 
 fn apply_autostart(app: &tauri::AppHandle, on: bool) -> Result<(), String> {

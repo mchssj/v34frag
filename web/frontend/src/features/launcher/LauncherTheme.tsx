@@ -1,14 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
-import { equippedOptions } from "@/features/shop/api"
+import { useMe } from "@/auth/queries"
+import { catalogOptions, equippedOptions } from "@/features/shop/api"
 import "@/features/shop/cosmeticos.css"
-import {
-  inLauncher,
-  launcherPrefs,
-  launcherWindowTheme,
-  registerLauncherHandlers,
-} from "@/lib/launcher"
+import { inLauncher, launcherWindowTheme } from "@/lib/launcher"
+import { useLauncherPrefs } from "./lib/useLauncherPrefs"
 
 /** "#rrggbb" de una variable CSS, o null si no es un color hexadecimal (los de fábrica están en oklch). */
 function hexVar(name: string) {
@@ -19,27 +16,27 @@ function hexVar(name: string) {
 }
 
 /**
- * Solo en el launcher de escritorio y si el jugador lo prendió en su Configuración: pinta toda la web, y la barra de
- * título, con el tema de la tienda que tiene equipado en su perfil (solo se equipan los que tiene). En el navegador
- * no hace nada. Los temas son oscuros, como en el perfil, así que con el tema puesto la web queda en oscuro.
+ * Solo en el launcher de escritorio y si el jugador lo prendió: pinta toda la web, y la barra de título, con el tema
+ * de la tienda elegido para el launcher (Perfil › Preferencias, solo entre los que tiene) o con el equipado en su
+ * perfil. En el navegador no hace nada. Los temas son oscuros, como en el perfil: con el tema, la web queda oscura.
  */
 export function LauncherTheme() {
   const launcher = inLauncher()
-  const [enabled, setEnabled] = useState(false)
+  const [prefs] = useLauncherPrefs()
+  const enabled = launcher && !!prefs?.shop_theme
+  const chosen = prefs?.shop_theme_id ?? null
 
-  useEffect(() => {
-    if (!launcher) return
-    const read = () =>
-      void launcherPrefs().then((p) => setEnabled(!!p?.shop_theme))
-    read()
-    return registerLauncherHandlers({ prefsChanged: read })
-  }, [launcher])
-
-  const theme =
-    useQuery({ ...equippedOptions, enabled: launcher && enabled }).data
-      ?.theme ?? null
-  const cls =
-    launcher && enabled && theme && /^[a-z0-9-]+$/.test(theme) ? theme : null
+  const me = useMe().data
+  const equipped =
+    useQuery({ ...equippedOptions, enabled: enabled && !chosen }).data?.theme ??
+    null
+  // El elegido solo si sigue siendo tuyo.
+  const owned = useQuery({
+    ...catalogOptions(me?.id ?? null),
+    enabled: enabled && !!chosen,
+  }).data?.items.some((i) => i.id === chosen && i.kind === "theme" && i.owned)
+  const theme = chosen ? (owned ? chosen : null) : equipped
+  const cls = enabled && theme && /^[a-z0-9-]+$/.test(theme) ? theme : null
 
   useEffect(() => {
     if (!launcher) return

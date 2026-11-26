@@ -8,6 +8,7 @@ fn main() {
         "window_attention",
         "launcher_status",
         "launcher_prefs",
+        "launcher_set_theme",
         "window_theme",
         "settings_open",
         "settings_get",

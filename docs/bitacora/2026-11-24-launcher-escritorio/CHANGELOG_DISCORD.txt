@@ -1,0 +1,18 @@
+CMLeague 2.9.65 --  Changelog
+
+LLEGÓ EL LAUNCHER DE CMLEAGUE PARA WINDOWS
+
+- Es la misma web, con tu cuenta, en su propia ventana. Lo bajas desde cmleague.lat/launcher.
+- Cuando aparece la partida te avisa con una notificación de Windows y la ventana se pone al frente, aunque estés en otra cosa.
+- Puedes aceptar la partida desde el ícono de CMLeague en la bandeja, al lado del reloj.
+- Conectar abre ClientMod ya conectado a tu sala: aprietas PLAY y entras, sin copiar la IP ni la contraseña.
+- Si cierras la ventana, queda en la bandeja y sigues en la cola.
+- Tiene su propia configuración: abrir con Windows, avisos, mostrar en Discord lo que estás jugando y más. No cambia nada de la web.
+- Si tienes temas de la tienda, puedes usar uno en el launcher. Lo eliges en Perfil > Preferencias > Tema del launcher.
+- Se actualiza solo: te avisa cuando hay una versión nueva y la instalas cuando quieras.
+
+EN LA WEB
+
+- En el navegador, Conectar ahora copia el comando para pegarlo en la consola del juego. Antes intentaba abrir Steam, que no abre ClientMod.
+
+Si Windows te dice que protegió tu PC al instalarlo, toca "Más información" y "Ejecutar de todas formas".

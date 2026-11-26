@@ -153,11 +153,13 @@ fn run_elevated(_exe: &str, _dir: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn game_launch(app: tauri::AppHandle, address: String, password: String) -> Result<String, String> {
+pub fn game_launch(app: tauri::AppHandle, address: String, password: Option<String>) -> Result<String, String> {
     if !valid_address(&address) {
         return Err("La dirección del servidor no es válida.".into());
     }
-    if !valid_password(&password) {
+    // Sin contraseña: SourceTV.
+    let password = password.filter(|p| !p.is_empty());
+    if password.as_deref().is_some_and(|p| !valid_password(p)) {
         return Err("La contraseña de la sala tiene caracteres que no se pueden pasar al juego.".into());
     }
     let info = find_game(&app).ok_or("NO_GAME")?;
@@ -170,7 +172,10 @@ pub fn game_launch(app: tauri::AppHandle, address: String, password: String) -> 
 
     // El connect va en Params= de clientmod.ini y se restaura cuando aparece el juego.
     let ini = Path::new(&info.dir).join("clientmod.ini");
-    let extra = format!("+connect {address} +password {password}");
+    let extra = match &password {
+        Some(p) => format!("+connect {address} +password {p}"),
+        None => format!("+connect {address}"),
+    };
     let original = patch_ini(&ini, &extra)?;
     if let Err(e) = run_elevated(&info.launcher, &info.dir) {
         let _ = std::fs::write(&ini, &original);

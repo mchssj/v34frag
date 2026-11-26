@@ -666,6 +666,14 @@ const SECTIONS: LegalSection[] = [
           terceros. Podemos modificar, suspender o discontinuar cualquier
           función, servidor o temporada, temporal o definitivamente.
         </p>
+        <p>
+          <strong>Launcher de escritorio</strong> <Wip />. El launcher de
+          CMLeague para Windows también se ofrece «tal cual está». No es parte
+          de ClientMod ni lo reemplaza: para abrir el juego conectado a una
+          sala, usa <code>CMLauncher.exe</code> y modifica por un momento{" "}
+          <code>clientmod.ini</code>. Lo usas bajo tu responsabilidad, y puedes
+          desinstalarlo cuando quieras.
+        </p>
       </>
     ),
   },

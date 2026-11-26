@@ -15,6 +15,16 @@ export const CLIENTMOD = {
   downloadUrl: "https://clientmod.ru/",
 }
 
+/**
+ * Launcher de escritorio (docs/bitacora/2026-11-24-launcher-escritorio). Las versiones se publican en el VPS, en
+ * cmleague.lat/descargas/launcher/: `latest.json` dice cuál es la última y dónde está su instalador (lo arma GitHub Actions).
+ */
+export const LAUNCHER = {
+  latestUrl: "/descargas/launcher/latest.json",
+  /** Abre el launcher instalado (protocolo que registra el instalador). */
+  openUrl: "cmleague://play",
+}
+
 /** La tarjeta del Discord en el inicio. Los números (en línea y miembros) los da la API: GET /api/v1/community/discord. */
 export const DISCORD = {
   inviteUrl: COMMUNITY.discordUrl,

@@ -1,17 +1,32 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-24**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-26**.
 
-## Launcher de escritorio (2026-11-24): plan y prototipo, sin probar en Windows
+## Launcher de escritorio (2026-11-24): compilado y probado en Windows, sin desplegar
 
-- **Qué es:** una app de Windows al estilo del cliente de FACEIT. Inicias sesión, buscas partida, te avisa encima de todo cuando aparece, aceptas y abre ClientMod conectado a la sala. `steam://connect` no sirve porque ClientMod no es de Steam. Tauri 2, en `launcher/`. Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
-- **Hecho:** `PLAN.md` y prototipo. Compilan la interfaz y el chequeo de Rust para Windows, y pasan las pruebas de la validación y de `clientmod.ini`.
-- **Falta:**
-  - Que Daniel y Kyan aprueben el plan.
-  - Abrirlo en una PC con Windows (Rust y las Build Tools de Visual Studio), con ClientMod en `C:\CSSv34_ClientMod`, y ver si `CMLauncher.exe` toma `+connect` desde `Params=` y si `-hijack` funciona con el juego abierto.
-  - Sumar `http://tauri.localhost` a `CORS_ORIGINS` de la API.
-  - Protocolo `cmleague://` y los botones "Conectar" de la web, que hoy usan `steam://connect`.
-  - Guardar la sesión en el Administrador de credenciales, armar el instalador, el manual, los legales y el changelog.
+- **Qué es:** la web en una ventana propia para Windows, como el cliente de FACEIT, pedido por Agus. Suma:
+  - **Conectar** que abre ClientMod (`CMLauncher.exe` con `+connect` en `clientmod.ini`);
+  - avisos de Windows;
+  - bandeja con el estado y **Aceptar partida**;
+  - Discord Rich Presence;
+  - actualizaciones firmadas;
+  - Configuración propia;
+  - tema de la tienda;
+  - links `cmleague://`;
+  - la página `/launcher`.
+
+  En el navegador, Conectar copia el `connect`, porque `steam://` no abre ClientMod. Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
+- **Hecho:**
+  - commiteado en `claude/relaxed-einstein-sl0cme`;
+  - GitHub Actions lo compila en Windows, prueba que abre y saca capturas;
+  - pasan las 855 pruebas de la web.
+- **Falta, en orden:**
+  1. Probar el `+connect` en `Params=` con ClientMod (Agus avisa cuándo), y ver el título de la ventana del launcher de ClientMod con el juego cerrado.
+  2. Daniel: pasar los cambios de `web/frontend` a la rama de la que despliega y `deploy/vps/desplegar.sh web`.
+  3. Daniel: el Caddyfile nuevo (`/descargas/`, sin validar acá) y la carpeta `/srv/cmleague/descargas/launcher/`.
+  4. Daniel: la clave de firma y el ID de Discord en GitHub (`launcher/README.md`). Antes de repartir el launcher, si no, quien lo instale va a tener que reinstalar.
+  5. Publicar el `.exe` y `latest.json`, sacar el "En preparación" de los legales y publicar el changelog (CMLeague 2.9.65).
+  6. Decidir si se paga la firma de código: sin firma, aparece el aviso de SmartScreen.
 
 ## Tierlists de jugadores y equipos (2026-11-22): desplegado el 2026-11-23
 

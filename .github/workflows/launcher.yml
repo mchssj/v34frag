@@ -102,7 +102,7 @@ jobs:
           path: launcher/capturas/*.png
           retention-days: 14
 
-      # latest.json para https://cmleague.lat/launcher/ (solo con la clave de firma).
+      # latest.json para https://cmleague.lat/descargas/launcher/ (solo con la clave de firma).
       - name: latest.json
         if: ${{ hashFiles('launcher/src-tauri/target/release/bundle/nsis/*.sig') != '' }}
         shell: pwsh
@@ -115,7 +115,7 @@ jobs:
             version = $version
             notes = ""
             pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-            platforms = @{ "windows-x86_64" = @{ signature = $sig.Trim(); url = "https://cmleague.lat/launcher/$($exe.Name)" } }
+            platforms = @{ "windows-x86_64" = @{ signature = $sig.Trim(); url = "https://cmleague.lat/descargas/launcher/$($exe.Name)" } }
           } | ConvertTo-Json -Depth 5 | Set-Content "$dir/latest.json" -Encoding utf8
 
       - uses: actions/upload-artifact@v4

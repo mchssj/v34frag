@@ -6,6 +6,7 @@ import { THEME_MODES } from "@/components/brand/ThemeSwitch"
 import { useTheme } from "@/components/theme-provider"
 import { THEME_FX_OPTIONS, useThemeFxPref } from "@/features/theme-fx/lib/pref"
 import { errorMessage } from "@/api/errors"
+import { LauncherThemeCard } from "@/features/launcher/components/LauncherThemeCard"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { useUpdateProfile } from "../api/queries"
 import { CardTitle, SectionCard } from "../components/ui"
@@ -92,6 +93,8 @@ export function PreferencesSection() {
           </p>
         </div>
       </SectionCard>
+      {/* Solo en el launcher de escritorio. */}
+      <LauncherThemeCard />
       <NotificationPrefsCard />
     </div>
   )

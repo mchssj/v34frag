@@ -14,7 +14,28 @@ use tauri::{Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 use status::Shared;
 
 /// La web que abre la ventana.
+const WEB_ORIGIN: &str = "https://cmleague.lat";
 const WEB_URL: &str = "https://cmleague.lat/play";
+
+/// `cmleague://play` o `cmleague://match/<id>`: abre esa página de la web en el launcher (links de la web o de
+/// Discord). Solo rutas de la web: letras, números, `/`, `-` y `_`; la consulta y el fragmento se ignoran.
+fn link_path(url: &tauri::Url) -> Option<String> {
+    if url.scheme() != "cmleague" {
+        return None;
+    }
+    let path = format!("/{}{}", url.host_str().unwrap_or(""), url.path());
+    let path = path.trim_end_matches('/');
+    let ok = path.len() <= 200 && path.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'/' | b'-' | b'_'));
+    ok.then(|| if path.is_empty() { "/play".to_string() } else { path.to_string() })
+}
+
+fn open_link(app: &tauri::AppHandle, url: &tauri::Url) {
+    let Some(path) = link_path(url) else { return };
+    if let (Some(w), Ok(target)) = (app.get_webview_window("main"), format!("{WEB_ORIGIN}{path}").parse()) {
+        let _ = w.navigate(target);
+    }
+    status::show_main(app);
+}
 
 /// Fondo oscuro de la web (`--background` de .dark, oklch(0.145 0 0)), para que no haya un destello blanco al abrir.
 const BACKGROUND: (u8, u8, u8) = (0x0a, 0x0a, 0x0a);
@@ -88,8 +109,8 @@ fn open_settings(app: &tauri::AppHandle) {
     }
     if let Ok(w) = WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("ajustes.html".into()))
         .title("Configuración de CMLeague")
-        .inner_size(560.0, 720.0)
-        .resizable(false)
+        .inner_size(560.0, 860.0)
+        .min_inner_size(480.0, 500.0)
         .theme(Some(tauri::Theme::Dark))
         .background_color(tauri::window::Color(BACKGROUND.0, BACKGROUND.1, BACKGROUND.2, 255))
         .build()
@@ -138,6 +159,7 @@ pub fn run() {
                 status::show_main(app);
             }
         }))
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::Builder::new().args([AUTOSTART_ARG]).build())
         .manage(Shared::default())
@@ -191,6 +213,25 @@ pub fn run() {
             if std::env::args().any(|a| a == SETTINGS_ARG) {
                 open_settings(handle);
             }
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                let dl = app.deep_link();
+                // Abierto por un link: va a esa página. Con el launcher ya abierto, el link llega por on_open_url.
+                if let Ok(Some(urls)) = dl.get_current() {
+                    if let Some(u) = urls.first() {
+                        open_link(handle, u);
+                    }
+                }
+                let h = handle.clone();
+                dl.on_open_url(move |e| {
+                    if let Some(u) = e.urls().first() {
+                        open_link(&h, u);
+                    }
+                });
+                // En desarrollo el instalador no registró el protocolo: se registra al abrir.
+                #[cfg(debug_assertions)]
+                let _ = dl.register_all();
+            }
             status::start_discord(handle);
             updater::start(handle);
             Ok(())
@@ -215,6 +256,7 @@ pub fn run() {
             settings::settings_get,
             settings::settings_set,
             settings::launcher_prefs,
+            settings::launcher_set_theme,
             updater::update_check,
             updater::update_install,
             updater::app_version,
@@ -223,4 +265,20 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("no se pudo iniciar el launcher");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn links() {
+        let p = |s: &str| link_path(&s.parse().unwrap());
+        assert_eq!(p("cmleague://play"), Some("/play".into()));
+        assert_eq!(p("cmleague://play/"), Some("/play".into()));
+        assert_eq!(p("cmleague://match/0f8d-12?x=1#y"), Some("/match/0f8d-12".into()));
+        assert_eq!(p("https://otro.com/play"), None);
+        assert_eq!(p("cmleague://play/a.b"), None);
+        assert_eq!(p("cmleague://play/%2e%2e"), None);
+    }
 }

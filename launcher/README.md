@@ -7,8 +7,9 @@ Es la web de CMLeague (`https://cmleague.lat`) en una ventana propia, como el cl
 - **Bandeja con el estado:** el ícono dice qué estás haciendo ("Buscando partida · 5v5"), tiene **Aceptar partida** cuando aparece una, Configuración, la actualización pendiente y Salir. Doble clic abre la ventana. La X manda a la bandeja.
 - **Discord Rich Presence:** "Buscando partida", "Jugando 5v5 · de_dust2 · 9-7", con el tiempo.
 - **Actualización automática:** busca al abrir y cada 6 horas, avisa, y se instala cuando el jugador lo elige (bandeja o Configuración), así nunca corta una partida.
-- **Tema de la tienda:** si el jugador lo prende, el launcher (la web y la barra de título) usa el tema que tiene equipado en su perfil. Solo se pueden equipar los temas que tiene.
-- **Una sola instancia:** abrirlo de nuevo trae la ventana que ya está.
+- **Tema de la tienda:** si el jugador lo prende, el launcher (la web y la barra de título) usa uno de sus temas: el equipado en el perfil o el que elija en **Perfil › Preferencias › Tema del launcher** (esa tarjeta solo aparece en el launcher y lista solo los temas que tiene).
+- **Una sola instancia:** abrirlo de nuevo trae la ventana que ya está. `--ajustes` abre Configuración.
+- **Links `cmleague://`:** `cmleague://play` o `cmleague://match/<id>` abren esa página de la web en el launcher (el instalador registra el protocolo). La página `/launcher` de la web tiene "Ya lo tengo: abrirlo".
 - **Configuración propia** (bandeja › Configuración), guardada en la PC (`%APPDATA%\lat.cmleague.launcher\ajustes.json`), sin tocar la web ni la cuenta:
 
   | Opción | De fábrica |
@@ -19,7 +20,7 @@ Es la web de CMLeague (`https://cmleague.lat`) en una ventana propia, como el cl
   | Avisos de Windows | Sí |
   | Traer la ventana al frente | Sí |
   | Mostrar en Discord | Sí |
-  | Tema de mi perfil | No |
+  | Tema de la tienda | No |
   | Buscar actualizaciones solo | Sí |
   | Carpeta de ClientMod | Se busca sola |
 
@@ -36,7 +37,7 @@ Sin esto el launcher funciona igual, pero sin actualizaciones automáticas ni Di
    - El contenido de `cmleague-launcher.key` va al secreto `TAURI_SIGNING_PRIVATE_KEY` (y la contraseña, si se puso, a `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). **No se commitea ni se comparte.** Si se pierde, los launchers instalados no aceptan más actualizaciones y hay que reinstalar.
    - El contenido de `cmleague-launcher.key.pub` va a la variable `CMLEAGUE_UPDATER_PUBKEY`.
    - Con eso, cada compilación deja en el artefacto el `.exe`, su `.sig` y `latest.json`.
-2. **Publicar una versión:** subir la versión en `src-tauri/tauri.conf.json` y `src-tauri/Cargo.toml`, compilar, y copiar el `.exe` y `latest.json` del artefacto al VPS en `cmleague.lat/launcher/` (los launchers buscan `https://cmleague.lat/launcher/latest.json`). Hace falta que Caddy sirva esa carpeta.
+2. **Publicar una versión:** subir la versión en `src-tauri/tauri.conf.json` y `src-tauri/Cargo.toml`, compilar, y copiar el `.exe` y `latest.json` del artefacto al VPS en `/srv/cmleague/descargas/launcher/`. Caddy lo sirve en `https://cmleague.lat/descargas/launcher/` (`deploy/vps/Caddyfile`), fuera de la web, así un despliegue de la web no lo borra. De ahí leen la actualización automática y la página `/launcher` de la web.
 3. **Discord.** En <https://discord.com/developers/applications>, crear la aplicación "CMLeague", subir en Rich Presence › Art Assets el isotipo con el nombre `cmleague`, y poner su Application ID en la variable `CMLEAGUE_DISCORD_APP_ID`.
 
 ## Cómo se conecta con la web
@@ -51,7 +52,7 @@ Sin esto el launcher funciona igual, pero sin actualizaciones automáticas ni Di
 
 - **Cómo se reconoce el juego abierto.** Con ClientMod no hay `hl2.exe`: el juego y cinco procesos de ayuda corren como `CMLauncher.exe`. El juego es el que tiene la ventana `CS:S v34 ClientMod` (visto en la PC de Agus el 2026-11-24, dentro de un servidor). Falta ver el título de la ventana del launcher con el juego cerrado.
 - **Si `CMLauncher.exe` toma `+connect` desde `Params=`.** Falta probarlo a mano.
-- Los cambios de la web (`launcher.ts` y los botones) tienen que estar desplegados en `cmleague.lat` para que "Conectar" abra el juego.
+- Los cambios de la web (`web/frontend/src/lib/launcher.ts`, `features/launcher/` y los botones) tienen que estar desplegados en `cmleague.lat` para que "Conectar" abra el juego, para el estado de la bandeja y para el tema.
 
 ## Compilar
 

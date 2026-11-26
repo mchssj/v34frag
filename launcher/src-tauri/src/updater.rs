@@ -2,7 +2,7 @@
 //! la ofrece en la bandeja y en Configuración. Se instala solo cuando el jugador lo pide, así nunca corta una partida.
 //!
 //! Hace falta la clave pública de la firma al compilar (`CMLEAGUE_UPDATER_PUBKEY`): sin ella no busca nada. Las
-//! versiones se publican en https://cmleague.lat/launcher/latest.json (ver launcher/README.md).
+//! versiones se publican en https://cmleague.lat/descargas/launcher/latest.json (ver launcher/README.md).
 
 use std::time::Duration;
 
@@ -13,7 +13,7 @@ use crate::status::{notify, refresh, Shared};
 use crate::settings;
 
 pub const PUBKEY: Option<&str> = option_env!("CMLEAGUE_UPDATER_PUBKEY");
-const ENDPOINT: &str = "https://cmleague.lat/launcher/latest.json";
+const ENDPOINT: &str = "https://cmleague.lat/descargas/launcher/latest.json";
 
 pub fn enabled() -> bool {
     PUBKEY.is_some_and(|k| !k.is_empty())

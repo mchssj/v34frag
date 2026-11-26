@@ -43,11 +43,42 @@ export function launcherStatus(status: LauncherStatus) {
     .catch(() => undefined)
 }
 
-/** Lo que la web necesita de la Configuración del launcher. */
-export async function launcherPrefs(): Promise<{ shop_theme: boolean } | null> {
+/** Lo que la web necesita de la Configuración del launcher. `shop_theme_id` null: el tema equipado en el perfil. */
+export type LauncherPrefs = {
+  shop_theme: boolean
+  shop_theme_id: string | null
+}
+
+export async function launcherPrefs(): Promise<LauncherPrefs | null> {
   const t = tauri()
   if (!t) return null
-  return t.invoke<{ shop_theme: boolean }>("launcher_prefs").catch(() => null)
+  return t.invoke<LauncherPrefs>("launcher_prefs").catch(() => null)
+}
+
+const PREFS_EVENT = "cmleague-launcher-prefs"
+
+/** Avisa que cambió la Configuración del launcher a quien la escucha (`onLauncherPrefsChanged`). */
+function prefsChanged() {
+  window.dispatchEvent(new Event(PREFS_EVENT))
+}
+
+export function onLauncherPrefsChanged(fn: () => void) {
+  window.addEventListener(PREFS_EVENT, fn)
+  return () => window.removeEventListener(PREFS_EVENT, fn)
+}
+
+/**
+ * Tema del launcher: `null` sin tema, `"profile"` el equipado en el perfil, o el id de un tema de la tienda.
+ */
+export async function launcherSetTheme(theme: string | null) {
+  const t = tauri()
+  if (!t) return null
+  const prefs = await t.invoke<LauncherPrefs>("launcher_set_theme", {
+    on: theme !== null,
+    theme: theme === "profile" ? null : theme,
+  })
+  prefsChanged()
+  return prefs
 }
 
 /** Colores de la barra de título ("#rrggbb"); null vuelve a los de fábrica. */
@@ -71,10 +102,7 @@ export function openLauncherSettings() {
  * Funciones que el launcher llama desde la parte nativa (por ejemplo "Aceptar partida" en la bandeja). Devuelve cómo
  * sacarlas.
  */
-export function registerLauncherHandlers(handlers: {
-  accept?: () => void
-  prefsChanged?: () => void
-}) {
+export function registerLauncherHandlers(handlers: { accept?: () => void }) {
   if (!inLauncher()) return () => undefined
   const w = window as unknown as {
     __cmleagueLauncher?: Record<string, (() => void) | undefined>
@@ -88,24 +116,27 @@ export function registerLauncherHandlers(handlers: {
 }
 
 // El mismo texto que "Copiar connect" del matchmaking (connectCommand en features/matchmaking/labels.ts).
-const connectCommand = (address: string, password: string) =>
-  `connect ${address}; password ${password}`
+const connectCommand = (address: string, password?: string | null) =>
+  password ? `connect ${address}; password ${password}` : `connect ${address}`
 
 const message = (e: unknown) =>
   typeof e === "string" ? e : e instanceof Error ? e.message : String(e)
 
 /**
  * Abre ClientMod conectado al servidor (por CMLauncher.exe y clientmod.ini). El connect también queda copiado, por si
- * hay que pegarlo en la consola. Si no encuentra ClientMod, pide la carpeta una vez.
+ * hay que pegarlo en la consola. Si no encuentra ClientMod, pide la carpeta una vez. Sin contraseña: SourceTV.
  */
-export async function openGame(address: string, password: string) {
+export async function openGame(address: string, password?: string | null) {
   const t = tauri()
   if (!t) return
+  const pw = password || null
   await navigator.clipboard
-    .writeText(connectCommand(address, password))
+    .writeText(connectCommand(address, pw))
     .catch(() => undefined)
+  const launch = () =>
+    t.invoke<string>("game_launch", { address, password: pw })
   try {
-    toast.success(await t.invoke<string>("game_launch", { address, password }))
+    toast.success(await launch())
   } catch (e) {
     if (message(e) !== "NO_GAME") {
       toast.error(
@@ -123,9 +154,7 @@ export async function openGame(address: string, password: string) {
     }
     try {
       await t.invoke("game_set_dir", { dir })
-      toast.success(
-        await t.invoke<string>("game_launch", { address, password })
-      )
+      toast.success(await launch())
     } catch (e2) {
       toast.error(
         `${message(e2)} El connect quedó copiado: pégalo en la consola (º).`
@@ -134,12 +163,40 @@ export async function openGame(address: string, password: string) {
   }
 }
 
+/** Fuera del launcher: `steam://` no abre ClientMod, así que se copia el connect para pegarlo en la consola. */
+async function copyForConsole(address: string, password?: string | null) {
+  try {
+    await navigator.clipboard.writeText(connectCommand(address, password))
+    toast.success("Connect copiado: pégalo en la consola del juego (º)", {
+      description: "Con el launcher de CMLeague entras con un clic.",
+      action: {
+        label: "Ver el launcher",
+        onClick: () => window.location.assign("/launcher"),
+      },
+    })
+  } catch {
+    toast.error(
+      `No se pudo copiar. Escribe en la consola: ${connectCommand(address, password)}`
+    )
+  }
+}
+
 /**
- * Para los links "Conectar" (`steam://connect/...`): dentro del launcher abren ClientMod; fuera, el link sigue igual.
+ * Para los links "Conectar" (`steam://connect/...`): dentro del launcher abren ClientMod; en el navegador copian el
+ * connect (ClientMod no es de Steam y el link no lo abre). El href queda para "copiar dirección".
  */
 export const launchOnClick =
-  (address: string, password: string) => (e: { preventDefault(): void }) => {
-    if (!inLauncher()) return
+  (address: string, password?: string | null) =>
+  (e: { preventDefault(): void }) => {
     e.preventDefault()
-    void openGame(address, password)
+    if (inLauncher()) void openGame(address, password)
+    else void copyForConsole(address, password)
   }
+
+// Al cambiar la Configuración en su ventana, el launcher llama a window.__cmleagueLauncher.prefsChanged().
+if (typeof window !== "undefined" && inLauncher()) {
+  const w = window as unknown as {
+    __cmleagueLauncher?: Record<string, (() => void) | undefined>
+  }
+  ;(w.__cmleagueLauncher ??= {}).prefsChanged = prefsChanged
+}
