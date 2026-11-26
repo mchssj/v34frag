@@ -1,0 +1,11 @@
+# Ajustes de pnpm para el launcher (no es un monorepo). Iguales a web/backend.
+
+# Solo se instalan versiones publicadas hace al menos 7 días (en minutos).
+minimumReleaseAge: 10080
+
+# Rechaza una versión publicada con menos garantías (provenance) que las anteriores.
+trustPolicy: no-downgrade
+
+# Paquetes autorizados a correr scripts de instalación. El resto queda bloqueado.
+allowBuilds:
+  esbuild: true    # binario nativo de Vite

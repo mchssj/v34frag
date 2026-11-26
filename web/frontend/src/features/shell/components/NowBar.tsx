@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { WatchTvButton } from "@/features/mixes/components/parts"
 import { sideName } from "@/features/public/lib/format"
 import { useFeaturedLive, type FeaturedLive } from "../api/queries"
+import { launchOnClick } from "@/lib/launcher"
 
 /**
  * Franja "ahora": lo destacado en vivo (una partida oficial o PCW y, si no hay, un mix). "TU
@@ -52,7 +53,10 @@ function MatchNow({
     >
       {live.address && (
         <Button asChild variant="outline" size="sm" className="h-7">
-          <a href={`steam://connect/${live.address}`}>
+          <a
+            href={`steam://connect/${live.address}`}
+            onClick={launchOnClick(live.address)}
+          >
             <PlugZapIcon aria-hidden />
             Conectar
           </a>

@@ -1,0 +1,34 @@
+[package]
+name = "cmleague-launcher"
+version = "0.1.0"
+description = "Launcher de escritorio de CMLeague"
+edition = "2021"
+
+[lib]
+name = "cmleague_launcher_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+serde = { version = "1", features = ["derive"] }
+tauri-plugin-notification = "2"
+tauri-plugin-autostart = "2"
+# Cifrado nativo de Windows (SChannel): sin ring ni compilador de C.
+tauri-plugin-updater = { version = "2", default-features = false, features = ["native-tls", "system-proxy", "zip"] }
+serde_json = "1"
+discord-rich-presence = "1.1.0"
+tokio = { version = "1", features = ["time"] }
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+tauri-plugin-deep-link = "2"
+tauri-plugin-opener = "2"
+
+# Colores de la barra de título nativa (DwmSetWindowAttribute, Windows 11). Ya viene con Tauri: no suma descargas.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Graphics_Dwm"] }
+
+[features]
+# Solo para la prueba de Configuración en GitHub Actions (CMLEAGUE_AUTOPRUEBA). El instalador no la trae.
+autoprueba = []

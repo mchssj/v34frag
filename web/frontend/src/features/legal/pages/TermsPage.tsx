@@ -222,8 +222,9 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           Un baneo alcanza a tu ficha, aunque todavía no tenga SteamID, y a
-          todos sus SteamID, también a los que sumes después. La lista de baneos <Wip /> va a ser pública y va a
-          mostrar a quién, desde cuándo, hasta cuándo y el motivo.
+          todos sus SteamID, también a los que sumes después. La lista de baneos{" "}
+          <Wip /> va a ser pública y va a mostrar a quién, desde cuándo, hasta
+          cuándo y el motivo.
         </li>
         <li>
           Si te banean mientras buscas partida en el matchmaking, sales de la
@@ -653,9 +654,10 @@ const SECTIONS: LegalSection[] = [
     body: (
       <p>
         El nombre y la marca CMLeague, la web, los diseños, los cosméticos, el
-        HUD, los plugins y la aplicación del anticheat son de CMLeague o de sus
-        autores. No puedes usarlos fuera de la liga sin permiso. Los mapas,
-        modelos y sonidos del juego son de sus respectivos dueños.
+        HUD, los plugins, la aplicación del anticheat y la aplicación de
+        escritorio son de CMLeague o de sus autores. No puedes usarlos fuera de
+        la liga sin permiso. Los mapas, modelos y sonidos del juego son de sus
+        respectivos dueños.
       </p>
     ),
   },
@@ -682,6 +684,16 @@ const SECTIONS: LegalSection[] = [
           de los proveedores de infraestructura, de conectividad o de ataques de
           terceros. Podemos modificar, suspender o discontinuar cualquier
           función, servidor o temporada, temporal o definitivamente.
+        </p>
+        <p>
+          <strong>Launcher de escritorio</strong> <Wip />. El launcher de
+          CMLeague para Windows también se ofrece «tal cual está». No es parte
+          de ClientMod ni lo reemplaza: para abrir el juego conectado a una
+          sala, usa <code>CMLauncher.exe</code> y modifica por un momento{" "}
+          <code>clientmod.ini</code>, y abre ClientMod con permisos de
+          administrador porque ClientMod los pide: Windows te lo pregunta cada
+          vez. No es un anticheat. Lo usas bajo tu responsabilidad, y puedes
+          desinstalarlo cuando quieras.
         </p>
       </>
     ),

@@ -24,6 +24,7 @@ import {
 } from "../lib/series"
 import { sideName } from "../lib/pcw"
 import type { PcwBooking, PcwMatch } from "../types"
+import { launchOnClick } from "@/lib/launcher"
 
 const STEPS = ["Veto", "Servidor", "Entrar", "En juego"] as const
 const STEP_OF: Record<PcwBooking["step"], number> = {
@@ -225,6 +226,7 @@ export function SeriesPanel({
             <Button size="xs" asChild>
               <a
                 href={`steam://connect/${b.server.address}/${b.server.password}`}
+                onClick={launchOnClick(b.server.address, b.server.password)}
               >
                 <PlayIcon />
                 Entrar

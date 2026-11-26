@@ -590,12 +590,29 @@ const SECTIONS: LegalSection[] = [
     id: "navegador",
     title: "Lo que guarda tu navegador",
     body: (
-      <p>
-        La web guarda en el almacenamiento local de tu navegador la sesión
-        iniciada, tu tema y algunas preferencias de la pantalla. Sirven solo
-        para que la web funcione: no te siguen por otros sitios. Si los borras,
-        se cierra la sesión.
-      </p>
+      <>
+        <p>
+          La web guarda en el almacenamiento local de tu navegador la sesión
+          iniciada, tu tema y algunas preferencias de la pantalla. Sirven solo
+          para que la web funcione: no te siguen por otros sitios. Si los
+          borras, se cierra la sesión.
+        </p>
+        <p>
+          <strong>Launcher de escritorio</strong> <Wip />. Es la misma web en
+          una ventana propia para Windows, con la misma cuenta: no junta datos
+          nuevos. En tu PC guarda tu sesión, su configuración (por ejemplo, si
+          abre con Windows o si muestra tu estado en Discord) y la carpeta de
+          ClientMod. Para conectarte a una sala, agrega por un momento la
+          dirección y la contraseña de la sala a <code>clientmod.ini</code> y la
+          saca cuando se abre el juego. Si lo activas en su configuración,
+          muestra en tu Discord lo que estás haciendo («Buscando partida»,
+          «Jugando 5v5 · de_dust2»); Discord lo ve igual que el resto de tu
+          actividad. Para saber si hay una versión nueva, consulta nuestro
+          almacenamiento de Cloudflare (<code>descargas.cmleague.lat</code>). No
+          lee tus otros programas ni archivos, y no toca el juego mientras
+          juegas.
+        </p>
+      </>
     ),
   },
   {
