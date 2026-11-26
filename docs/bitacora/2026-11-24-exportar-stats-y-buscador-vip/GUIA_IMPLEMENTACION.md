@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local (2026-11-24), en el worktree de `main`, **sin commit ni despliegue**.
+Desplegado el 2026-11-25 a las 19:23 (00:23 UTC del 26), sin salas ni mixes abiertos: commit `affd6e60`, replanteos `140`, `141`, `142` y `146` en producción (respaldo antes) y la API y la web en `affd6e60867e`. Falta publicar los legales y el changelog. Antes: Hecho y probado en local (2026-11-24), en el worktree de `main`.
 
 ## Archivos
 
@@ -21,7 +21,7 @@ Hecho y probado en local (2026-11-24), en el worktree de `main`, **sin commit ni
 | `web/frontend/src/features/shell/**` | Ruta de arriba y páginas del buscador (Ctrl + K) |
 | `docs/manual/jugador/filtros-avanzados.md`, `tarjeta-de-stats.md` (nuevas), `buscador.md`, `elo-y-estadisticas.md` | Manual |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-25)
 
 Junto con los otros dos: ver [la guía del comparador](../2026-11-24-comparador-y-favoritas-vip/GUIA_IMPLEMENTACION.md). La `141` necesita la `140`.
 

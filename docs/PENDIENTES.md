@@ -2,6 +2,16 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
 
+## Beneficios VIP en la web y preveto de mapas (2026-11-24 y 2026-11-25): desplegado el 2026-11-25
+
+- **Qué es:** comparar hasta 5, partidas favoritas, tarjeta de stats, filtros avanzados del ranking y de Partidas con búsquedas guardadas, desglose de ELO (los puntos 1 a 3 de la revisión de `origin/kyan/vip`) y el preveto de mapas para VIP. Detalle: [`2026-11-24-comparador-y-favoritas-vip`](bitacora/2026-11-24-comparador-y-favoritas-vip/), [`2026-11-24-exportar-stats-y-buscador-vip`](bitacora/2026-11-24-exportar-stats-y-buscador-vip/), [`2026-11-24-desglose-elo-vip`](bitacora/2026-11-24-desglose-elo-vip/) y [`2026-11-25-preveto-vip`](bitacora/2026-11-25-preveto-vip/).
+- **Hecho:** commit `affd6e60` en `main` (la `146` también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`). El 2026-11-25 a las 19:23 (00:23 UTC del 26), sin salas ni mixes abiertos: respaldo (`~/respaldos/antes_140_146_202611260023.sql.gz` en el VPS), replanteos `140`, `141`, `142` y `146` en producción, y la API y la web en `affd6e60867e`. El preveto quedó en 2.
+- **Falta:**
+  1. Publicar `terms/terminos.html` y `terms/privacidad.html`, y los changelog 2.9.67, 2.9.68, 2.9.69 y 2.9.74.
+  2. Probar **Compartir** la tarjeta desde un teléfono y ver una sala real con prevetos.
+- **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
+- **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
+
 ## Banear una ficha sin SteamID (2026-11-25): probado en local, sin commit ni despliegue
 
 - **Qué es:** no se podía banear a aura67 porque su ficha no tiene SteamID; el baneo tiene que sacarlo del matchmaking igual. Detalle: [`2026-11-25-banear-ficha-sin-steamid`](bitacora/2026-11-25-banear-ficha-sin-steamid/).

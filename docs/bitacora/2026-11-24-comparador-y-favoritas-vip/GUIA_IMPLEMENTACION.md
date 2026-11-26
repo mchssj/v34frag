@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local (2026-11-24), en el worktree de `main`, **sin commit ni despliegue**. Se despliega junto con [`2026-11-24-exportar-stats-y-buscador-vip`](../2026-11-24-exportar-stats-y-buscador-vip/) y [`2026-11-24-desglose-elo-vip`](../2026-11-24-desglose-elo-vip/): comparten rutas y archivos.
+Desplegado el 2026-11-25 a las 19:23 (00:23 UTC del 26), sin salas ni mixes abiertos: commit `affd6e60`, replanteos `140`, `141`, `142` y `146` en producción (respaldo antes) y la API y la web en `affd6e60867e`. Falta publicar los legales y el changelog. Antes: Hecho y probado en local (2026-11-24), en el worktree de `main`. Se despliega junto con [`2026-11-24-exportar-stats-y-buscador-vip`](../2026-11-24-exportar-stats-y-buscador-vip/) y [`2026-11-24-desglose-elo-vip`](../2026-11-24-desglose-elo-vip/): comparten rutas y archivos.
 
 ## Archivos
 
@@ -22,7 +22,7 @@ Hecho y probado en local (2026-11-24), en el worktree de `main`, **sin commit ni
 | `docs/manual/jugador/comparar-jugadores.md`, `partidas-favoritas.md` | Nuevas |
 | `terms/*.html`, `web/frontend/src/features/legal/**` | Lo de "Términos y privacidad" de los tres |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-25)
 
 Los tres requerimientos juntos, en este orden. No toca los servidores de juego (#1, #2 y #3).
 

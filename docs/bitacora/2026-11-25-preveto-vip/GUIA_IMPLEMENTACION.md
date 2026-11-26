@@ -2,7 +2,7 @@
 
 ## Estado
 
-Hecho y probado en local (2026-11-25), en el worktree de `main`, **sin commit ni despliegue**.
+Desplegado el 2026-11-25 a las 19:23 (00:23 UTC del 26), sin salas ni mixes abiertos: commit `affd6e60`, replanteos `140`, `141`, `142` y `146` en producción (respaldo antes) y la API y la web en `affd6e60867e`. Falta publicar los legales y el changelog. Antes: Hecho y probado en local (2026-11-25), en el worktree de `main`.
 
 ## Archivos
 
@@ -20,7 +20,7 @@ Hecho y probado en local (2026-11-25), en el worktree de `main`, **sin commit ni
 | `docs/manual/jugador/buscar-partida.md`, `docs/manual/admin/matchmaking.md`, `docs/manual/README.md` | Manual |
 | `terms/*.html`, `web/frontend/src/features/legal/` | Legales, con fecha 25 de noviembre |
 
-## Despliegue (pendiente)
+## Despliegue (hecho el 2026-11-25)
 
 1. Con respaldo y **sin un mix en curso** (los `alter table` bloquean un instante al worker del matchmaking), aplicar la `146`:
 
