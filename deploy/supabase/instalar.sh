@@ -89,6 +89,9 @@ esac
 SH
 chmod 755 /usr/local/bin/sb
 install -m 755 "$aqui/respaldar.sh" /usr/local/bin/cmleague-respaldar
+# Restauración con los permisos exactos (docs/bitacora/2026-11-26-migracion-vps-brasil).
+install -m 755 "$aqui/restaurar.sh" /usr/local/bin/cmleague-restaurar
+install -m 644 "$aqui/permisos.sql" /srv/supabase/permisos.sql
 install -m 644 "$aqui/cmleague-respaldo.service" "$aqui/cmleague-respaldo.timer" /etc/systemd/system/
 systemctl daemon-reload
 if (( EN_ESPERA )); then echo "--en-espera: cmleague-respaldo.timer sin prender"; else systemctl enable --now cmleague-respaldo.timer >/dev/null; fi

@@ -11,7 +11,8 @@ Supabase instalado en el VPS de OVH, con Docker, en lugar del plan gratis de la 
 | `roles.sql` | Contraseñas de los roles internos al crear la base | `/srv/supabase/roles.sql` |
 | `migrar.sh` y `migrar-vps.sh` | Copia producción (la nube) al VPS y la compara fila a fila | Se corre desde la PC |
 | `copiar_storage.py` | Copia los archivos de Storage (lo llama `migrar-vps.sh`) | Ídem |
-| `respaldar.sh`, `cmleague-respaldo.service` y `.timer` | Respaldo diario a las 09:00 UTC | `/usr/local/bin/cmleague-respaldar`, `/etc/systemd/system/` |
+| `respaldar.sh`, `cmleague-respaldo.service` y `.timer` | Respaldo diario a las 09:00 UTC (base, Storage y permisos) | `/usr/local/bin/cmleague-respaldar`, `/etc/systemd/system/` |
+| `restaurar.sh` y `permisos.sql` | Restaurar un respaldo con los permisos exactos | `/usr/local/bin/cmleague-restaurar`, `/srv/supabase/permisos.sql` |
 | `respaldo.env.example` | Credenciales de R2 del respaldo, sin valores | `/etc/cmleague/respaldo.env` (root, 600) |
 
 ## Qué corre
@@ -86,7 +87,7 @@ deploy/supabase/migrar.sh --desde-cero
 ## Respaldos
 
 - **Cuándo:** todos los días a las 09:00 UTC (`systemctl list-timers cmleague-respaldo.timer`). A mano: `sudo cmleague-respaldar`.
-- **Qué se guarda:** `base.dump` (`pg_dump -Fc` de toda la base), `storage.tar.gz` y `SHA256SUMS`, en `/srv/supabase/respaldos/<fecha>/`. Quedan los últimos 7.
+- **Qué se guarda:** `base.dump` (`pg_dump -Fc` de toda la base), `permisos.sql` (desde el 2026-11-26), `storage.tar.gz` y `SHA256SUMS`, en `/srv/supabase/respaldos/<fecha>/`. Quedan los últimos 7.
 - **Copia afuera:** con `/etc/cmleague/respaldo.env` completo (ver `respaldo.env.example`), sube también a R2. Hacen falta:
   - el bucket `cmleague-respaldos`;
   - una regla de ciclo de vida de 14 días;
@@ -94,16 +95,18 @@ deploy/supabase/migrar.sh --desde-cero
 
   Los crea Daniel en Cloudflare.
 
-**Restaurar un respaldo** en una base nueva del VPS:
+**Restaurar un respaldo** (borra la base y los archivos del VPS y los reemplaza):
 
 ```bash
-sudo sb down -v && sudo rm -rf /srv/supabase/oficial/docker/volumes/db/data && sudo sb arrancar
-cat base.dump | sudo docker exec -i supabase-db pg_restore -U supabase_admin -d postgres --clean --if-exists
-sudo tar -C /srv/supabase/oficial/docker/volumes -xzf storage.tar.gz
-sudo sb restart
+sudo systemctl stop cmleague-api cmleague-mm cmleague-season.timer cmleague-notify.timer cmleague-medals.timer cmleague-demos.timer
+sudo cmleague-restaurar /srv/supabase/respaldos/<fecha>      # uno de R2: bajarlo antes a una carpeta
+sudo systemctl start cmleague-api cmleague-mm cmleague-season.timer cmleague-notify.timer cmleague-medals.timer cmleague-demos.timer
 ```
 
-Probado el 2026-11-03 en una base aparte, con 0 errores y las mismas filas y el mismo ELO.
+- `restaurar.sh` (`cmleague-restaurar`) comprueba `SHA256SUMS`, crea `mm_listener` con la contraseña de `MM_LISTEN_URL`, corre `pg_restore --clean`, aplica `permisos.sql`, copia Storage y hace `ANALYZE`.
+- **Hace falta `permisos.sql`** (los respaldos desde el 2026-11-26 lo tienen; lo genera `/srv/supabase/permisos.sql`). Sin él, el `pg_restore` deja 539 funciones y 132 tablas o vistas de `public` con permisos para `anon` y `authenticated`, sin `mm_listener` y sin el uso de `graphql` y `graphql_public`. Era el procedimiento anterior, a mano, que se había probado el 2026-11-03 sin mirar los permisos.
+- **La clave de pgsodium** (volumen `supabase_db-config`) no está en el respaldo: el script la conserva. En otra máquina hay que copiarla antes desde la original. Hoy Vault está vacío.
+- Probado el 2026-11-26 en el VPS viejo con el respaldo `20261126T163405Z`: 0 errores y los mismos permisos que producción ([`2026-11-26-migracion-vps-brasil`](../../docs/bitacora/2026-11-26-migracion-vps-brasil/GUIA_IMPLEMENTACION.md)).
 
 ## Volver a la nube
 

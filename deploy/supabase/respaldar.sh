@@ -2,8 +2,10 @@
 # Respaldo diario del Supabase del VPS (plan docs/bitacora/2026-11-03-supabase-en-vps, sección 5). Lo corre
 # cmleague-respaldo.timer como root; a mano: sudo /usr/local/bin/cmleague-respaldar
 #
-#   1. pg_dump -Fc de la base completa (como supabase_admin: public, auth, storage y lo demás) y tar de los archivos
-#      de Storage, en /srv/supabase/respaldos/AAAAMMDDTHHMMSSZ/. Quedan los últimos 7 en el VPS.
+#   1. pg_dump -Fc de la base completa (como supabase_admin: public, auth, storage y lo demás), los permisos exactos
+#      (permisos.sql, desde el 2026-11-26: sin ellos la restauración abre funciones a anon; ver /srv/supabase/permisos.sql)
+#      y tar de los archivos de Storage, en /srv/supabase/respaldos/AAAAMMDDTHHMMSSZ/. Quedan los últimos 7 en el VPS.
+#      Se restaura con cmleague-restaurar (restaurar.sh).
 #   2. Si /etc/cmleague/respaldo.env tiene R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID y R2_SECRET_ACCESS_KEY, los sube
 #      a R2 (S3 firmado con curl --aws-sigv4). Los de más de 14 días los borra la regla de ciclo de vida del bucket.
 #   3. Comprueba el volcado (pg_restore --list) y avisa por Discord si falla (DISCORD_UPTIME_WEBHOOK, opcional).
@@ -21,14 +23,16 @@ trap 'avisar "Respaldo de la base del VPS: FALLÓ ($fecha). Ver journalctl -u cm
 
 install -d -m 700 "$base" "$dir"
 docker exec supabase-db pg_dump -U supabase_admin -d postgres -Fc > "$dir/base.dump"
+docker exec -i supabase-db psql -X -q -v ON_ERROR_STOP=1 -U supabase_admin -d postgres < /srv/supabase/permisos.sql > "$dir/permisos.sql"
+[[ -s "$dir/permisos.sql" ]] || { echo "permisos.sql salió vacío" >&2; false; }
 tar -C /srv/supabase/oficial/docker/volumes -czf "$dir/storage.tar.gz" storage
 # Un volcado que pg_restore no puede leer no es un respaldo.
 docker exec -i supabase-db pg_restore --list < "$dir/base.dump" | grep -c "TABLE DATA" > "$dir/tablas.txt"
-( cd "$dir" && sha256sum base.dump storage.tar.gz > SHA256SUMS )
-echo "Respaldo $fecha: base $(du -h "$dir/base.dump" | cut -f1), storage $(du -h "$dir/storage.tar.gz" | cut -f1), $(cat "$dir/tablas.txt") tablas con datos"
+( cd "$dir" && sha256sum base.dump storage.tar.gz permisos.sql > SHA256SUMS )
+echo "Respaldo $fecha: base $(du -h "$dir/base.dump" | cut -f1), storage $(du -h "$dir/storage.tar.gz" | cut -f1), $(cat "$dir/tablas.txt") tablas con datos, $(wc -l < "$dir/permisos.sql") permisos"
 
 if [[ -n "${R2_BUCKET:-}" && -n "${R2_ACCESS_KEY_ID:-}" && -n "${R2_SECRET_ACCESS_KEY:-}" && -n "${R2_ACCOUNT_ID:-}" ]]; then
-  for f in base.dump storage.tar.gz SHA256SUMS; do
+  for f in base.dump storage.tar.gz permisos.sql SHA256SUMS; do
     curl -fsS -m 600 --aws-sigv4 "aws:amz:auto:s3" --user "$R2_ACCESS_KEY_ID:$R2_SECRET_ACCESS_KEY" \
       -T "$dir/$f" "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/$R2_BUCKET/$fecha/$f"
   done
