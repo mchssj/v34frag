@@ -111,7 +111,10 @@
     </main>
 
     <script>
-      const ipc = window.__TAURI_INTERNALS__
+      ;(() => {
+      // Todo en un bloque propio: Tauri ya define window.ipc, y un "const ipc" global rompía la página entera
+      // ("Identifier 'ipc' has already been declared"): no se ejecutaba nada y no se veía ningún error (2026-11-26).
+      const tauri = window.__TAURI_INTERNALS__
       // Si el launcher no contesta, se dice: sin esto, la página queda callada y parece que no hace nada.
       const LENTO = { game_pick_dir: 300000, update_install: 600000 }
       // Registro de lo que pasa (lo lee la prueba de GitHub y sirve para revisar un problema): cada pedido al launcher.
@@ -120,7 +123,7 @@
       anota("script")
       const invoke = (cmd, args) =>
         Promise.race([
-          (anota(`→ ${cmd}`), ipc.invoke(cmd, args)).then(
+          (anota(`→ ${cmd}`), tauri.invoke(cmd, args)).then(
             (r) => (anota(`✓ ${cmd}`), r),
             (e) => {
               anota(`✗ ${cmd}: ${typeof e === "string" ? e : e && e.message}`)
@@ -148,7 +151,7 @@
       }
 
       async function load() {
-        if (!ipc) throw new Error("Esta ventana no puede hablar con el launcher.")
+        if (!tauri) throw new Error("Esta ventana no puede hablar con el launcher.")
         current = await invoke("settings_get")
         paint()
         say($("msg"), "Conectado al launcher.")
@@ -226,6 +229,7 @@
         // Sin la configuración real, los interruptores mentirían: se bloquean.
         document.querySelectorAll("input[data-key]").forEach((i) => (i.disabled = true))
       })
+      })()
     </script>
   </body>
 </html>
