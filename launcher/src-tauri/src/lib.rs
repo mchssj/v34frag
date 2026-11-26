@@ -279,6 +279,7 @@ mod tests {
         assert_eq!(p("cmleague://match/0f8d-12?x=1#y"), Some("/match/0f8d-12".into()));
         assert_eq!(p("https://otro.com/play"), None);
         assert_eq!(p("cmleague://play/a.b"), None);
-        assert_eq!(p("cmleague://play/%2e%2e"), None);
+        // El lector de URL resuelve ".." (también escrito %2e%2e) dentro de la ruta: nunca sale de la web.
+        assert_eq!(p("cmleague://play/%2e%2e"), Some("/play".into()));
     }
 }
