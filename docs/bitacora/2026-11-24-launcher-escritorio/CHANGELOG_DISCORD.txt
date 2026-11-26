@@ -1,0 +1,11 @@
+CMLeague X.Y.Z --  Changelog
+
+(Borrador: se publica cuando la app esté para descargar. Falta el número de versión.)
+
+NUEVO: la app de escritorio de CMLeague
+- Es la misma web en una ventana propia para Windows, con tu cuenta de siempre.
+- Cuando aparece tu partida, la ventana se abre al frente aunque la tengas minimizada.
+- "Conectar" abre ClientMod y entras directo al servidor, sin copiar el connect.
+- Si cierras la ventana, la app queda junto al reloj de Windows y sigues en la cola.
+- Se actualiza sola.
+- Bájala desde cmleague.lat/launcher. Si Windows te dice "Windows protegió tu PC", toca "Más información" y "Ejecutar de todas formas".

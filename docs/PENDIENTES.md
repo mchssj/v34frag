@@ -12,6 +12,17 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
 - **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
 
+## App de escritorio (launcher) (2026-11-24): en curso, sin publicar
+
+- **Qué es:** la web de CMLeague en una ventana de Windows, de Kyan (Tauri 2, `launcher/`). La partida encontrada trae la ventana al frente y **Conectar**, **Volver a la partida** y **Entrar** (PCW) abren ClientMod conectado. Fuera de la app, la web no cambia. Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
+- **Decidido por Daniel (2026-11-25):** el enfoque de la web en una ventana; sin firma de Windows por ahora (el aviso de SmartScreen se explica en `/launcher`; el certificado OV, al abrirla a todos); con actualización automática; el instalador y `latest.json` en su R2; descarga desde `/launcher`.
+- **Hecho:** rama `feat/launcher` (worktree `v34frag-launcher`) desde `main`, con lo de Kyan (`acf5825`) sin su base vieja. La carpeta de ClientMod ya no la manda la web: se elige con el selector de Windows y no puede ser de la red. Textos en tuteo, `alert.ts` unido con el aviso de partida, manual oculto y legales "En preparación". Web: lint, tipos y 882 de 882 pruebas.
+- **Falta** (en orden, detalle en la [guía](bitacora/2026-11-24-launcher-escritorio/GUIA_IMPLEMENTACION.md)):
+  1. Daniel: probar a mano `+connect` en `Params=` de `clientmod.ini` y anotar el título de la ventana de CMLauncher con el juego cerrado.
+  2. Push de `feat/launcher`, instalar el `.exe` de GitHub Actions y probar dentro de la ventana (conectar, aviso, notificaciones, links de afuera, sesión). Las pruebas de Rust corren ahí.
+  3. Actualizador de Tauri, token de R2 y llave del actualizador (secretos de GitHub, los pone Daniel), y la página `/launcher`.
+  4. Al publicar: manual visible, líneas en `buscar-partida.md` y `capitan/jugar-pcw.md`, sacar "En preparación" de los legales, changelog, y la web también en `feat/frontend-fase-1`.
+
 ## Aviso de partida encontrada y agregar SteamID a mano (2026-11-23 y 2026-11-25): web desplegada el 2026-11-26
 
 - **Qué es:** el aviso de partida encontrada se repite hasta aceptar ([`2026-11-23-aviso-partida-encontrada`](bitacora/2026-11-23-aviso-partida-encontrada/)) y el botón **Agregar SteamID** en la ficha ([`2026-11-25-admin-agregar-steamid`](bitacora/2026-11-25-admin-agregar-steamid/)).
