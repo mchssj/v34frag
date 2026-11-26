@@ -120,8 +120,11 @@ jobs:
           Remove-Item $archivo -ErrorAction SilentlyContinue
           $env:CMLEAGUE_AUTOPRUEBA = "1"
           $p = Start-Process -FilePath "src-tauri/target/release/cmleague-launcher.exe" -PassThru
-          Start-Sleep -Seconds 20
+          Start-Sleep -Seconds 25
           Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          # Lo que mostraba la página (el aviso de arriba, si hay IPC, si los interruptores estaban bloqueados).
+          $diag = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/autoprueba.txt"
+          if (Test-Path $diag) { Write-Host "Página: $(Get-Content $diag -Raw)" } else { Write-Host "Página: sin datos" }
           if (-not (Test-Path $archivo)) {
             Get-ChildItem (Join-Path $env:APPDATA "lat.cmleague.launcher") -ErrorAction SilentlyContinue
             throw "No se guardó la configuración: no existe $archivo."
