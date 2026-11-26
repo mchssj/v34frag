@@ -289,4 +289,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-25 | [El nombre de los jugadores, en un solo plugin](2026-11-25-nombre-web-en-vivo/) | Reporter 2.10.3 (maneja los nombres y limpia los caracteres raros) y `csstv_qol` 1.6.0 (deja de tocarlos), subidos a #1, #2 y #3 el 2026-11-25 (entran en el próximo cambio de mapa). El #1 ya los cargó |
 | 2026-11-22 | [El nick de la web en producción](2026-11-22-nick-de-la-web-en-produccion/) | Replanteo `134` aplicado el 2026-11-25; falta la web y la API (legales y manual) |
 | 2026-11-25 | [Banear una ficha sin SteamID](2026-11-25-banear-ficha-sin-steamid/) | Replanteo `147` el 2026-11-25; web y API en producción (`affd6e60867e`) desde el 2026-11-26 |
-| 2026-11-26 | [Migración del VPS a São Paulo](2026-11-26-migracion-vps-brasil/) | Fase 1 en curso: VPS nuevo preparado sin secretos y con todo apagado |
+| 2026-11-26 | [Migración del VPS a São Paulo](2026-11-26-migracion-vps-brasil/) | Desplegado el 2026-11-26 (16:35 UTC), con `/privacidad` y la restauración de respaldos al día; el VPS de OVH, apagado como vuelta atrás |
