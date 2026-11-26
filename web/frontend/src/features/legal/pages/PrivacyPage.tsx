@@ -590,14 +590,19 @@ const SECTIONS: LegalSection[] = [
           borras, se cierra la sesión.
         </p>
         <p>
-          La aplicación de escritorio de CMLeague <Wip /> es la misma web en una
-          ventana propia: guarda lo mismo en tu PC y, además, la carpeta donde
-          instalaste ClientMod. No nos manda ningún dato nuevo. Para conectarte
-          a una partida escribe por un momento la dirección del servidor y la
-          contraseña de la sala en el archivo <code>clientmod.ini</code> de
-          ClientMod, y lo deja como estaba cuando se abre el juego. Al abrirse,
-          consulta en nuestro almacenamiento de Cloudflare si hay una versión
-          nueva.
+          <strong>Launcher de escritorio</strong> <Wip />. Es la misma web en
+          una ventana propia para Windows, con la misma cuenta: no junta datos
+          nuevos. En tu PC guarda tu sesión, su configuración (por ejemplo, si
+          abre con Windows o si muestra tu estado en Discord) y la carpeta de
+          ClientMod. Para conectarte a una sala, agrega por un momento la
+          dirección y la contraseña de la sala a <code>clientmod.ini</code> y la
+          saca cuando se abre el juego. Si lo activas en su configuración,
+          muestra en tu Discord lo que estás haciendo («Buscando partida»,
+          «Jugando 5v5 · de_dust2»); Discord lo ve igual que el resto de tu
+          actividad. Para saber si hay una versión nueva, consulta nuestro
+          almacenamiento de Cloudflare (<code>descargas.cmleague.lat</code>). No
+          lee tus otros programas ni archivos, y no toca el juego mientras
+          juegas.
         </p>
       </>
     ),

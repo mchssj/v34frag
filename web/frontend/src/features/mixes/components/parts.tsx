@@ -5,6 +5,7 @@ import type { MouseEvent } from "react"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
+import { launchOnClick } from "@/lib/launcher"
 import {
   Tooltip,
   TooltipContent,
@@ -78,8 +79,8 @@ export function CancelChip({ reason }: { reason: string | null }) {
 }
 
 /**
- * Abre Steam conectado al SourceTV del servidor. Es un link (`steam://`), así funciona con el
- * teclado y con "copiar dirección"; no dispara el clic de la fila que lo contiene.
+ * Conecta al SourceTV del servidor: en el launcher abre ClientMod; en el navegador copia el connect (ClientMod no es
+ * de Steam). Es un link, así funciona con el teclado y con "copiar dirección"; no dispara el clic de la fila.
  */
 export function WatchTvButton({
   tv,
@@ -96,7 +97,10 @@ export function WatchTvButton({
       <TooltipTrigger asChild>
         <a
           href={tvUrl(tv)}
-          onClick={stop}
+          onClick={(e) => {
+            stop(e)
+            launchOnClick(tvAddress(tv))(e)
+          }}
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
             "h-7 gap-1.5 px-2.5 text-xs",

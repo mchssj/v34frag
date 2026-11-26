@@ -14,14 +14,16 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 
 ## App de escritorio (launcher) (2026-11-24): en curso, sin publicar
 
-- **Qué es:** la web de CMLeague en una ventana de Windows, de Kyan (Tauri 2, `launcher/`). La partida encontrada trae la ventana al frente y **Conectar**, **Volver a la partida** y **Entrar** (PCW) abren ClientMod conectado. Fuera de la app, la web no cambia. Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
-- **Decidido por Daniel (2026-11-25):** el enfoque de la web en una ventana; sin firma de Windows por ahora (el aviso de SmartScreen se explica en `/launcher`; el certificado OV, al abrirla a todos); con actualización automática; el instalador y `latest.json` en su R2; descarga desde `/launcher`.
-- **Hecho:** rama `feat/launcher` (worktree `v34frag-launcher`) desde `main`, con lo de Kyan (`acf5825`) sin su base vieja. La carpeta de ClientMod ya no la manda la web: se elige con el selector de Windows y no puede ser de la red. Textos en tuteo, `alert.ts` unido con el aviso de partida, manual oculto y legales "En preparación". Web: lint, tipos y 882 de 882 pruebas.
+- **Qué es:** la web de CMLeague en una ventana de Windows, de Kyan (Tauri 2, `launcher/`): avisos de Windows, la ventana al frente con la partida encontrada, **Aceptar partida** desde la bandeja, **Conectar** que abre ClientMod conectado, Configuración propia, Discord, tema de la tienda, links `cmleague://` y actualización automática. En el navegador, **Conectar**, **Entrar** (PCW) y **Ver en TV** pasan a copiar el connect (antes `steam://`, que no abre ClientMod). Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
+- **Decidido por Daniel (2026-11-25):** el enfoque de la web en una ventana; sin firma de Windows por ahora (el certificado OV, al abrirlo a todos); con actualización automática; el instalador y `latest.json` en su R2 (`descargas.cmleague.lat/launcher/`), subidos por GitHub Actions solo con **Publicar en R2**; descarga desde `/launcher`.
+- **Hecho:** rama `feat/launcher` (worktree `v34frag-launcher`) desde `main`, con lo de Kyan hasta `29a6600a` sin su base vieja ni su `Caddyfile`. Revisión: la carpeta de ClientMod solo con el selector de Windows y nunca de la red; afuera solo `https`, `http` y `mailto`; la prueba `CMLEAGUE_AUTOPRUEBA` fuera del instalador; `LAUNCHER.published = false` apaga la promoción; manual `jugador/launcher.md` oculto; legales "En preparación"; tuteo. Web: lint, tipos y 892 de 892 pruebas.
 - **Falta** (en orden, detalle en la [guía](bitacora/2026-11-24-launcher-escritorio/GUIA_IMPLEMENTACION.md)):
   1. Daniel: probar a mano `+connect` en `Params=` de `clientmod.ini` y anotar el título de la ventana de CMLauncher con el juego cerrado.
-  2. Push de `feat/launcher`, instalar el `.exe` de GitHub Actions y probar dentro de la ventana (conectar, aviso, notificaciones, links de afuera, sesión). Las pruebas de Rust corren ahí.
-  3. Actualizador de Tauri, token de R2 y llave del actualizador (secretos de GitHub, los pone Daniel), y la página `/launcher`.
-  4. Al publicar: manual visible, líneas en `buscar-partida.md` y `capitan/jugar-pcw.md`, sacar "En preparación" de los legales, changelog, y la web también en `feat/frontend-fase-1`.
+  2. Pasar `feat/launcher` a `main`, desplegar la web y copiar sus commits a `feat/frontend-fase-1`.
+  3. Instalar el `.exe` de prueba de GitHub Actions y probarlo con una sala real (conectar, aviso, bandeja, links de afuera, iframes de clips y Twitch, sesión).
+  4. Daniel: bucket de R2 con `descargas.cmleague.lat` y CORS, token de escritura solo de ese bucket, llaves del actualizador y datos de Discord en GitHub. Publicar con **Run workflow › Publicar en R2**.
+  5. Al publicar: `LAUNCHER.published = true`, manual visible con su link en `buscar-partida.md` y `capitan/jugar-pcw.md` (despliegue de la API), sacar "En preparación" de los legales y el changelog.
+  6. Avisarle a Kyan que la rama del launcher es `feat/launcher`.
 
 ## Aviso de partida encontrada y agregar SteamID a mano (2026-11-23 y 2026-11-25): web desplegada el 2026-11-26
 

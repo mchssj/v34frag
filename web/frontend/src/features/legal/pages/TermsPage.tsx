@@ -685,13 +685,14 @@ const SECTIONS: LegalSection[] = [
           función, servidor o temporada, temporal o definitivamente.
         </p>
         <p>
-          La aplicación de escritorio de CMLeague <Wip /> es opcional y
-          gratuita, y se ofrece en las mismas condiciones. No es parte de
-          ClientMod ni de sus autores, y no es un anticheat. Para conectarte a
-          una partida modifica por un momento el archivo{" "}
-          <code>clientmod.ini</code> de ClientMod y lo deja como estaba, y abre
-          ClientMod con permisos de administrador porque ClientMod los pide:
-          Windows te lo pregunta cada vez.
+          <strong>Launcher de escritorio</strong> <Wip />. El launcher de
+          CMLeague para Windows también se ofrece «tal cual está». No es parte
+          de ClientMod ni lo reemplaza: para abrir el juego conectado a una
+          sala, usa <code>CMLauncher.exe</code> y modifica por un momento{" "}
+          <code>clientmod.ini</code>, y abre ClientMod con permisos de
+          administrador porque ClientMod los pide: Windows te lo pregunta cada
+          vez. No es un anticheat. Lo usas bajo tu responsabilidad, y puedes
+          desinstalarlo cuando quieras.
         </p>
       </>
     ),

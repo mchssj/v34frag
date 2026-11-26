@@ -4,20 +4,10 @@
   "version": "0.1.0",
   "identifier": "lat.cmleague.launcher",
   "build": {
-    "frontendDist": "../offline"
+    "frontendDist": "../local"
   },
   "app": {
-    "windows": [
-      {
-        "label": "main",
-        "title": "CMLeague",
-        "width": 1280,
-        "height": 800,
-        "minWidth": 900,
-        "minHeight": 600,
-        "url": "https://cmleague.lat/play"
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": null
     }
@@ -32,5 +22,18 @@
       "icons/128x128.png",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": []
+    },
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "cmleague"
+        ]
+      }
+    }
   }
 }

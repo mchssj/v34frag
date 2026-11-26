@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as LauncherRouteImport } from './routes/launcher'
 import { Route as PrivacidadRouteImport } from './routes/privacidad'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TerminosRouteImport } from './routes/terminos'
@@ -91,6 +92,11 @@ const AppRoute = AppRouteImport.update({
 } as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LauncherRoute = LauncherRouteImport.update({
+  id: '/launcher',
+  path: '/launcher',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadRoute = PrivacidadRouteImport.update({
@@ -432,6 +438,7 @@ const AppPlayerNickRecapSeasonRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/launcher': typeof LauncherRoute
   '/privacidad': typeof PrivacidadRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
@@ -502,6 +509,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/launcher': typeof LauncherRoute
   '/privacidad': typeof PrivacidadRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
@@ -574,6 +582,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
+  '/launcher': typeof LauncherRoute
   '/privacidad': typeof PrivacidadRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terminos': typeof TerminosRoute
@@ -646,6 +655,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/launcher'
     | '/privacidad'
     | '/reset-password'
     | '/terminos'
@@ -716,6 +726,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/launcher'
     | '/privacidad'
     | '/reset-password'
     | '/terminos'
@@ -787,6 +798,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/_auth'
+    | '/launcher'
     | '/privacidad'
     | '/reset-password'
     | '/terminos'
@@ -860,6 +872,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  LauncherRoute: typeof LauncherRoute
   PrivacidadRoute: typeof PrivacidadRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TerminosRoute: typeof TerminosRoute
@@ -896,6 +909,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/launcher': {
+      id: '/launcher'
+      path: '/launcher'
+      fullPath: '/launcher'
+      preLoaderRoute: typeof LauncherRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidad': {
@@ -1518,6 +1538,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  LauncherRoute: LauncherRoute,
   PrivacidadRoute: PrivacidadRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TerminosRoute: TerminosRoute,

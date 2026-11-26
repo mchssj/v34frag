@@ -7,12 +7,19 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
+import {
+  inLauncher,
+  launcherStatus,
+  registerLauncherHandlers,
+  type LauncherStatus,
+} from "@/lib/launcher"
 import { AcceptDialog } from "./AcceptDialog"
 import { alertMatchFound, alertServerReady } from "./alert"
 import { fmtClock } from "./labels"
 import { noticePartyDisbanded } from "./PartyMenu"
 import { mmStateOptions, useMmAction, useMmSocket } from "./queries"
 import { useMmSource } from "./source"
+import type { MmLobby } from "./types"
 import { useNow } from "./useNow"
 
 // La cola fuera de Jugar (Kyan, 2026-11-08): la partida encontrada salta en cualquier pantalla, y mientras se busca
@@ -69,6 +76,25 @@ export function GlobalMatchAlerts({ away }: { away?: boolean } = {}) {
   const accepting = lobby?.status === "accepting"
   const searching = !!state?.queue && !lobby
 
+  // Launcher de escritorio: el estado para la bandeja y Discord, y "Aceptar partida" desde la bandeja.
+  const status = launcherStatusOf(state)
+  const statusKey = JSON.stringify(status)
+  useEffect(() => {
+    if (inLauncher()) launcherStatus(JSON.parse(statusKey) as LauncherStatus)
+  }, [statusKey])
+  const acceptRef = useRef(() => {})
+  useEffect(() => {
+    acceptRef.current = () =>
+      accept.mutate(undefined, {
+        onSuccess: toPlay,
+        onError: (e) => toast.error(errorMessage(e)),
+      })
+  })
+  useEffect(
+    () => registerLauncherHandlers({ accept: () => acceptRef.current() }),
+    []
+  )
+
   // El título de la pestaña avisa aunque estés en otra pestaña; el de la partida encontrada lo pone AcceptDialog.
   useEffect(() => {
     if (onPlay || !searching) return
@@ -97,6 +123,40 @@ export function GlobalMatchAlerts({ away }: { away?: boolean } = {}) {
       sound={selected}
     />
   )
+}
+
+/** El estado del matchmaking como lo muestra el launcher (bandeja y Discord). */
+export function launcherStatusOf(
+  state:
+    | {
+        queue: { mode: string; joined_at: string } | null
+        lobby: MmLobby | null
+      }
+    | undefined
+): LauncherStatus {
+  const lobby = state?.lobby ?? null
+  const queue = state?.queue ?? null
+  if (lobby) {
+    const base = { mode: lobby.mode, map: lobby.map }
+    if (lobby.status === "accepting") return { state: "found", ...base }
+    if (lobby.status === "live")
+      return {
+        state: "live",
+        ...base,
+        score: lobby.match
+          ? `${lobby.match.score1}-${lobby.match.score2}`
+          : null,
+      }
+    if (lobby.status !== "finished" && lobby.status !== "cancelled")
+      return { state: "lobby", ...base }
+  }
+  if (queue)
+    return {
+      state: "queue",
+      mode: queue.mode,
+      since: Date.parse(queue.joined_at),
+    }
+  return { state: "idle" }
 }
 
 /**
