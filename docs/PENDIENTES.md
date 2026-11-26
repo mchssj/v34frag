@@ -19,18 +19,17 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Falta:**
   1. Comprobar que el HUD del #1 llegue al relay después del próximo cambio de mapa.
   2. Dar de baja el VPS de OVH y quitar la contraseña de `root` del nuevo, cuando Daniel lo decida.
-## App de escritorio (launcher) (2026-11-24): en `main` y en la web, sin publicar el launcher
+## App de escritorio (launcher) (2026-11-24): publicado el 2026-11-26 (0.1.0)
 
 - **Qué es:** la web de CMLeague en una ventana de Windows, de Kyan (Tauri 2, `launcher/`): avisos de Windows, la ventana al frente con la partida encontrada, **Aceptar partida** desde la bandeja, **Conectar** que abre ClientMod conectado, Configuración propia, Discord, tema de la tienda, links `cmleague://` y actualización automática. En el navegador, **Conectar**, **Entrar** (PCW) y **Ver en TV** pasan a copiar el connect (antes `steam://`, que no abre ClientMod). Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
 - **Decidido por Daniel (2026-11-25):** el enfoque de la web en una ventana; sin firma de Windows por ahora (el certificado OV, al abrirlo a todos); con actualización automática; el instalador y `latest.json` en su R2 (`descargas.cmleague.lat/launcher/`), subidos por GitHub Actions solo con **Publicar en R2**; descarga desde `/launcher`.
 - **Hecho:** rama `feat/launcher` (worktree `v34frag-launcher`) desde `main`, con lo de Kyan hasta `29a6600a` sin su base vieja ni su `Caddyfile`. Revisión: la carpeta de ClientMod solo con el selector de Windows y nunca de la red; afuera solo `https`, `http` y `mailto`; la prueba `CMLEAGUE_AUTOPRUEBA` fuera del instalador; `LAUNCHER.published = false` apaga la promoción; manual `jugador/launcher.md` oculto; legales "En preparación"; tuteo. Web: lint, tipos y 892 de 892 pruebas.
-- **Falta** (en orden, detalle en la [guía](bitacora/2026-11-24-launcher-escritorio/GUIA_IMPLEMENTACION.md)):
-  1. ~~Probar `+connect` en `Params=`~~: **funciona** (Daniel, 2026-11-26: el juego se conectó solo a `190.104.34.3:27065`). La ventana de CMLauncher se llama "ClientMod Launcher". Apareció otro problema: el SourceTV del #1 pide contraseña ("Bad spectator password") y **Ver en TV** se arma sin ella (en la web y en el launcher). **Resuelto el 2026-11-26:** SourceTV público (Daniel). Solo el #1 tenía `tv_password`, puesta a mano por consola; se borró y `tv_password ""` quedó en el `server.cfg` de #1, #2 y #3.
-  2. ~~Pasar `feat/launcher` a `main` y desplegar la web~~: hecho el 2026-11-26 (merge `42d600b4`, web y API `42d600b4da3d`). Falta copiar los commits de la web a `feat/frontend-fase-1`, que está 158 commits atrás de `main` y con cambios sin commit en su worktree.
-  3. Instalar el `.exe` de prueba de GitHub Actions y probarlo con una sala real (conectar, aviso, bandeja, links de afuera, iframes de clips y Twitch, sesión).
-  4. Daniel: bucket de R2 con `descargas.cmleague.lat` y CORS, token de escritura solo de ese bucket, llaves del actualizador (**generadas el 2026-11-26**: la privada en `~/.tauri/cmleague-launcher.key` de la PC de Daniel y su contraseña en `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` del `.env`; falta cargarlas en GitHub y guardar una copia aparte) y datos de Discord en GitHub. Publicar con **Run workflow › Publicar en R2**.
-  5. Al publicar: `LAUNCHER.published = true`, manual visible con su link en `buscar-partida.md` y `capitan/jugar-pcw.md` (despliegue de la API), sacar "En preparación" de los legales y el changelog.
-  6. Avisarle a Kyan que la rama del launcher es `feat/launcher`.
+- **Publicado el 2026-11-26:** la 0.1.0 en `https://descargas.cmleague.lat/launcher/` (corrida `45874714707`, firmada para las actualizaciones) y la web y la API `0ae84c2803a1` con `LAUNCHER.published = true`, el manual visible y los legales sin "En preparación". Daniel lo probó instalado. El SourceTV quedó público, así que **Ver en TV** también anda.
+- **Falta:**
+  1. Publicar el changelog 2.9.76 (`bitacora/2026-11-24-launcher-escritorio/CHANGELOG_DISCORD.txt`).
+  2. Copiar los commits de la web a `feat/frontend-fase-1` (158 commits atrás, con cambios sin commit en su worktree).
+  3. Avisarle a Kyan que el launcher sigue en `main`.
+  4. Guardar fuera de la PC la llave del actualizador (`~/.tauri/cmleague-launcher.key`) y su contraseña.
 
 ## Aviso de partida encontrada y agregar SteamID a mano (2026-11-23 y 2026-11-25): web desplegada el 2026-11-26
 

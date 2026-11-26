@@ -67,6 +67,14 @@ No toca la base, la API (salvo el manual), el VPS ni los servidores de juego.
 - **Arreglos de Kyan** (`origin/claude/relaxed-einstein-sl0cme`, de `16aee34c` a `84840288`): merge `3ecf9f9e`. Configuración se ejecuta (un `const ipc` chocaba con el de Tauri), se abre fuera del evento de la bandeja y guarda aunque falle "Abrir con Windows"; el selector de carpetas pasa a `tauri-plugin-dialog` (sin permisos para la web en `capabilities/`, y sigue `is_local_dir`); la página `/launcher` completa (sigue sin publicar); el workflow, sin capturas. Revisado: no toca el VPS, la base, la API ni el manual, y no deshace la revisión del 2026-11-25. Pruebas de la mezcla: web 892, API 685 y manual validado. Web `3ecf9f9eae51` desplegada; la API no cambió (sigue `42d600b4da3d`). El instalador más nuevo es el de la corrida `45862228345` (`0364d6a1`; lo que viene después es solo documentación).
 - **Llaves del actualizador:** `pnpm tauri signer generate` con contraseña al azar. La privada quedó en `~/.tauri/cmleague-launcher.key` de la PC de Daniel y la contraseña en `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` del `.env`. Se probó firmar un archivo con las dos. La pública va en `CMLEAGUE_UPDATER_PUBKEY`.
 
+### Publicación (2026-11-26)
+
+- **Build firmado:** el paso Instalador fallaba con "Missing comment in public key" (la configuración tenía `pubkey` vacía); desde `1c364bf6` el workflow arma `tauri.updater.ci.json` con `CMLEAGUE_UPDATER_PUBKEY`. Corrida `45872709951`: Instalador, Abre y no se cierra y `latest.json`, bien.
+- **Prueba de Daniel:** instaló ese build y anduvo todo.
+- **Publicado:** Run workflow con **Publicar en R2** (corrida `45874714707`). `latest.json` y `CMLeague_0.1.0_x64-setup.exe` responden 200 en `descargas.cmleague.lat`, con CORS para `https://cmleague.lat`. El DNS del subdominio tardó un rato en llegarle a la PC de Daniel.
+- **Paso 8:** `LAUNCHER.published = true`, `jugador/launcher.md` visible con su link en `buscar-partida.md` y `capitan/jugar-pcw.md`, legales sin "En preparación", changelog 2.9.76. Web y API `0ae84c2803a1`. En producción, `/launcher` muestra **Descargar para Windows** con la versión 0.1.0.
+- **Accesos en la web** (Daniel): **Launcher** en el menú lateral y la búsqueda, y **Descargar el launcher** en el menú de la cuenta, solo fuera del launcher (`showLauncherLinks`, commit `4751f05f`).
+
 ## Pruebas
 
 ### GitHub Actions (Windows, `windows-latest`)
