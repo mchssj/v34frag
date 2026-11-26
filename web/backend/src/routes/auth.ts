@@ -205,6 +205,13 @@ export const auth = createRouter()
       const message = check.data === 'blocked' ? 'El alias contiene una palabra no permitida.' : 'El alias tiene caracteres no permitidos.';
       throw new AppError(400, 'VALIDATION_ERROR', message, [{ path: 'tag', message }]);
     }
+    // Correos temporales (replanteo 148): la base los rechaza igual (trigger en auth.users); esto da un error claro.
+    const blocked = await anonClient(cfg).rpc('email_domain_blocked' as never, { p_email: email } as never);
+    if (blocked.error) throw fromPostgrest(blocked.error);
+    if (blocked.data === true) {
+      const message = 'No aceptamos correos temporales. Usa otro correo, por ejemplo Gmail u Outlook.';
+      throw new AppError(400, 'VALIDATION_ERROR', message, [{ path: 'email', message }]);
+    }
     const { data, error } = await anonClient(cfg).auth.signUp({
       email,
       password,

@@ -6,7 +6,12 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap } from "@/api/client"
-import type { VipGrant, SettableRole, AccountFilter } from "../types"
+import type {
+  VipGrant,
+  SettableRole,
+  AccountFilter,
+  EmailDomainFilter,
+} from "../types"
 
 export const USERS_PER = 25
 
@@ -18,6 +23,10 @@ export const adminUserKeys = {
   streamer: (alias: string) => ["admin", "users", "streamer", alias] as const,
   words: ["admin", "words", "list"] as const,
   hits: ["admin", "words", "hits"] as const,
+  emailDomains: (q: string, f: EmailDomainFilter, page: number) =>
+    ["admin", "email-domains", "list", q, f, page] as const,
+  emailAccounts: (page: number) =>
+    ["admin", "email-domains", "accounts", page] as const,
 }
 
 export function usersOptions(q: string, f: AccountFilter, page: number) {
@@ -261,3 +270,75 @@ export const useGrantStreamer = (id: string) =>
   useStreamerMutation(id, "/api/v1/admin/users/{id}/streamer")
 export const useRevokeStreamer = (id: string) =>
   useStreamerMutation(id, "/api/v1/admin/users/{id}/streamer/revoke")
+
+// ---------- correos temporales bloqueados (replanteo 148) ----------
+
+export const EMAIL_DOMAINS_PER = 25
+
+export function emailDomainsOptions(
+  q: string,
+  f: EmailDomainFilter,
+  page: number
+) {
+  return queryOptions({
+    queryKey: adminUserKeys.emailDomains(q, f, page),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/email-domains", {
+          params: {
+            query: {
+              page,
+              per: EMAIL_DOMAINS_PER,
+              ...(q ? { q } : {}),
+              ...(f === "lista"
+                ? { source: "lista" as const, blocked: "true" as const }
+                : {}),
+              ...(f === "admin" ? { source: "admin" as const } : {}),
+              ...(f === "exceptions" ? { blocked: "false" as const } : {}),
+            },
+          },
+          signal,
+        })
+      ),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function emailAccountsOptions(page: number) {
+  return queryOptions({
+    queryKey: adminUserKeys.emailAccounts(page),
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/email-domains/accounts", {
+          params: { query: { page, per: 10 } },
+          signal,
+        })
+      ),
+    placeholderData: keepPreviousData,
+  })
+}
+
+const touchedEmailDomains = (qc: ReturnType<typeof useQueryClient>) =>
+  qc.invalidateQueries({ queryKey: ["admin", "email-domains"] as const })
+
+export function useBlockEmailDomain() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { domain: string; reason?: string }) =>
+      unwrap(api.POST("/api/v1/admin/email-domains", { body })),
+    onSuccess: () => touchedEmailDomains(qc),
+  })
+}
+
+export function useUnblockEmailDomain() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (domain: string) =>
+      unwrap(
+        api.DELETE("/api/v1/admin/email-domains/{domain}", {
+          params: { path: { domain } },
+        })
+      ),
+    onSuccess: () => touchedEmailDomains(qc),
+  })
+}

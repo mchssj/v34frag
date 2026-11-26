@@ -244,3 +244,56 @@ export const BlockedHitQuery = listQuery(['kind', 'name'], { sort: 'kind', order
 });
 export const BlockedHitList = Envelope(BlockedHit).openapi('BlockedHitList');
 
+
+// ---------- correos temporales bloqueados (replanteo 148, docs/bitacora/2026-11-26-correos-bloqueados) ----------
+
+export const EmailDomain = z
+  .object({
+    domain: z.string().openapi({ description: 'En minúsculas. Bloquearlo bloquea también sus subdominios' }),
+    source: z.enum(['lista', 'admin']).openapi({ description: '`lista`: la lista pública de correos temporales. `admin`: lo agregó un admin' }),
+    blocked: z.boolean().openapi({ description: '`false`: un admin lo sacó de la lista pública (excepción)' }),
+    reason: z.string().nullable(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  })
+  .openapi('EmailDomain');
+
+export const EmailDomainBody = z
+  .object({
+    domain: z.string().trim().min(3).max(260).openapi({ description: 'Dominio (`anonmart.com`); también acepta `@anonmart.com` o un correo' }),
+    reason: z.string().trim().max(200).optional(),
+  })
+  .openapi('EmailDomainBody');
+
+export const EmailDomainParam = z.object({
+  domain: z.string().trim().min(3).max(253).openapi({ param: { name: 'domain', in: 'path' }, example: 'anonmart.com' }),
+});
+
+export const EmailDomainUnblocked = z
+  .object({
+    domain: z.string(),
+    removed: z.boolean().openapi({ description: '`true`: era de un admin y se borró. `false`: era de la lista y queda como excepción' }),
+  })
+  .openapi('EmailDomainUnblocked');
+
+export const EmailDomainQuery = listQuery(['domain', 'updated_at'], { sort: 'domain', order: 'asc' }).extend({
+  q: z.string().max(253).optional().openapi({ description: 'Parte del dominio' }),
+  source: z.enum(['lista', 'admin']).optional(),
+  blocked: boolParam('`true`: bloqueados. `false`: excepciones'),
+});
+export const EmailDomainList = Envelope(EmailDomain).openapi('EmailDomainList');
+
+export const EmailDomainAccount = z
+  .object({
+    user_id: z.uuid(),
+    email: z.string(),
+    alias: z.string().nullable(),
+    domain: z.string(),
+    created_at: z.string(),
+    confirmed: z.boolean().openapi({ description: 'Confirmó el correo' }),
+    player_id: z.uuid().nullable(),
+    banned: z.boolean().openapi({ description: 'Su ficha tiene un baneo activo' }),
+  })
+  .openapi('EmailDomainAccount');
+export const EmailDomainAccountQuery = listQuery(['created_at', 'email'], { sort: 'created_at', order: 'desc' });
+export const EmailDomainAccountList = Envelope(EmailDomainAccount).openapi('EmailDomainAccountList');

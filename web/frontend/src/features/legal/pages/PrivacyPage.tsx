@@ -464,8 +464,8 @@ const SECTIONS: LegalSection[] = [
             Varios de estos servicios guardan los datos fuera de la Argentina:
             la base de datos, las cuentas y los archivos están en nuestro
             servidor VPS (Halver), en São Paulo, Brasil. Hasta el 2026-11-26
-            estaban en un servidor VPS de OVH en Beauharnois, Canadá, que
-            guarda una copia de esa fecha hasta darlo de baja. Hasta el 2026-11-03
+            estaban en un servidor VPS de OVH en Beauharnois, Canadá, que guarda
+            una copia de esa fecha hasta darlo de baja. Hasta el 2026-11-03
             estaban en Supabase, en el oeste de Estados Unidos (Oregón), que
             guarda una copia de esa fecha hasta borrarla, como mucho el
             2026-12-03. Cloudflare, Google, Discord y Resend pueden guardarlos
@@ -598,8 +598,8 @@ const SECTIONS: LegalSection[] = [
           borras, se cierra la sesión.
         </p>
         <p>
-          <strong>Launcher de escritorio</strong>. Es la misma web en
-          una ventana propia para Windows, con la misma cuenta: no junta datos
+          <strong>Launcher de escritorio</strong>. Es la misma web en una
+          ventana propia para Windows, con la misma cuenta: no junta datos
           nuevos. En tu PC guarda tu sesión, su configuración (por ejemplo, si
           abre con Windows o si muestra tu estado en Discord) y la carpeta de
           ClientMod. Para conectarte a una sala, agrega por un momento la

@@ -21,6 +21,8 @@ function gotrue(route: Route) {
     if (r) return r;
     // El registro valida el alias antes: por defecto está libre.
     if (url.includes('/rest/v1/rpc/alias_check')) return Response.json('ok');
+    // Y el correo (replanteo 148): por defecto no es temporal.
+    if (url.includes('/rest/v1/rpc/email_domain_blocked')) return Response.json(false);
     return new Response('no simulado: ' + url, { status: 599 });
   });
   vi.stubGlobal('fetch', fn);
@@ -90,6 +92,18 @@ describe('POST /auth/signup', () => {
     expect(body.error.code).toBe(code);
     expect(body.error.details).toEqual([{ path: 'tag', message: expect.any(String) }]);
     expect(fetch.mock.calls.some(([u]) => String(u).includes('/auth/v1/signup'))).toBe(false);
+  });
+
+  it('correo temporal (replanteo 148): 400 en el campo email y no crea la cuenta', async () => {
+    const fetch = gotrue((url) => (url.includes('/rest/v1/rpc/email_domain_blocked') ? Response.json(true) : undefined));
+    const res = await post('/auth/signup', { email: 'x@anonmart.com', password: 'secreta1', tag: 'Tag1' });
+    expect(res.status).toBe(400);
+    const body = await json(res);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.details).toEqual([{ path: 'email', message: expect.stringContaining('correos temporales') }]);
+    expect(fetch.mock.calls.some(([u]) => String(u).includes('/auth/v1/signup'))).toBe(false);
+    const rpc = fetch.mock.calls.find(([u]) => String(u).includes('/rpc/email_domain_blocked'))!;
+    expect(JSON.parse(String((rpc[1] as RequestInit).body))).toEqual({ p_email: 'x@anonmart.com' });
   });
 
   it('si set_my_tag falla después del registro, igual responde 201 y lo registra', async () => {

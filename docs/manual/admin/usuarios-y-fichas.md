@@ -1,6 +1,6 @@
 ---
 titulo: Usuarios, roles y fichas
-resumen: Las cuentas (alias, rol, VIP, streamer), las palabras bloqueadas, las fichas de jugador y los pedidos de SteamID.
+resumen: Las cuentas (alias, rol, VIP, streamer), las palabras bloqueadas, los correos temporales bloqueados, las fichas de jugador y los pedidos de SteamID.
 orden: 7
 ---
 
@@ -46,6 +46,16 @@ En la sección **Acceso** de la cuenta tienes tres acciones. Todas piden confirm
 ## Palabras bloqueadas
 
 En **Palabras bloqueadas** agregas palabras que nadie puede usar en su alias ni en el nombre de un equipo. La web te muestra los alias, fichas y equipos que ya contienen una palabra bloqueada, para que los corrijas. También puedes desbloquear una palabra.
+
+## Correos bloqueados
+
+En **Correos bloqueados** están los dominios de correo con los que nadie se puede registrar ni cambiar su correo. Sirve para frenar a quien se crea cuentas nuevas con correos temporales (por ejemplo, un cheater baneado).
+
+- Ya está cargada la **lista pública de correos temporales**, más de 10.000 dominios. Los que agrega un admin aparecen como **Agregado**.
+- Bloquear un dominio bloquea también sus subdominios: `anonmart.com` frena también `mail.anonmart.com`.
+- Para bloquear uno, escribe el dominio (`anonmart.com`) y, si quieres, un motivo, y toca **Bloquear**. Desde ese momento, quien intente registrarse con ese correo ve un aviso y tiene que usar otro.
+- Si un dominio de la lista pública es un correo real (por ejemplo, el de una universidad), toca **Desbloquear**: queda **Permitido** y no se vuelve a bloquear cuando se actualiza la lista. Con **Volver a bloquear** lo deshaces.
+- Abajo ves las **cuentas que ya usan un correo bloqueado**: se crearon antes del bloqueo y siguen funcionando. Con **Ver cuenta** la abres en **Cuentas** y, si corresponde, baneas su ficha.
 
 ## Imagen del inicio de sesión
 

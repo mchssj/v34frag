@@ -14,6 +14,8 @@ Con una cuenta en la web puedes buscar partida, sumar ELO, entrar a un equipo y 
 
 Si tu email ya tiene una cuenta, la web te avisa: inicia sesión con él o toca **¿Olvidaste tu contraseña?** si no la recuerdas.
 
+Usa un correo propio, como Gmail u Outlook. No aceptamos **correos temporales** (los que se crean por unos minutos): si usas uno, la web te pide otro.
+
 Tu alias es tu nombre en toda la web: el ranking, los planteles y el chat. Cuando vinculas tu SteamID con `!claim`, también es tu nombre en nuestros servidores (ver [Jugar en el servidor](/help/jugador/jugar-en-el-servidor)). Empiezas con 1000 de ELO.
 
 ## 2. Confirmar tu correo

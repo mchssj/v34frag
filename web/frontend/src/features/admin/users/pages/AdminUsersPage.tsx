@@ -4,10 +4,11 @@ import { useState } from "react"
 import { AdminHeader, AdminTabs } from "../../components/ui"
 import { AccountsTab } from "../components/AccountsTab"
 import { AuthImageTab } from "../components/AuthImageTab"
-import { hitsOptions } from "../api/queries"
+import { emailAccountsOptions, hitsOptions } from "../api/queries"
+import { EmailDomainsTab } from "../components/EmailDomainsTab"
 import { WordsTab } from "../components/WordsTab"
 
-export const USER_TABS = ["accounts", "words", "login"] as const
+export const USER_TABS = ["accounts", "words", "emails", "login"] as const
 export type UserTab = (typeof USER_TABS)[number]
 
 export function AdminUsersPage({
@@ -18,6 +19,7 @@ export function AdminUsersPage({
   onTab: (t: UserTab) => void
 }) {
   const hits = useQuery(hitsOptions)
+  const emailAccounts = useQuery(emailAccountsOptions(1))
   const [selected, setSelected] = useState<string | null>(null)
   // Al llegar desde "Cambiar alias", la lista se abre buscando ese alias.
   const [focus, setFocus] = useState<string | undefined>(undefined)
@@ -26,7 +28,7 @@ export function AdminUsersPage({
     <section className="flex flex-col gap-5">
       <AdminHeader
         title="Usuarios"
-        subtitle="Las cuentas con las que la gente entra a la web: alias, rol y VIP. Las palabras que nadie puede usar en su alias ni en un equipo. Y la imagen de la pantalla de inicio de sesión."
+        subtitle="Las cuentas con las que la gente entra a la web: alias, rol y VIP. Las palabras que nadie puede usar en su alias ni en un equipo, los correos temporales con los que no se puede registrar y la imagen de la pantalla de inicio de sesión."
       />
       <AdminTabs
         label="Secciones de Usuarios"
@@ -38,6 +40,11 @@ export function AdminUsersPage({
             key: "words",
             label: "Palabras bloqueadas",
             badge: hits.data?.total,
+          },
+          {
+            key: "emails",
+            label: "Correos bloqueados",
+            badge: emailAccounts.data?.total,
           },
           { key: "login", label: "Inicio de sesión" },
         ]}
@@ -51,6 +58,15 @@ export function AdminUsersPage({
         />
       )}
       {tab === "login" && <AuthImageTab />}
+      {tab === "emails" && (
+        <EmailDomainsTab
+          onOpenAccount={(a) => {
+            setFocus(a.name)
+            setSelected(a.id)
+            onTab("accounts")
+          }}
+        />
+      )}
       {tab === "words" && (
         <WordsTab
           onEditAlias={(h) => {

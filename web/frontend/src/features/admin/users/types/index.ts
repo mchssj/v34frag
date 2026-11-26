@@ -8,6 +8,12 @@ export type AdminUser = Schemas["AdminUser"]
 
 export type BlockedHit = Schemas["BlockedHit"]
 
+// Correos temporales bloqueados (replanteo 148, docs/bitacora/2026-11-26-correos-bloqueados).
+export type EmailDomain = Schemas["EmailDomain"]
+export type EmailDomainAccount = Schemas["EmailDomainAccount"]
+/** Filtro de la lista: todos, los de la lista pública, los agregados por un admin o las excepciones. */
+export type EmailDomainFilter = "all" | "lista" | "admin" | "exceptions"
+
 export type VipGrant = Schemas["VipGrant"]
 
 export type Streamer = Schemas["Streamer"]

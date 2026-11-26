@@ -10772,6 +10772,292 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/email-domains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dominios de correo bloqueados
+         * @description La lista pública de correos temporales y los que agregaron los admins, con las excepciones (`blocked: false`).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `domain`, `updated_at` */
+                    sort?: "domain" | "updated_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                    /** @description Parte del dominio */
+                    q?: string;
+                    source?: "lista" | "admin";
+                    /** @description `true`: bloqueados. `false`: excepciones */
+                    blocked?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Dominios */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EmailDomainList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Bloquear un dominio de correo
+         * @description Desde ese momento no se puede registrar ni cambiar el correo a uno de ese dominio ni de sus subdominios. Si era una excepción, se vuelve a bloquear.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EmailDomainBody"];
+                };
+            };
+            responses: {
+                /** @description Bloqueado */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EmailDomain"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/email-domains/{domain}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Desbloquear un dominio de correo
+         * @description Uno agregado por un admin se borra. Uno de la lista pública queda como excepción, para que una carga nueva de la lista no lo vuelva a bloquear.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    domain: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Desbloqueado */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EmailDomainUnblocked"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/email-domains/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cuentas que ya usan un dominio bloqueado
+         * @description Se crearon antes del bloqueo y no se tocan: un admin decide si banea su ficha.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at`, `email` */
+                    sort?: "created_at" | "email";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Cuentas */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EmailDomainAccountList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/teams": {
         parameters: {
             query?: never;
@@ -31825,6 +32111,64 @@ export interface components {
             name: string;
             word: string;
         };
+        EmailDomainList: {
+            items: components["schemas"]["EmailDomain"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        EmailDomain: {
+            /** @description En minúsculas. Bloquearlo bloquea también sus subdominios */
+            domain: string;
+            /**
+             * @description `lista`: la lista pública de correos temporales. `admin`: lo agregó un admin
+             * @enum {string}
+             */
+            source: "lista" | "admin";
+            /** @description `false`: un admin lo sacó de la lista pública (excepción) */
+            blocked: boolean;
+            reason: string | null;
+            created_at: string;
+            updated_at: string;
+        };
+        EmailDomainBody: {
+            /** @description Dominio (`anonmart.com`); también acepta `@anonmart.com` o un correo */
+            domain: string;
+            reason?: string;
+        };
+        EmailDomainUnblocked: {
+            domain: string;
+            /** @description `true`: era de un admin y se borró. `false`: era de la lista y queda como excepción */
+            removed: boolean;
+        };
+        EmailDomainAccountList: {
+            items: components["schemas"]["EmailDomainAccount"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        EmailDomainAccount: {
+            /** Format: uuid */
+            user_id: string;
+            email: string;
+            alias: string | null;
+            domain: string;
+            created_at: string;
+            /** @description Confirmó el correo */
+            confirmed: boolean;
+            /** Format: uuid */
+            player_id: string | null;
+            /** @description Su ficha tiene un baneo activo */
+            banned: boolean;
+        };
         AdminTeamCreate: {
             name: string;
             tag: string;
@@ -32386,7 +32730,7 @@ export interface components {
             } | null;
             /** @description Alias de la ficha o último nick conocido del SteamID */
             nick: string | null;
-            /** @description SteamID baneado. Sin ficha es público (como los perfiles sin reclamar); con ficha, solo para moderadores y admins */
+            /** @description SteamID baneado. Sin ficha es público (como los perfiles sin reclamar); con ficha, solo para moderadores y admins. `null`: ficha sin SteamID (replanteo 147) */
             steam_id: string | null;
             reason: string;
             created_at: string;
@@ -32431,7 +32775,7 @@ export interface components {
         BanCreate: {
             /**
              * Format: uuid
-             * @description Ficha a banear (todos sus SteamID). Necesita SteamID
+             * @description Ficha a banear: todos sus SteamID y los que sume después. Sin SteamID también (replanteo 147): no puede buscar partida, y el baneo les llega a los servidores cuando vincule uno
              */
             player_id?: string;
             /** @description SteamID64 sin ficha. Si tiene ficha, se banea la ficha */

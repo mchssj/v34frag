@@ -40,7 +40,9 @@ const SECTIONS: LegalSection[] = [
         <li>
           Te registras con un correo, una contraseña y un <em>tag</em> (tu
           nombre en la liga). Una persona, una cuenta: no se permiten cuentas
-          duplicadas para saltar un baneo, inflar el ELO o jugar por otro.
+          duplicadas para saltar un baneo, inflar el ELO o jugar por otro. El
+          correo tiene que ser tuyo: no aceptamos correos temporales o
+          descartables.
         </li>
         <li>
           Eres responsable de lo que pase con tu cuenta. Cuida tu contraseña y
@@ -686,10 +688,10 @@ const SECTIONS: LegalSection[] = [
           función, servidor o temporada, temporal o definitivamente.
         </p>
         <p>
-          <strong>Launcher de escritorio</strong>. El launcher de
-          CMLeague para Windows también se ofrece «tal cual está». No es parte
-          de ClientMod ni lo reemplaza: para abrir el juego conectado a una
-          sala, usa <code>CMLauncher.exe</code> y modifica por un momento{" "}
+          <strong>Launcher de escritorio</strong>. El launcher de CMLeague para
+          Windows también se ofrece «tal cual está». No es parte de ClientMod ni
+          lo reemplaza: para abrir el juego conectado a una sala, usa{" "}
+          <code>CMLauncher.exe</code> y modifica por un momento{" "}
           <code>clientmod.ini</code>, y abre ClientMod con permisos de
           administrador porque ClientMod los pide: Windows te lo pregunta cada
           vez. No es un anticheat. Lo usas bajo tu responsabilidad, y puedes

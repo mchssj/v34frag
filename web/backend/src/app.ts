@@ -14,6 +14,7 @@ import { createRouter } from './lib/router';
 import { account } from './routes/account';
 import { adminDemos } from './routes/admin-demos';
 import { adminPlayers } from './routes/admin-players';
+import { adminEmailDomains } from './routes/admin-email-domains';
 import { adminServers } from './routes/admin-servers';
 import { adminTeams } from './routes/admin-teams';
 import { auth } from './routes/auth';
@@ -113,6 +114,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', teams);
   app.route('/', roster);
   app.route('/', adminPlayers);
+  app.route('/', adminEmailDomains); // (replanteo 148) correos temporales bloqueados
   app.route('/', adminTeams);
   app.route('/', adminServers);
   app.route('/', adminDemos);
