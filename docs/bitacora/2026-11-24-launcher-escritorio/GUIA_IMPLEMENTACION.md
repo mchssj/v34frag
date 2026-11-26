@@ -2,7 +2,7 @@
 
 ## Estado
 
-Compilado y probado en Windows por GitHub Actions: abre, sigue abierto y saca capturas. **Sin desplegar ni publicar** (2026-11-26).
+Compilado y probado en Windows por GitHub Actions: abre, sigue abierto y saca capturas. **En `main` y en la web desde el 2026-11-26** (merge `42d600b4`, web y API `42d600b4da3d`); el launcher, **sin publicar**. Llaves del actualizador generadas el 2026-11-26 (falta cargarlas en GitHub).
 
 Está en la rama `feat/launcher` (worktree `v34frag-launcher`), que sale de `main`. Trae lo de Kyan (`claude/relaxed-einstein-sl0cme`, hasta `29a6600a`) sin su base vieja: tomar sus archivos de la web tal cual borraba cosas desplegadas después (el preveto VIP en `RoomOverview.tsx`), así que van como parche, y `MatchAlerts.tsx`, `alert.ts` y los legales se unieron a mano. La revisión del 2026-11-25 y el 2026-11-26 está en "Decisiones y revisión" de [`DOCUMENTACION.md`](DOCUMENTACION.md).
 
@@ -58,6 +58,13 @@ Faltan, en orden:
    - publicar el `CHANGELOG_DISCORD.txt`.
 
 No toca la base, la API (salvo el manual), el VPS ni los servidores de juego.
+
+### Hecho el 2026-11-26
+
+- **Mezcla:** `feat/launcher` en `main` con el commit `42d600b4`, hecho en un worktree aparte. Solo chocó `docs/PENDIENTES.md`; se conservaron las dos secciones. Antes, la mezcla de prueba pasó typecheck, lint y 892 pruebas de la web, y 685 de la API con el manual validado (76 páginas).
+- **Despliegue:** web y API `42d600b4da3d` con `desplegar.sh`, desde ese worktree limpio. `/launcher` responde 200.
+- **`feat/frontend-fase-1`, sin copiar:** está 158 commits atrás de `main` y su worktree tiene cambios sin commit (Workers de Cloudflare).
+- **Llaves del actualizador:** `pnpm tauri signer generate` con contraseña al azar. La privada quedó en `~/.tauri/cmleague-launcher.key` de la PC de Daniel y la contraseña en `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` del `.env`. Se probó firmar un archivo con las dos. La pública va en `CMLEAGUE_UPDATER_PUBKEY`.
 
 ## Pruebas
 
