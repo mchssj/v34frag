@@ -237,6 +237,13 @@ const SECTIONS: LegalSection[] = [
             duplicadas.
           </li>
           <li>
+            <strong>La IP con la que usas la web</strong>, al iniciar sesión, al
+            renovar la sesión y al entrar a la cola del matchmaking, con la
+            primera y la última vez. Solo la ven los administradores, se usa
+            para detectar cuentas duplicadas y aplicar baneos por IP, y se borra
+            a los 90 días.
+          </li>
+          <li>
             Los avisos que haces con <code>!calladmin</code> y los baneos o
             sanciones que recibas.
           </li>

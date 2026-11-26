@@ -34,6 +34,8 @@ Si te banean mientras estás en el matchmaking:
 - Si estabas en una sala que todavía no empezó, la sala se cancela y los demás vuelven a la cola.
 - Si ya estabas jugando, cuenta como abandono: te resta ELO y tu equipo puede recibir un reemplazo.
 
+Un baneo también puede incluir **tu conexión** (tu IP o un rango de IPs), por hasta 30 días: desde ahí nadie puede buscar partida, aceptar una ni crear una cuenta, aunque sea con otra cuenta. Si compartes internet con alguien baneado (en tu casa, un ciber) y no puedes buscar partida, escríbenos por Discord.
+
 ## Si te quitan la foto o el logo
 
 Si tu foto de perfil o el logo de tu equipo no cumplen las reglas (ofensivos o con datos personales), el soporte, un moderador o un admin los puede quitar. Te llega el aviso "Te quitamos la foto de perfil" (o, al líder, el del logo) con el motivo. Queda la imagen por defecto y puedes subir otra cuando quieras.

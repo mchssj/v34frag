@@ -47,6 +47,18 @@ Desde el detalle del baneo:
 - **Cambiar:** otro motivo u otra duración. Si solo cambias el motivo, deja la duración en **Como está** y el vencimiento no se mueve. Guarda con **Guardar cambios**.
 - **Levantar baneo:** escribe el motivo (es obligatorio) y confirma. El jugador puede volver a buscar partida. El baneo no se borra: queda en la lista como levantado, con tu motivo.
 
+## IPs y rangos (solo admins)
+
+En el detalle de un baneo activo, un admin ve la sección **IPs y rangos**. Sirve para frenar a quien se crea cuentas nuevas para seguir jugando.
+
+- **IPs que usó:** las de los servidores (por sus SteamID) y las de la web (al iniciar sesión y entrar a la cola). Si otra ficha o cuenta usó la misma IP, aparece en amarillo.
+- Al lado de cada IP eliges **Esta IP**, `x.y.z.*` (un rango `/24`) o `x.y.*.*` (un rango `/16`). Muchas conexiones cambian de IP pero repiten los primeros números: un rango las cubre.
+- También puedes escribir otra IP o rango en **Otra IP o rango** y tocar **Revisar**. Como mucho, `/16`.
+- Antes de confirmar, la web te muestra **a quién más afecta**: los jugadores de CMLeague que usaron alguna IP de ese rango. Si son muchos, usa un rango más chico.
+- Desde una IP o rango baneado nadie puede buscar partida, aceptar una ni crear una cuenta. Vence con el baneo, como mucho a los 30 días. Con la **X** lo levantas.
+
+> **Ojo:** con una VPN o los datos del celular la persona cambia de IP. Es una barrera más, no la única.
+
 ## Los baneos del soporte
 
 El soporte también banea desde la web, pero con límites: por minutos, nunca a quien ya está baneado y con un límite de baneos de soporte por jugador. Los números los fija un admin (hoy, hasta 120 minutos y 3 baneos en 7 días) y los ves en la tarjeta **Límites del soporte**, en la pestaña **Actividad del soporte**. Solo cambia o levanta los suyos. Tú puedes cambiar o levantar cualquiera de ellos. Lo que puede hacer el soporte está en la sección [Soporte](/help/soporte/banear-jugador) del manual.
