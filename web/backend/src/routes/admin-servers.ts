@@ -185,6 +185,6 @@ export function toServer(c: C, s: ServerRow) {
     matches: s.matches ?? 0,
     last_match_at: s.last_match_at ?? null,
     created_at: s.created_at ?? '',
-    hud: toServerHud(s, hudHost(c.var.config.HUD_BASE_URL)),
+    hud: toServerHud(s, hudHost(c.var.config.HUD_BASE_URL, c.var.config.HUD_UDP_HOST)),
   };
 }

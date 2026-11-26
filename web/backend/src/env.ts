@@ -39,6 +39,13 @@ const EnvSchema = z.object({
     .url()
     .transform((s) => s.replace(/\/+$/, ''))
     .optional(),
+  // Host al que los servidores mandan el UDP del HUD (csstv_hud_host), si no es el de HUD_BASE_URL. Desde el 2026-11-26
+  // `hud` va por Cloudflare, que no pasa UDP, y los servidores usan relay.cmleague.lat ("DNS only";
+  // docs/bitacora/2026-11-26-migracion-vps-brasil).
+  HUD_UDP_HOST: z
+    .string()
+    .regex(/^(?=.{1,253}$)[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i)
+    .optional(),
   // La API no la usa: la usa el cron de las temporadas (scripts/season-tick.mts). Se declara para que el despliegue
   // falle temprano si viene mal formada.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),

@@ -72,6 +72,9 @@ describe('HUD de un servidor (armado)', () => {
   it('las líneas del cfg, con el host de HUD_BASE_URL', () => {
     expect(hudHost('https://hud.cmleague.lat')).toBe('hud.cmleague.lat');
     expect(hudHost(undefined)).toBeNull();
+    // HUD_UDP_HOST manda: hud va por Cloudflare y el UDP entra por relay (2026-11-26).
+    expect(hudHost('https://hud.cmleague.lat', 'relay.cmleague.lat')).toBe('relay.cmleague.lat');
+    expect(hudHost(undefined, 'relay.cmleague.lat')).toBe('relay.cmleague.lat');
     expect(hudCfg('hud.cmleague.lat', 27501, KEY)).toBe(
       `csstv_hud "1"\ncsstv_hud_host "hud.cmleague.lat"\ncsstv_hud_port "27501"\ncsstv_hud_key "${KEY}"`,
     );

@@ -17,3 +17,4 @@ CLIENT_IP_HEADER=
 # CLIPS_BASE_URL=https://cmleague-clips.cmleague.workers.dev
 # Dirección del relay del HUD: links de OBS de los streamers y csstv_hud_host del cfg. Sin ella, POST /me/hud-link da 501.
 # HUD_BASE_URL=https://hud.cmleague.lat
+# HUD_UDP_HOST=relay.cmleague.lat

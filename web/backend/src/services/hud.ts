@@ -8,8 +8,8 @@ type HudRow = {
   hud_key: string | null; hud_seen_at: string | null; hud_streaming: unknown;
 };
 
-/** Host del relay para csstv_hud_host: el de HUD_BASE_URL (null si no está configurada). */
-export const hudHost = (base: string | undefined) => (base ? new URL(base).hostname : null);
+/** Host del relay para csstv_hud_host: HUD_UDP_HOST, o si no el de HUD_BASE_URL (null si no hay ninguna). */
+export const hudHost = (base: string | undefined, udpHost?: string) => udpHost ?? (base ? new URL(base).hostname : null);
 
 /** Las líneas del cfg del HUD de un servidor. Sin host, la del host queda para completar a mano. */
 export function hudCfg(host: string | null, port: number, key: string) {
