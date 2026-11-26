@@ -73,8 +73,13 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           if ($env:TAURI_SIGNING_PRIVATE_KEY -and $env:CMLEAGUE_UPDATER_PUBKEY) {
+            # Al firmar, Tauri verifica la firma con plugins.updater.pubkey de la configuración, que en tauri.conf.json
+            # está vacía ("Missing comment in public key", 2026-11-26). Se arma con la de CMLEAGUE_UPDATER_PUBKEY. La app
+            # no la lee de ahí: la recibe al compilar (updater.rs).
             # Archivo y no JSON en la línea: pnpm en Windows pasa por cmd, que rompe las comillas.
-            pnpm tauri build --config src-tauri/tauri.updater.conf.json
+            @{ bundle = @{ createUpdaterArtifacts = $true }; plugins = @{ updater = @{ pubkey = $env:CMLEAGUE_UPDATER_PUBKEY.Trim() } } } |
+              ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8NoBOM src-tauri/tauri.updater.ci.json
+            pnpm tauri build --config src-tauri/tauri.updater.ci.json
           } else {
             Write-Host "Sin clave de firma: el instalador sale sin actualizaciones automáticas."
             pnpm tauri build

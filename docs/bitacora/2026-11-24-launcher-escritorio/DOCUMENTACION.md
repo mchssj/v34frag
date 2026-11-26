@@ -189,7 +189,7 @@ No hay comandos del servidor nuevos.
 | Parte nativa | `launcher/src-tauri/src/` (`lib.rs`, `game.rs`, `status.rs`, `settings.rs`, `updater.rs`) |
 | Permisos | `launcher/src-tauri/capabilities/web.json` y `ajustes.json` |
 | Páginas locales | `launcher/local/ajustes.html` (Configuración) e `index.html` |
-| Configuración de Tauri | `launcher/src-tauri/tauri.conf.json` (y `tauri.updater.conf.json` para el build firmado) |
+| Configuración de Tauri | `launcher/src-tauri/tauri.conf.json` (y `tauri.updater.ci.json` para el build firmado, que arma el workflow con `CMLEAGUE_UPDATER_PUBKEY`) |
 | Compilación, prueba y capturas en Windows | `.github/workflows/launcher.yml` |
 | Puente en la web | `web/frontend/src/lib/launcher.ts` |
 | Tema y su tarjeta | `web/frontend/src/features/launcher/` |
