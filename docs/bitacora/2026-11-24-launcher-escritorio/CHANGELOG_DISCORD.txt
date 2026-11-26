@@ -31,6 +31,14 @@ MÁS
 - Se actualiza solo: te avisa cuando hay una versión nueva y la instalas cuando quieras, nunca en medio de una partida.
 - Si lo abres dos veces, te trae la ventana que ya tenías abierta.
 
+TU NOMBRE EN EL SERVIDOR (VUELVE)
+- Si tu SteamID está vinculado a tu perfil, al entrar al servidor juegas con el nombre de tu perfil de cmleague.lat, el mismo que se ve en el ranking y en las partidas.
+- Si te lo cambias dentro del servidor, vuelve solo al de tu perfil. Para usar otro, cámbialo en tu perfil y se actualiza la próxima vez que entres.
+- Los VIP pueden usar el nombre que quieran, también con la partida empezada.
+- Si no tienes el SteamID vinculado o tu perfil es privado, sigues con tu nombre, pero con la partida empezada no lo puedes cambiar. Para vincularlo, usa !claim.
+- Los símbolos que el juego no muestra bien (emojis, caracteres invisibles) se quitan del nombre.
+- Ya está prendido en los tres servidores.
+
 EN LA WEB
 - En el navegador, Conectar, Volver a la partida y Entrar (PCW) ahora copian el comando para pegarlo en la consola del juego. Antes intentaban abrir Steam, que no abre ClientMod. Lo mismo con Ver en TV.
 - Ver en TV ya no pide contraseña: entras directo a mirar la partida en vivo.
