@@ -19,6 +19,12 @@ describe("steam64", () => {
     expect(steam64("STEAM_0:0:1340892842")).toBe("76561200642051412")
     expect(steam64("steam_1:1:0")).toBe("76561197960265729")
   })
+  it("acepta el link del perfil y espacios alrededor", () => {
+    expect(steam64(" STEAM_0:0:637057701 ")).toBe("76561199234381130")
+    expect(
+      steam64("https://steamcommunity.com/profiles/76561199234381130/")
+    ).toBe("76561199234381130")
+  })
   it("devuelve null con otra cosa", () => {
     expect(steam64("Nmz1-")).toBeNull()
     expect(steam64("STEAM_0:2:5")).toBeNull()
