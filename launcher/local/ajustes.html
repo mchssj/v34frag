@@ -111,8 +111,31 @@
     </main>
 
     <script>
-      const ipc = window.__TAURI_INTERNALS__
-      const invoke = (cmd, args) => ipc.invoke(cmd, args)
+      ;(() => {
+      // Todo en un bloque propio: Tauri ya define window.ipc, y un "const ipc" global rompía la página entera
+      // ("Identifier 'ipc' has already been declared"): no se ejecutaba nada y no se veía ningún error (2026-11-26).
+      const tauri = window.__TAURI_INTERNALS__
+      // Si el launcher no contesta, se dice: sin esto, la página queda callada y parece que no hace nada.
+      const LENTO = { game_pick_dir: 300000, update_install: 600000 }
+      // Registro de lo que pasa (lo lee la prueba de GitHub y sirve para revisar un problema): cada pedido al launcher.
+      window.__traza = []
+      const anota = (t) => window.__traza.push(`${Math.round(performance.now())} ${t}`)
+      anota("script")
+      const invoke = (cmd, args) =>
+        Promise.race([
+          (anota(`→ ${cmd}`), tauri.invoke(cmd, args)).then(
+            (r) => (anota(`✓ ${cmd}`), r),
+            (e) => {
+              anota(`✗ ${cmd}: ${typeof e === "string" ? e : e && e.message}`)
+              throw e
+            }
+          ),
+          new Promise((_, no) =>
+            setTimeout(() => no(new Error(`El launcher no respondió a ${cmd}. Ciérralo desde la bandeja (Salir) y ábrelo de nuevo.`)), LENTO[cmd] || 8000)
+          ),
+        ])
+      window.addEventListener("error", (e) => (anota(`error: ${e.message}`), document.getElementById("msg").textContent = `Error de la página: ${e.message}`))
+      window.addEventListener("unhandledrejection", (e) => (anota(`rechazo: ${e.reason && e.reason.message || e.reason}`), document.getElementById("msg").textContent = `Error: ${e.reason && e.reason.message || e.reason}`))
       const $ = (id) => document.getElementById(id)
       const say = (el, text, err) => { el.textContent = text || ""; el.classList.toggle("err", !!err) }
       const errText = (e) => (typeof e === "string" ? e : (e && e.message) || String(e))
@@ -128,9 +151,11 @@
       }
 
       async function load() {
-        if (!ipc) throw new Error("Esta ventana no puede hablar con el launcher.")
+        if (!tauri) throw new Error("Esta ventana no puede hablar con el launcher.")
         current = await invoke("settings_get")
         paint()
+        say($("msg"), "Conectado al launcher.")
+        setTimeout(() => { if ($("msg").textContent === "Conectado al launcher.") say($("msg"), "") }, 2500)
         const game = await invoke("game_detect").catch(() => null)
         $("dir").value = current.clientmod_dir || (game && game.dir) || ""
         say($("dir-msg"), game ? `Encontrado en ${game.dir}.` : "No encontré ClientMod en las carpetas comunes.", !game)
@@ -147,21 +172,30 @@
             window.__okTimer = setTimeout(() => { if ($("msg").textContent === "Guardado.") say($("msg"), "") }, 2500)
           } catch (e) {
             say($("msg"), `No se guardó: ${errText(e)}`, true)
+            // Pudo guardarse una parte (por ejemplo, todo menos "Abrir con Windows"): se muestra lo que quedó.
+            current = await invoke("settings_get").catch(() => current)
           }
           if (current) paint()
         })
       )
 
       $("save-dir").addEventListener("click", async () => {
+        $("save-dir").disabled = true
+        say($("dir-msg"), "Elige la carpeta en la ventana que se abrió…")
         try {
           // El selector de carpetas de Windows: la ruta no se escribe a mano (CMLauncher.exe se abre como administrador).
           const game = await invoke("game_pick_dir")
-          if (!game) return
+          if (!game) {
+            say($("dir-msg"), $("dir").value ? "" : "No elegiste ninguna carpeta.")
+            return
+          }
           current = await invoke("settings_get")
           $("dir").value = game.dir
           say($("dir-msg"), `Guardado: ${game.dir}.`)
         } catch (e) {
           say($("dir-msg"), errText(e), true)
+        } finally {
+          $("save-dir").disabled = false
         }
       })
 
@@ -195,6 +229,7 @@
         // Sin la configuración real, los interruptores mentirían: se bloquean.
         document.querySelectorAll("input[data-key]").forEach((i) => (i.disabled = true))
       })
+      })()
     </script>
   </body>
 </html>

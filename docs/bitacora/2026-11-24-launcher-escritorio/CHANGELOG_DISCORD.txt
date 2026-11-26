@@ -1,20 +1,39 @@
 CMLeague X.Y.Z --  Changelog
 
-(Borrador: se publica junto con el launcher. El número de versión se pone al publicarlo.)
+(Borrador: se publica junto con el launcher. El número de versión se pone al publicarlo. Antes de publicar, confirmar que están encendidos Discord y las actualizaciones; si alguno no está, sacar su línea.)
 
 LLEGÓ EL LAUNCHER DE CMLEAGUE PARA WINDOWS
 
-- Es la misma web, con tu cuenta, en su propia ventana. Lo bajas desde cmleague.lat/launcher.
-- Cuando aparece la partida te avisa con una notificación de Windows y la ventana se pone al frente, aunque estés en otra cosa.
+Es la misma web, con tu misma cuenta, en su propia ventana. Lo bajas desde cmleague.lat/launcher, donde también te contamos qué hace y respondemos las dudas más comunes.
+
+PARTIDAS
+- Cuando aparece la partida te llega una notificación de Windows y la ventana se pone al frente, aunque estés haciendo otra cosa.
 - Puedes aceptar la partida desde el ícono de CMLeague en la bandeja, al lado del reloj.
-- Conectar abre ClientMod ya conectado a tu sala: aprietas PLAY y entras, sin copiar la IP ni la contraseña.
+- Conectar abre ClientMod ya conectado a tu sala: aprietas PLAY y entras, sin copiar la IP ni la contraseña. También funciona con Volver a la partida y con Entrar en las PCW.
+- La primera vez te pide la carpeta de ClientMod con el buscador de carpetas de Windows. Después la recuerda.
+- Si el juego ya está abierto, te deja el connect copiado para que lo pegues en la consola.
 - Si cierras la ventana, queda en la bandeja y sigues en la cola.
-- Tiene su propia configuración: abrir con Windows, avisos, mostrar en Discord lo que estás jugando y más. No cambia nada de la web.
-- Si tienes temas de la tienda, puedes usar uno en el launcher. Lo eliges en Perfil > Preferencias > Tema del launcher.
-- Se actualiza solo: te avisa cuando hay una versión nueva y la instalas cuando quieras.
+
+BANDEJA Y DISCORD
+- El ícono de la bandeja te dice qué estás haciendo: buscando partida, partida encontrada o jugando.
+- Tu Discord puede mostrar lo que estás haciendo en CMLeague: en el launcher, en el juego, buscando partida o jugando, con el mapa y el resultado. Se apaga desde la configuración.
+
+CONFIGURACIÓN PROPIA
+- Abrir con Windows y arrancar en la bandeja.
+- Cerrar a la bandeja o cerrar del todo con la X.
+- Avisos de Windows, traer la ventana al frente y mostrar en Discord, cada uno por separado.
+- La carpeta de ClientMod.
+- Todo se guarda en tu PC y no cambia nada de la web ni de tu cuenta.
+
+TU ESTILO
+- Si tienes temas de la tienda, puedes pintar el launcher con el que quieras. Lo eliges en Perfil > Preferencias > Tema del launcher. Tu perfil y la web quedan igual.
+
+MÁS
+- Ver demo, Descargar demo y los links a otros sitios se abren en tu navegador, así la demo se descarga como siempre y el launcher se queda en CMLeague.
+- Se actualiza solo: te avisa cuando hay una versión nueva y la instalas cuando quieras, nunca en medio de una partida.
+- Si lo abres dos veces, te trae la ventana que ya tenías abierta.
 
 EN LA WEB
+- En el navegador, Conectar, Volver a la partida y Entrar (PCW) ahora copian el comando para pegarlo en la consola del juego. Antes intentaban abrir Steam, que no abre ClientMod. Lo mismo con Ver en TV.
 
-- En el navegador, Conectar ahora copia el comando para pegarlo en la consola del juego. Antes intentaba abrir Steam, que no abre ClientMod.
-
-Si Windows te dice que protegió tu PC al instalarlo, toca "Más información" y "Ejecutar de todas formas".
+Si Windows te dice que protegió tu PC al instalarlo, toca "Más información" y "Ejecutar de todas formas". Es el aviso que Windows muestra con los programas nuevos.

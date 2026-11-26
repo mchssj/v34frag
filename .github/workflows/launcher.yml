@@ -80,33 +80,19 @@ jobs:
             pnpm tauri build
           }
 
-      # Que abra y se quede abierto (el 2026-11-25 una versión se cerraba al arrancar sin mostrar nada), con capturas
-      # de la ventana y de Configuración para ver cómo queda sin instalarlo.
+      # Que abra y se quede abierto (el 2026-11-25 una versión se cerraba al arrancar sin mostrar nada). Sin capturas:
+      # se sacan solo cuando Kyan las pide.
       - name: Abre y no se cierra
         shell: pwsh
         run: |
-          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-          New-Item -ItemType Directory -Force capturas | Out-Null
-          function Captura($nombre) {
-            $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
-            $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
-            [System.Drawing.Graphics]::FromImage($bmp).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
-            $bmp.Save((Join-Path (Resolve-Path capturas) $nombre))
-          }
-          $exe = "src-tauri/target/release/cmleague-launcher.exe"
-          $p = Start-Process -FilePath $exe -PassThru
+          $p = Start-Process -FilePath "src-tauri/target/release/cmleague-launcher.exe" -PassThru
           Start-Sleep -Seconds 25
           if ($p.HasExited) {
             $log = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/error.log"
             if (Test-Path $log) { Get-Content $log }
             throw "El launcher se cerró solo (código $($p.ExitCode))."
           }
-          Captura "1-ventana.png"
-          # Con el launcher abierto, --ajustes abre Configuración en la misma instancia.
-          Start-Process -FilePath $exe -ArgumentList "--ajustes"
-          Start-Sleep -Seconds 6
-          Captura "2-configuracion.png"
-          Write-Host "Sigue abierto y con capturas."
+          Write-Host "Sigue abierto después de 25 s."
           Stop-Process -Id $p.Id -Force
 
       # Configuración: un cambio hecho desde su ventana (como un clic) tiene que quedar en ajustes.json. Usa un build
@@ -120,8 +106,11 @@ jobs:
           Remove-Item $archivo -ErrorAction SilentlyContinue
           $env:CMLEAGUE_AUTOPRUEBA = "1"
           $p = Start-Process -FilePath "src-tauri/target/release/cmleague-launcher.exe" -PassThru
-          Start-Sleep -Seconds 15
+          Start-Sleep -Seconds 35
           Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          # Lo que mostraba la página (el aviso de arriba, si hay IPC, si los interruptores estaban bloqueados).
+          $diag = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/autoprueba.txt"
+          if (Test-Path $diag) { Write-Host "Página: $(Get-Content $diag -Raw)" } else { Write-Host "Página: sin datos" }
           if (-not (Test-Path $archivo)) {
             Get-ChildItem (Join-Path $env:APPDATA "lat.cmleague.launcher") -ErrorAction SilentlyContinue
             throw "No se guardó la configuración: no existe $archivo."
@@ -131,12 +120,6 @@ jobs:
           $s = $json | ConvertFrom-Json
           if ($s.notifications -ne $false -or $s.discord_presence -ne $false) { throw "ajustes.json no tiene el cambio." }
           Write-Host "La configuración se guarda."
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: capturas
-          path: launcher/capturas/*.png
-          retention-days: 14
 
       # latest.json para https://descargas.cmleague.lat/launcher/ (solo con la clave de firma).
       - name: latest.json

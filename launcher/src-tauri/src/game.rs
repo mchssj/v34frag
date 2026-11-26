@@ -65,38 +65,27 @@ pub fn game_detect(app: tauri::AppHandle) -> Option<GameInfo> {
 }
 
 /// El selector de carpetas de Windows. Devuelve la carpeta elegida, o `None` si el jugador lo cerró.
-#[cfg(windows)]
-fn pick_folder() -> Result<Option<String>, String> {
-    use std::os::windows::process::CommandExt;
-    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-    // Un formulario invisible "siempre visible" como dueño, para que el selector no quede detrás de la ventana.
-    let script = "[Console]::OutputEncoding = [Text.Encoding]::UTF8; \
-        Add-Type -AssemblyName System.Windows.Forms; \
-        $d = New-Object System.Windows.Forms.FolderBrowserDialog; \
-        $d.Description = 'Elige la carpeta de ClientMod (la que tiene CMLauncher.exe)'; \
-        $d.ShowNewFolderButton = $false; \
-        $o = New-Object System.Windows.Forms.Form -Property @{ TopMost = $true }; \
-        if ($d.ShowDialog($o) -eq [System.Windows.Forms.DialogResult]::OK) { $d.SelectedPath }";
-    let out = Command::new("powershell")
-        .args(["-NoProfile", "-STA", "-Command", script])
-        .creation_flags(CREATE_NO_WINDOW)
-        .output()
-        .map_err(|e| format!("No pude abrir el selector de carpetas: {e}."))?;
-    let dir = String::from_utf8_lossy(&out.stdout).trim().to_string();
-    Ok((!dir.is_empty()).then_some(dir))
-}
-
-#[cfg(not(windows))]
-fn pick_folder() -> Result<Option<String>, String> {
-    Err("ClientMod solo corre en Windows.".into())
-}
 
 /// El jugador elige la carpeta de ClientMod con el selector de Windows, y queda guardada. Nadie le manda una ruta: ni
 /// la web ni la ventana de Configuración, solo piden que se abra el selector. `None` si lo cerró sin elegir.
 #[tauri::command]
 pub async fn game_pick_dir(app: tauri::AppHandle) -> Result<Option<GameInfo>, String> {
-    let picked = tauri::async_runtime::spawn_blocking(pick_folder).await.map_err(|e| e.to_string())??;
-    let Some(dir) = picked else { return Ok(None) };
+    // Selector de carpetas nativo, encima de la ventana desde la que se pidió (Configuración o la web).
+    let picker = app.clone();
+    let picked = tauri::async_runtime::spawn_blocking(move || {
+        use tauri::Manager;
+        use tauri_plugin_dialog::DialogExt;
+        let mut d = picker.dialog().file().set_title("Elige la carpeta de ClientMod (la que tiene CMLauncher.exe)");
+        if let Some(w) = picker.get_webview_window("settings").or_else(|| picker.get_webview_window("main")) {
+            d = d.set_parent(&w);
+        }
+        d.blocking_pick_folder()
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    let Some(dir) = picked.and_then(|p| p.into_path().ok()).map(|p| p.to_string_lossy().into_owned()) else {
+        return Ok(None);
+    };
     if !is_local_dir(&dir) {
         return Err("Elige una carpeta de un disco de esta PC, no de la red.".into());
     }

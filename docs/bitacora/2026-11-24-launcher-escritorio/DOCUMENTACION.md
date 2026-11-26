@@ -1,6 +1,6 @@
 # Launcher de escritorio: documentación
 
-> Estado al 2026-11-26: **sin publicar.** Rama `feat/launcher` (worktree `v34frag-launcher`), que sale de `main` y trae lo de Kyan (`claude/relaxed-einstein-sl0cme`, hasta `29a6600a`) con la revisión de Daniel de la sección "Decisiones y revisión". Lo que falta está en [`GUIA_IMPLEMENTACION.md`](GUIA_IMPLEMENTACION.md).
+> Estado al 2026-11-26: **sin publicar.** Rama `feat/launcher` (worktree `v34frag-launcher`), que sale de `main` y trae lo de Kyan (`claude/relaxed-einstein-sl0cme`, hasta `29a6600a`) con la revisión de Daniel de la sección "Decisiones y revisión". Después siguió en `claude/relaxed-einstein-sl0cme` sobre esa copia (`16aee34`): la página de descarga completa y los arreglos de Configuración del 2026-11-26 (ver "Incidentes" en la guía). Lo que falta está en [`GUIA_IMPLEMENTACION.md`](GUIA_IMPLEMENTACION.md).
 
 ## Qué hace
 
@@ -155,7 +155,15 @@ La ventana solo navega por `https://cmleague.lat` (y `www`). Cualquier otro link
 
 ## Página de descarga
 
-`/launcher` es pública. Lee `latest.json` del mismo lugar que el actualizador y ofrece **Descargar para Windows**, que solo acepta instaladores de `descargas.cmleague.lat/launcher/`, y **Ya lo tengo: abrirlo**. Sin publicar, dice "Todavía no está publicado". Con `LAUNCHER.published`, **Jugar** la enlaza ("Launcher para Windows") cuando no estás en el launcher. El bucket tiene que permitir el GET de `latest.json` desde `https://cmleague.lat` (CORS).
+`/launcher` es pública y está armada como la portada de la web (`features/launcher/pages/LauncherPage.tsx`):
+
+1. **Portada:** el título, **Descargar para Windows** con la versión y, a la derecha, un dibujo de la ventana con el aviso "¡Partida encontrada!" (`LauncherMockup.tsx`, decorativo, no es una captura).
+2. **Qué hace:** seis tarjetas (Conectar con un clic, avisos, la misma web, Configuración propia, temas de la tienda y actualizaciones).
+3. **Cómo empezar:** cuatro pasos, con el aviso de SmartScreen.
+4. **Preguntas frecuentes** (que se abren al tocarlas): SmartScreen, si es un anticheat, ClientMod, si hay que actualizarlo con la web, el navegador y cómo desinstalarlo.
+5. **"Listo para jugar":** la descarga otra vez.
+
+Los botones (`DownloadButtons.tsx`) leen `latest.json` del mismo lugar que el actualizador y solo aceptan instaladores de `descargas.cmleague.lat/launcher/`. Con `LAUNCHER.published = false` no piden `latest.json` y dicen "Todavía no está publicado"; dentro del launcher, "Ya lo estás usando". Con `LAUNCHER.published`, **Jugar** la enlaza ("Launcher para Windows") cuando no estás en el launcher. El bucket tiene que permitir el GET de `latest.json` desde `https://cmleague.lat` (CORS).
 
 ## Qué cambia para cada rol
 
