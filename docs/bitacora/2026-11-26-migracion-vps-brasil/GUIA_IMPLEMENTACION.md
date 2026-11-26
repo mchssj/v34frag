@@ -87,6 +87,8 @@ Mientras el viejo siga entero:
 2. `cmleague-respaldar` y `cmleague-restaurar` nuevos y `/srv/supabase/permisos.sql` instalados a mano en el VPS (sin correr `instalar.sh`, que reinicia los contenedores). Respaldo de prueba `20261126T165345Z` con `permisos.sql` (1105 sentencias), en R2 y con `SHA256SUMS` bien.
 3. Web y API `9f41fd836a16` con `desplegar.sh` desde un worktree limpio en `9f41fd83` (sin lo que sigue sin commit en `main`). La web incluye `/privacidad` y `/terminos` al día; la API, las dos páginas del manual que faltaban (`admin/usuarios-y-fichas.md` y `jugador/buscar-partida.md`).
 
+4. Memoria (17:07 UTC, sin nadie en #1, #2 y #3): `cmleague.yml` con Postgres a 2 GB (`shared_buffers` 512 MB, `effective_cache_size` 2 GB, `work_mem` 8 MB, `maintenance_work_mem` 128 MB; los de fábrica eran 128 MB), Storage 512 MB, Kong 768 MB, PostgREST 384 MB y Auth 256 MB; `cmleague-api` con `MemoryMax=1536M` (el ffmpeg de los clips cuenta adentro). `sb arrancar` recreó los contenedores: 20 s sin base, y la API se reinició después. Todo sano, sin errores; uso real ~1,6 GB de 5,8 GB.
+
 ### Prueba de la restauración (en el VPS viejo, 2026-11-26)
 
 - Se guardaron `db/data`, `storage` y `supabase_db-config` del viejo y su huella (sha256 de todos los archivos).
@@ -98,5 +100,4 @@ Mientras el viejo siga entero:
 1. Comprobar que el HUD del #1 llegue al relay después del próximo cambio de mapa.
 2. **Dar de baja el VPS de OVH** cuando se decida que no hace falta volver atrás. Hasta entonces guarda una copia de la base: `/privacidad` ya lo dice (al darlo de baja, sacar esa frase).
 3. Quitar la contraseña de `root` y dejar solo llaves (Daniel lo decide más adelante).
-4. Los límites de memoria de `cmleague.yml` y el `MemoryMax` de la API, con la RAM nueva.
 5. `pnpm gen:api` en el frontend no hace falta (`HUD_UDP_HOST` no cambia la OpenAPI).

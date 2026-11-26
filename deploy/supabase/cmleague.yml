@@ -5,11 +5,13 @@
 #   - Todo escucha solo en 127.0.0.1: Docker se saltea ufw, así que nunca se publica un puerto en 0.0.0.0.
 #     Desde afuera se entra por Caddy (db.cmleague.lat, solo /rest, /auth y /storage).
 #   - Sin Realtime, Edge Functions, Analytics, Vector, Supavisor ni imgproxy: la plataforma no los usa.
-#   - Límite de memoria por contenedor, para no quitarle RAM a la API, al socket ni al relay del HUD.
+#   - Límite de memoria por contenedor, para no quitarle RAM a la API, al socket ni al relay del HUD. Subidos el
+#     2026-11-26 para el VPS de São Paulo (5,8 GB; docs/bitacora/2026-11-26-migracion-vps-brasil). Son topes: con
+#     tráfico, todo Supabase usaba ~800 MB.
 
 services:
   db:
-    mem_limit: 1200m
+    mem_limit: 2048m
     ports:
       - 127.0.0.1:5432:5432/tcp
     # Solo las contraseñas de los roles internos y el jwt_exp. Sin los scripts de Realtime, Analytics, Supavisor ni
@@ -29,12 +31,21 @@ services:
       # Producción las tiene (pg_stat_statements) y las consultas de diagnóstico las usan.
       - -c
       - pg_stat_statements.track=top
+      # Memoria (2026-11-26): la base entera y sus índices entran en shared_buffers; los de fábrica eran 128 MB.
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - effective_cache_size=2GB
+      - -c
+      - work_mem=8MB
+      - -c
+      - maintenance_work_mem=128MB
 
   rest:
-    mem_limit: 256m
+    mem_limit: 384m
 
   auth:
-    mem_limit: 128m
+    mem_limit: 256m
     # Plantillas de deploy/auth/plantillas/: GoTrue las pide por URL y Caddy las sirve desde /srv/supabase/plantillas
     # (no tienen secretos). Los asuntos son los mismos de deploy/auth/configurar-auth.mjs.
     environment:
@@ -46,7 +57,7 @@ services:
       GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE: Confirma tu nuevo correo en CMLeague
 
   storage:
-    mem_limit: 256m
+    mem_limit: 512m
     depends_on: !override
       db:
         condition: service_healthy
@@ -64,7 +75,7 @@ services:
     mem_limit: 384m
 
   api-gw:
-    mem_limit: 512m
+    mem_limit: 768m
     depends_on: !reset []
     ports: !override
       - 127.0.0.1:8000:8000/tcp

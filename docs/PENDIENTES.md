@@ -15,11 +15,10 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 ## Migración del VPS a São Paulo (2026-11-26): desplegada, faltan detalles
 
 - **Qué es:** todo lo del VPS de OVH (Beauharnois, Canadá) pasó a uno de Halver en São Paulo, más potente y cerca de los jugadores. Detalle: [`2026-11-26-migracion-vps-brasil`](bitacora/2026-11-26-migracion-vps-brasil/GUIA_IMPLEMENTACION.md).
-- **Hecho el 2026-11-26:** corte a las 16:35 UTC sin mixes (copia física idéntica, Cloudflare al VPS nuevo, `relay.cmleague.lat` y `csstv_hud_host` en **#1, #2 y #3**, firewall, `.env`). Después: web y API `9f41fd836a16` (`/privacidad` y `/terminos` al día, `HUD_UDP_HOST` para Administración › Servidores) y la restauración de respaldos arreglada (`cmleague-restaurar` con `permisos.sql`, probada en el VPS viejo con 0 diferencias de permisos). El VPS de OVH quedó apagado y entero (`VPS_HOST_VIEJO`).
+- **Hecho el 2026-11-26:** corte a las 16:35 UTC sin mixes (copia física idéntica, Cloudflare al VPS nuevo, `relay.cmleague.lat` y `csstv_hud_host` en **#1, #2 y #3**, firewall, `.env`). Después: web y API `9f41fd836a16` (`/privacidad` y `/terminos` al día, `HUD_UDP_HOST` para Administración › Servidores), la restauración de respaldos arreglada (`cmleague-restaurar` con `permisos.sql`, probada en el VPS viejo con 0 diferencias de permisos) y los límites de memoria subidos (Postgres 2 GB con `shared_buffers` 512 MB, API 1,5 GB). El VPS de OVH quedó apagado y entero (`VPS_HOST_VIEJO`).
 - **Falta:**
   1. Comprobar que el HUD del #1 llegue al relay después del próximo cambio de mapa.
   2. Dar de baja el VPS de OVH y quitar la contraseña de `root` del nuevo, cuando Daniel lo decida.
-  3. Subir los límites de memoria de `cmleague.yml` y el `MemoryMax` de la API.
 
 ## Aviso de partida encontrada y agregar SteamID a mano (2026-11-23 y 2026-11-25): web desplegada el 2026-11-26
 

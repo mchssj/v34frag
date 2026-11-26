@@ -20,7 +20,8 @@ Restart=always
 RestartSec=2
 # Al reiniciar, hasta 20 s para terminar los pedidos en curso.
 TimeoutStopSec=20
-MemoryMax=768M
+# 2026-11-26: 1,5 GB en el VPS de São Paulo (5,8 GB); el ffmpeg de los clips cuenta dentro de este límite.
+MemoryMax=1536M
 
 NoNewPrivileges=yes
 ProtectSystem=strict
