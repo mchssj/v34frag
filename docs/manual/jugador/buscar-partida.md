@@ -83,6 +83,7 @@ Cuando termina el veto, buscamos un servidor libre. Si están todos ocupados, la
 Con el servidor listo, la **Sala de la partida** te muestra la dirección y la contraseña. Para entrar:
 
 - Toca **Copiar connect** y pega el comando en la consola del juego (º). **Conectar** hace lo mismo: copia el comando, porque ClientMod no se abre desde la web.
+- Con el [launcher de CMLeague](/help/jugador/launcher) para Windows, **Conectar** abre ClientMod ya conectado a la sala, con la contraseña.
 
 Tienes **{{mm.conectar}}** para conectarte; la sala muestra cuánto queda y quiénes ya entraron. Si todavía no vinculaste tu SteamID, o entraste desde otra PC, escribe en el chat el `!claim` que te muestra la sala.
 

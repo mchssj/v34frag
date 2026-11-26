@@ -598,7 +598,7 @@ const SECTIONS: LegalSection[] = [
           borras, se cierra la sesión.
         </p>
         <p>
-          <strong>Launcher de escritorio</strong> <Wip />. Es la misma web en
+          <strong>Launcher de escritorio</strong>. Es la misma web en
           una ventana propia para Windows, con la misma cuenta: no junta datos
           nuevos. En tu PC guarda tu sesión, su configuración (por ejemplo, si
           abre con Windows o si muestra tu estado en Discord) y la carpeta de

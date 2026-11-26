@@ -2,7 +2,6 @@
 titulo: Usar el launcher de CMLeague
 resumen: La web en su propia ventana para Windows, con aviso de partida, entrada al servidor con un clic y su configuración.
 orden: 24
-oculta: true
 ---
 
 El launcher de CMLeague es la misma web, con tu misma cuenta, en una ventana propia para Windows. Suma lo que el navegador no puede hacer: abrir ClientMod ya conectado a tu sala y avisarte cuando aparece la partida aunque estés haciendo otra cosa. No es un anticheat y no toca el juego mientras juegas.

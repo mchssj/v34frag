@@ -20,7 +20,7 @@ Mientras no hay servidor, cualquiera de los dos equipos puede tocar **Ya no esta
 
 ## 2. Conectarse
 
-Cuando la fila les da un servidor, les avisamos en la campana y la sala muestra **Conectar** y la contraseña. La contraseña solo la ven los planteles: si juega un stand-in, pásasela tú. **Entrar** copia el comando para conectarte: pégalo en la consola del juego (º), porque ClientMod no se abre desde la web.
+Cuando la fila les da un servidor, les avisamos en la campana y la sala muestra **Conectar** y la contraseña. La contraseña solo la ven los planteles: si juega un stand-in, pásasela tú. **Entrar** copia el comando para conectarte: pégalo en la consola del juego (º), porque ClientMod no se abre desde la web. Con el [launcher de CMLeague](/help/jugador/launcher), **Entrar** abre ClientMod ya conectado.
 
 ## 3. La espera
 

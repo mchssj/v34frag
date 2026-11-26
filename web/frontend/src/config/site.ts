@@ -25,7 +25,7 @@ export const LAUNCHER = {
    * Si ya se puede bajar. Mientras sea `false`, la web no lo promociona (el link de Jugar y el "Ver el launcher" del aviso
    * de Conectar); `/launcher` igual se puede abrir y dice que todavía no está publicado.
    */
-  published: false,
+  published: true,
   latestUrl: "https://descargas.cmleague.lat/launcher/latest.json",
   /** Abre el launcher instalado (protocolo que registra el instalador). */
   openUrl: "cmleague://play",

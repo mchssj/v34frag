@@ -1,6 +1,4 @@
-CMLeague X.Y.Z --  Changelog
-
-(Borrador: se publica junto con el launcher. El número de versión se pone al publicarlo. Antes de publicar, confirmar que están encendidos Discord y las actualizaciones; si alguno no está, sacar su línea.)
+CMLeague 2.9.76 --  Changelog
 
 LLEGÓ EL LAUNCHER DE CMLEAGUE PARA WINDOWS
 
