@@ -46,10 +46,15 @@
       .msg.err { color: var(--danger); }
       footer { display: flex; align-items: center; gap: 8px; }
       footer .grow { flex: 1; }
+      /* Aviso fijo arriba: "Guardado" o el error, siempre a la vista. */
+      #msg { position: sticky; top: 0; z-index: 2; margin: -20px -20px 0; padding: 10px 20px; background: var(--card); border-bottom: 1px solid var(--line); }
+      #msg:empty { display: none; }
+      #msg.err { background: #2a1414; }
     </style>
   </head>
   <body>
     <main>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
       <header>
         <img src="logo.svg" alt="" />
         <div>
@@ -103,7 +108,6 @@
         </div>
       </section>
 
-      <p class="msg" id="msg"></p>
     </main>
 
     <script>
@@ -124,6 +128,7 @@
       }
 
       async function load() {
+        if (!ipc) throw new Error("Esta ventana no puede hablar con el launcher.")
         current = await invoke("settings_get")
         paint()
         const game = await invoke("game_detect").catch(() => null)
@@ -138,10 +143,12 @@
           try {
             current = await invoke("settings_set", { settings: next })
             say($("msg"), "Guardado.")
+            clearTimeout(window.__okTimer)
+            window.__okTimer = setTimeout(() => { if ($("msg").textContent === "Guardado.") say($("msg"), "") }, 2500)
           } catch (e) {
-            say($("msg"), errText(e), true)
+            say($("msg"), `No se guardó: ${errText(e)}`, true)
           }
-          paint()
+          if (current) paint()
         })
       )
 
@@ -180,7 +187,11 @@
         }
       })
 
-      load().catch((e) => say($("msg"), errText(e), true))
+      load().catch((e) => {
+        say($("msg"), `No pude leer la configuración: ${errText(e)}`, true)
+        // Sin la configuración real, los interruptores mentirían: se bloquean.
+        document.querySelectorAll("input[data-key]").forEach((i) => (i.disabled = true))
+      })
     </script>
   </body>
 </html>

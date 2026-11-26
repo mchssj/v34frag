@@ -290,6 +290,20 @@ pub fn run() {
             if std::env::args().any(|a| a == SETTINGS_ARG) {
                 open_settings(handle);
             }
+            // Prueba de GitHub Actions: con CMLEAGUE_AUTOPRUEBA=1, la ventana de Configuración guarda un cambio por la
+            // misma vía que un clic (IPC y permisos), y el workflow revisa ajustes.json.
+            if std::env::var("CMLEAGUE_AUTOPRUEBA").as_deref() == Ok("1") {
+                open_settings(handle);
+                let h = handle.clone();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_secs(6));
+                    if let Some(w) = h.get_webview_window("settings") {
+                        let _ = w.eval(
+                            "const i=window.__TAURI_INTERNALS__;i.invoke('settings_get').then(s=>i.invoke('settings_set',{settings:{...s,notifications:false,discord_presence:false}})).catch(e=>i.invoke('settings_set',{settings:{autoprueba_error:String(e)}}))",
+                        );
+                    }
+                });
+            }
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 let dl = app.deep_link();

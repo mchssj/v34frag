@@ -96,6 +96,26 @@ jobs:
           Write-Host "Sigue abierto y con capturas."
           Stop-Process -Id $p.Id -Force
 
+      # Configuración: un cambio hecho desde su ventana (como un clic) tiene que quedar en ajustes.json.
+      - name: Configuración se guarda
+        shell: pwsh
+        run: |
+          $archivo = Join-Path $env:APPDATA "lat.cmleague.launcher/ajustes.json"
+          Remove-Item $archivo -ErrorAction SilentlyContinue
+          $env:CMLEAGUE_AUTOPRUEBA = "1"
+          $p = Start-Process -FilePath "src-tauri/target/release/cmleague-launcher.exe" -PassThru
+          Start-Sleep -Seconds 15
+          Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          if (-not (Test-Path $archivo)) {
+            Get-ChildItem (Join-Path $env:APPDATA "lat.cmleague.launcher") -ErrorAction SilentlyContinue
+            throw "No se guardó la configuración: no existe $archivo."
+          }
+          $json = Get-Content $archivo -Raw
+          Write-Host $json
+          $s = $json | ConvertFrom-Json
+          if ($s.notifications -ne $false -or $s.discord_presence -ne $false) { throw "ajustes.json no tiene el cambio." }
+          Write-Host "La configuración se guarda."
+
       - uses: actions/upload-artifact@v4
         with:
           name: capturas
