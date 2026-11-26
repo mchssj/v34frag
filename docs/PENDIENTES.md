@@ -18,9 +18,14 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Hecho:** replanteo `148`, lista cargada, API `7e8d5b843348` y web `b983b8960846`. Administración › Usuarios › **Correos bloqueados**.
 - **Falta:** que un admin revise las 6 cuentas que ya usan un dominio bloqueado (`anonmart.com`, `afronewz.com`, `gonrr.net`) y banee sus fichas si corresponde. Actualizar la lista pública de vez en cuando (`pruebas/cargar_lista.py`).
 
-## Baneo por IP (2026-11-26) y baneos en los servidores (2026-11-26): planeados
+## Baneo por IP (2026-11-26): desplegado
 
-- Planes en [`2026-11-26-baneo-por-ip`](bitacora/2026-11-26-baneo-por-ip/PLAN.md) y [`2026-11-26-baneos-en-los-servidores`](bitacora/2026-11-26-baneos-en-los-servidores/PLAN.md), pendientes de aprobación de Daniel. Hoy los baneos de la web no echan de los servidores y el `!ban` del juego vale solo en el servidor donde se usa.
+- IPs y rangos (hasta `/16`) atados a un baneo, con excepciones por ficha o cuenta: frenan cola, aceptar, grupos y registro. Detalle: [`2026-11-26-baneo-por-ip`](bitacora/2026-11-26-baneo-por-ip/GUIA_IMPLEMENTACION.md). Primer rango: `181.21.*.*` en el baneo de Nose, con GabeV exceptuado.
+- **Ojo:** muchos jugadores se conectan por IPv6; un rango IPv4 no los frena por ahí. Hace falta sumar sus IPv6 cuando aparezcan en la sección.
+
+## Baneos en los servidores (2026-11-26): aprobado, sin empezar
+
+- Plan: [`2026-11-26-baneos-en-los-servidores`](bitacora/2026-11-26-baneos-en-los-servidores/PLAN.md). Hoy los baneos de la web no echan de los servidores y el `!ban` del juego vale solo en el servidor donde se usa.
 
 ## Migración del VPS a São Paulo (2026-11-26): desplegada, faltan detalles
 

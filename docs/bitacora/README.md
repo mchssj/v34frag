@@ -293,5 +293,5 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-26 | [Migración del VPS a São Paulo](2026-11-26-migracion-vps-brasil/) | Desplegado el 2026-11-26 (16:35 UTC), con `/privacidad` y la restauración de respaldos al día; el VPS de OVH, apagado como vuelta atrás |
 | 2026-11-26 | [Baneos de la web aplicados en los servidores](2026-11-26-baneos-en-los-servidores/) | Planeado, pendiente de aprobación |
 | 2026-11-26 | [Correos temporales bloqueados al registrarse](2026-11-26-correos-bloqueados/) | Desplegado (2026-11-26): replanteo `148`, lista pública, API y web |
-| 2026-11-26 | [Baneo por IP desde la web](2026-11-26-baneo-por-ip/) | Planeado, pendiente de aprobación |
+| 2026-11-26 | [Baneo por IP desde la web](2026-11-26-baneo-por-ip/) | Desplegado (2026-11-26): replanteos `149` y `150`, Caddy, API y web `833b692f19af`; primer rango `181.21.*.*` |
 | 2026-11-26 | [Banear una cuenta sin ficha](2026-11-26-banear-cuenta-sin-ficha/) | Desplegado (2026-11-26): web 1ee6c8dc6f84 y manual en la API |
