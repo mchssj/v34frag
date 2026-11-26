@@ -20,6 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { myProfileOptions } from "@/features/profile/api/queries"
+import { showLauncherLinks } from "@/lib/launcher"
 import { activeNavKey, NAV_GROUPS, type BadgeKey } from "../lib/nav"
 import { AccountMenu } from "./AccountMenu"
 import { useBadgeCounts } from "../api/queries"
@@ -39,7 +40,9 @@ export function AppSidebar({ user }: { user: AuthUser }) {
   const groups = NAV_GROUPS.map((g) => ({
     ...g,
     items: g.items.filter(
-      (i) => !i.admin || canAccessAdminSection(user.role, i.admin)
+      (i) =>
+        (!i.admin || canAccessAdminSection(user.role, i.admin)) &&
+        (!i.launcher || showLauncherLinks())
     ),
   })).filter((g) => g.items.length > 0)
 

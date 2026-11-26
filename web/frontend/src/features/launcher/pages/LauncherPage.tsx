@@ -252,13 +252,16 @@ export function LauncherPage() {
             <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {STEPS.map((s, i) => (
                 <li key={s.title} className="flex flex-col gap-2">
-                  <span className="flex items-center gap-2 text-primary [&_svg]:size-5">
-                    <span className="grid size-7 place-items-center rounded-full bg-primary font-mono text-xs font-bold text-primary-foreground">
+                  {/* Número, título e ícono en una sola línea (Daniel, 2026-11-26). */}
+                  <div className="flex items-center gap-2.5">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary font-mono text-xs font-bold text-primary-foreground">
                       {i + 1}
                     </span>
-                    {s.icon}
-                  </span>
-                  <h3 className="text-base font-semibold">{s.title}</h3>
+                    <h3 className="text-base font-semibold">{s.title}</h3>
+                    <span className="text-primary [&_svg]:size-4" aria-hidden>
+                      {s.icon}
+                    </span>
+                  </div>
                   <p className="text-sm text-pretty text-muted-foreground">
                     {s.text}
                   </p>

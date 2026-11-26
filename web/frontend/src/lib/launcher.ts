@@ -21,6 +21,12 @@ function tauri(): TauriInternals | null {
 export const inLauncher = () => tauri() !== null
 
 /**
+ * Los accesos al launcher (menú lateral, menú de la cuenta, link de Jugar): solo en la web, nunca dentro del launcher,
+ * y solo con el launcher publicado (Daniel, 2026-11-26).
+ */
+export const showLauncherLinks = () => LAUNCHER.published && !inLauncher()
+
+/**
  * Partida encontrada (`found`) o servidor listo (`server`): aviso de Windows y la ventana del launcher al frente
  * (según su Configuración).
  */

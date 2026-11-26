@@ -48,8 +48,7 @@ import {
 import { useMmSource } from "./source"
 import type { MmInvite, MmLobby, MmState } from "./types"
 import { useNow } from "./useNow"
-import { LAUNCHER } from "@/config/site"
-import { inLauncher } from "@/lib/launcher"
+import { showLauncherLinks } from "@/lib/launcher"
 
 // Jugar (plan docs/bitacora/2026-10-28-matchmaking, sección 7): tu equipo y el panel de partida;
 // después, confirmación, veto de capitanes y sala.
@@ -282,7 +281,7 @@ function GroupView({ state, socketUp }: { state: MmState; socketUp: boolean }) {
               {state.live_matches}
             </span>
           </Link>
-          {LAUNCHER.published && !inLauncher() && (
+          {showLauncherLinks() && (
             <Link
               to="/launcher"
               className="inline-flex items-center gap-1.5 text-[13px] font-medium hover:text-primary"

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import {
   ChevronsUpDownIcon,
   LogOutIcon,
+  MonitorDownIcon,
   PencilIcon,
   SlidersHorizontalIcon,
   UserRoundIcon,
@@ -31,6 +32,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { myProfileOptions } from "@/features/profile/api/queries"
+import { showLauncherLinks } from "@/lib/launcher"
 import { useShellIdentity } from "../api/queries"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 
@@ -131,6 +133,14 @@ export function AccountMenu({
                 Cuenta
               </Link>
             </DropdownMenuItem>
+            {showLauncherLinks() && (
+              <DropdownMenuItem asChild className="h-8 gap-2">
+                <Link to="/launcher" onClick={onNavigate}>
+                  <MonitorDownIcon aria-hidden />
+                  Descargar el launcher
+                </Link>
+              </DropdownMenuItem>
+            )}
             <ThemeRow />
             <DropdownMenuSeparator />
             <DropdownMenuItem

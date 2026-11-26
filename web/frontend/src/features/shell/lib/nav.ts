@@ -11,6 +11,7 @@ import {
   HandHeartIcon,
   HouseIcon,
   LifeBuoyIcon,
+  MonitorDownIcon,
   ListOrderedIcon,
   MapIcon,
   ServerIcon,
@@ -41,6 +42,8 @@ export type NavItem = {
   admin?: AdminSection
   /** Sección sin terminar: se ve en el menú, gris y sin link, con "Pronto". */
   soon?: boolean
+  /** Acceso al launcher: solo en la web y con el launcher publicado (showLauncherLinks). */
+  launcher?: boolean
 }
 
 export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
@@ -95,6 +98,14 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       },
       // El manual de usuario, filtrado por rol (docs/bitacora/2026-11-02-manual-usuario).
       { key: "help", label: "Ayuda", to: "/help", icon: LifeBuoyIcon },
+      // La página de descarga del launcher (docs/bitacora/2026-11-24-launcher-escritorio).
+      {
+        key: "launcher",
+        label: "Launcher",
+        to: "/launcher",
+        icon: MonitorDownIcon,
+        launcher: true,
+      },
     ],
   },
   {

@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/command"
 import { Kbd } from "@/components/ui/kbd"
 import { STATUS_LABEL } from "@/features/events/lib/model"
+import { showLauncherLinks } from "@/lib/launcher"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { LogoutDialog } from "./AccountMenu"
 import { useGlobalSearch } from "../api/queries"
@@ -96,6 +97,7 @@ export function CommandMenu({
       g.items
         .filter((i) => !i.soon)
         .filter((i) => !i.admin || canAccessAdminSection(user.role, i.admin))
+        .filter((i) => !i.launcher || showLauncherLinks())
         .map((i) => ({
           label: i.label,
           to: i.to,
