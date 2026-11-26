@@ -321,10 +321,12 @@ export const IpCandidateList = Envelope(IpCandidate).openapi('IpCandidateList');
 export const IpRangeAccount = z
   .object({
     player_id: z.uuid().nullable(),
+    user_id: z.uuid().nullable().openapi({ description: 'La cuenta (para exceptuar una cuenta sin ficha)' }),
     alias: z.string().nullable(),
     sources: z.array(z.enum(['servidor', 'web'])),
     ips: z.number().int().openapi({ description: 'Cuántas IPs distintas del rango usó' }),
     last_seen_at: z.string(),
+    banned: z.boolean().openapi({ description: 'Su ficha tiene un baneo activo' }),
   })
   .openapi('IpRangeAccount');
 export const IpRangeAccountQuery = listQuery(['last_seen_at'], { sort: 'last_seen_at', order: 'desc' }).extend({
@@ -340,6 +342,9 @@ export const BanIp = z
     created_at: z.string(),
     created_by_alias: z.string().nullable(),
     active: z.boolean(),
+    exceptions: z
+      .array(z.object({ id: z.uuid(), player_id: z.uuid().nullable(), user_id: z.uuid().nullable(), alias: z.string().nullable() }))
+      .openapi({ description: 'Fichas o cuentas que siguen buscando partida desde esta IP o rango (replanteo 150)' }),
   })
   .openapi('BanIp');
 export const BanIpQuery = listQuery(['created_at'], { sort: 'created_at', order: 'asc' });
@@ -352,3 +357,17 @@ export const BanIpsBody = z
   })
   .openapi('BanIpsBody');
 export const BanIpsResult = z.object({ count: z.number().int() }).openapi('BanIpsResult');
+
+// Excepciones de los baneos por IP (replanteo 150).
+export const BanIpAddBody = z
+  .object({
+    ip: z.string().trim().min(3).max(60).openapi({ description: 'IP o rango (hasta /16 en IPv4 o /32 en IPv6)' }),
+    except_players: z.array(z.uuid()).max(100).optional().openapi({ description: 'Fichas exceptuadas' }),
+    except_users: z.array(z.uuid()).max(100).optional().openapi({ description: 'Cuentas sin ficha exceptuadas' }),
+  })
+  .openapi('BanIpAddBody');
+export const BanIpExceptionBody = z
+  .object({ player_id: z.uuid().optional(), user_id: z.uuid().optional() })
+  .refine((v) => (v.player_id === undefined) !== (v.user_id === undefined), { message: 'Una ficha (`player_id`) o una cuenta (`user_id`)' })
+  .openapi('BanIpExceptionBody');
+export const CreatedId = z.object({ id: z.uuid() }).openapi('CreatedId');

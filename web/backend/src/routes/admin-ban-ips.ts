@@ -5,6 +5,9 @@ import { AppError } from '../lib/errors';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
 import {
+  BanIpAddBody,
+  BanIpExceptionBody,
+  CreatedId,
   BanIpList,
   BanIpQuery,
   BanIpsBody,
@@ -55,6 +58,25 @@ const liftBanIp = createRoute({
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
 });
 
+const addBanIp = createRoute({
+  method: 'post', path: '/api/v1/admin/bans/{id}/ip', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Banear una IP o rango, con excepciones',
+  description: 'Suma una IP o rango al baneo (vence con él, como mucho a los 30 días), con las fichas y cuentas que siguen pudiendo buscar partida desde ahí.',
+  request: { params: IdParam, body: { required: true, ...json(BanIpAddBody) } },
+  responses: { 201: { description: 'La IP baneada', ...json(CreatedId) }, ...errorResponses(400, 401, 403, 404) },
+});
+const addException = createRoute({
+  method: 'post', path: '/api/v1/admin/ban-ips/{id}/exceptions', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Exceptuar una ficha o cuenta de una IP o rango baneado',
+  request: { params: IdParam, body: { required: true, ...json(BanIpExceptionBody) } },
+  responses: { 201: { description: 'La excepción', ...json(CreatedId) }, ...errorResponses(400, 401, 403, 404) },
+});
+const removeException = createRoute({
+  method: 'delete', path: '/api/v1/admin/ban-ip-exceptions/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Sacar una excepción', request: { params: IdParam },
+  responses: { ...done, ...errorResponses(400, 401, 403, 404) },
+});
+
 export const adminBanIps = createRouter()
   .openapi(candidates, async (c) => {
     const p = c.req.valid('query');
@@ -86,5 +108,25 @@ export const adminBanIps = createRouter()
   })
   .openapi(liftBanIp, async (c) => {
     must(await c.var.sb.rpc('admin_ban_ip_lift' as never, { p_id: c.req.valid('param').id } as never));
+    return c.body(null, 204);
+  })
+  .openapi(addBanIp, async (c) => {
+    const b = c.req.valid('json');
+    const id = must(
+      await c.var.sb.rpc('admin_ban_ip_add' as never, {
+        p_ban: c.req.valid('param').id, p_ip: b.ip, p_except_players: b.except_players ?? [], p_except_users: b.except_users ?? [],
+      } as never),
+    ) as unknown as string;
+    return c.json({ id }, 201);
+  })
+  .openapi(addException, async (c) => {
+    const b = c.req.valid('json');
+    const id = must(
+      await c.var.sb.rpc('admin_ban_ip_exception_add' as never, { p_ban_ip: c.req.valid('param').id, p_player: b.player_id ?? null, p_user: b.user_id ?? null } as never),
+    ) as unknown as string;
+    return c.json({ id }, 201);
+  })
+  .openapi(removeException, async (c) => {
+    must(await c.var.sb.rpc('admin_ban_ip_exception_remove' as never, { p_id: c.req.valid('param').id } as never));
     return c.body(null, 204);
   });

@@ -50,6 +50,7 @@ function api() {
             created_at: "2026-11-26T00:00:00Z",
             created_by_alias: "Daniel",
             active: true,
+            exceptions: [],
           },
         ])
       )
@@ -74,21 +75,27 @@ function api() {
         page([
           {
             player_id: PLAYER,
+            user_id: null,
             alias: "Cheater",
+            banned: true,
             sources: ["web"],
             ips: 1,
             last_seen_at: "2026-11-26T00:00:00Z",
           },
           {
             player_id: null,
+            user_id: "ffffffff-0000-4000-8000-000000000001",
             alias: "Tormenta",
+            banned: false,
             sources: ["web"],
             ips: 1,
             last_seen_at: "2026-11-25T00:00:00Z",
           },
           {
             player_id: "eeeeeeee-0000-4000-8000-000000000001",
-            alias: "Inocente",
+            user_id: "eeeeeeee-1111-4000-8000-000000000001",
+            alias: "GabeV",
+            banned: false,
             sources: ["servidor"],
             ips: 2,
             last_seen_at: "2026-11-24T00:00:00Z",
@@ -96,9 +103,12 @@ function api() {
         ])
       )
     }),
-    http.put(`${API}/api/v1/admin/bans/:id/ips`, async ({ request }) => {
+    http.post(`${API}/api/v1/admin/bans/:id/ip`, async ({ request }) => {
       put(await request.json())
-      return HttpResponse.json({ count: 2 })
+      return HttpResponse.json(
+        { id: "22222222-2222-4222-8222-222222222222" },
+        { status: 201 }
+      )
     })
   )
 }
@@ -115,26 +125,37 @@ describe("ipOptions", () => {
 })
 
 describe("BanIpsSection", () => {
-  it("elegir el /24 muestra a quién afecta (sin la ficha baneada) y banea sumando a las que había", async () => {
+  it("elegir el /16 propone exceptuar a los que no están baneados; se puede desmarcar a uno", async () => {
     api()
     renderWithQuery(
       <BanIpsSection banId={BAN} playerId={PLAYER} playerAlias="Cheater" />
     )
     expect(await screen.findByText("198.51.100.9")).toBeInTheDocument()
     expect(screen.getByText(/También la usaron: Tormenta/)).toBeInTheDocument()
-    await userEvent.click(screen.getByRole("button", { name: "181.45.10.*" }))
+    await userEvent.click(screen.getByRole("button", { name: "181.45.*.*" }))
     const region = await screen.findByRole("region", { name: "A quién afecta" })
-    expect(rangeAsked).toHaveBeenLastCalledWith("181.45.10.0/24")
+    expect(rangeAsked).toHaveBeenLastCalledWith("181.45.0.0/16")
     expect(
-      await within(region).findByText(/Afecta también a 2 jugadores/)
+      await within(region).findByText(/Otros 2 jugadores usaron/)
     ).toBeInTheDocument()
-    expect(within(region).queryByText(/Cheater/)).not.toBeInTheDocument()
+    const gabe = within(region).getByRole("checkbox", {
+      name: "Exceptuar a GabeV",
+    })
+    const torm = within(region).getByRole("checkbox", {
+      name: "Exceptuar a Tormenta",
+    })
+    expect(gabe).toBeChecked()
+    expect(torm).toBeChecked()
+    // Tormenta es otra cuenta del cheater: se desmarca.
+    await userEvent.click(torm)
     await userEvent.click(
-      within(region).getByRole("button", { name: "Banear 181.45.10.0/24" })
+      within(region).getByRole("button", { name: "Banear 181.45.0.0/16" })
     )
     await waitFor(() =>
       expect(put).toHaveBeenCalledWith({
-        ips: ["198.51.100.9", "181.45.10.0/24"],
+        ip: "181.45.0.0/16",
+        except_players: ["eeeeeeee-0000-4000-8000-000000000001"],
+        except_users: [],
       })
     )
   })

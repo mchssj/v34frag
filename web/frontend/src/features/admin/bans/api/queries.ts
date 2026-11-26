@@ -318,3 +318,57 @@ export function useLiftBanIp() {
     onSuccess: () => touchedIps(qc),
   })
 }
+
+// Excepciones (replanteo 150).
+
+export function useAddBanIp(banId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: {
+      ip: string
+      except_players?: string[]
+      except_users?: string[]
+    }) =>
+      unwrap(
+        api.POST("/api/v1/admin/bans/{id}/ip", {
+          params: { path: { id: banId } },
+          body,
+        })
+      ),
+    onSuccess: () => touchedIps(qc),
+  })
+}
+
+export function useAddBanIpException() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      banIpId,
+      ...body
+    }: {
+      banIpId: string
+      player_id?: string
+      user_id?: string
+    }) =>
+      unwrap(
+        api.POST("/api/v1/admin/ban-ips/{id}/exceptions", {
+          params: { path: { id: banIpId } },
+          body,
+        })
+      ),
+    onSuccess: () => touchedIps(qc),
+  })
+}
+
+export function useRemoveBanIpException() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      unwrap(
+        api.DELETE("/api/v1/admin/ban-ip-exceptions/{id}", {
+          params: { path: { id } },
+        })
+      ),
+    onSuccess: () => touchedIps(qc),
+  })
+}

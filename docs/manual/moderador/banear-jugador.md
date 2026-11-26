@@ -54,7 +54,8 @@ En el detalle de un baneo activo, un admin ve la sección **IPs y rangos**. Sirv
 - **IPs que usó:** las de los servidores (por sus SteamID) y las de la web (al iniciar sesión y entrar a la cola). Si otra ficha o cuenta usó la misma IP, aparece en amarillo.
 - Al lado de cada IP eliges **Esta IP**, `x.y.z.*` (un rango `/24`) o `x.y.*.*` (un rango `/16`). Muchas conexiones cambian de IP pero repiten los primeros números: un rango las cubre.
 - También puedes escribir otra IP o rango en **Otra IP o rango** y tocar **Revisar**. Como mucho, `/16`.
-- Antes de confirmar, la web te muestra **a quién más afecta**: los jugadores de CMLeague que usaron alguna IP de ese rango. Si son muchos, usa un rango más chico.
+- Antes de confirmar, la web te muestra **a quién más afecta**: los jugadores de CMLeague que usaron alguna IP de ese rango. Cada uno tiene una casilla **Exceptuar**: los que no están baneados vienen marcados y siguen buscando partida desde ahí. Desmarca a quien creas que es otra cuenta del baneado.
+- En cada IP o rango baneado ves sus **excepciones**: con la **X** sacas una y con **Exceptuar a alguien** sumas a otro de los que usaron ese rango (por ejemplo, si un jugador escribe por Discord que no puede buscar partida).
 - Desde una IP o rango baneado nadie puede buscar partida, aceptar una ni crear una cuenta. Vence con el baneo, como mucho a los 30 días. Con la **X** lo levantas.
 
 > **Ojo:** con una VPN o los datos del celular la persona cambia de IP. Es una barrera más, no la única.

@@ -116,3 +116,31 @@ describe('rutas de admin', () => {
     expect((await call('GET', `/api/v1/admin/ip-candidates?player_id=${PLAYER}`)).status).toBe(403);
   });
 });
+
+describe('excepciones (replanteo 150)', () => {
+  it('banear un rango con excepciones manda todo a admin_ban_ip_add', async () => {
+    const calls = postgrest('admin', (url) =>
+      url.pathname.endsWith('/rpc/admin_ban_ip_add') ? Response.json('11111111-1111-4111-8111-111111111111') : undefined,
+    );
+    const res = await call('POST', `/api/v1/admin/bans/${BAN}/ip`, { ip: '181.21.0.0/16', except_players: [PLAYER] });
+    expect(res.status).toBe(201);
+    expect(await json(res)).toEqual({ id: '11111111-1111-4111-8111-111111111111' });
+    expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/admin_ban_ip_add'))!.body!)).toEqual({
+      p_ban: BAN, p_ip: '181.21.0.0/16', p_except_players: [PLAYER], p_except_users: [],
+    });
+  });
+
+  it('exceptuar: una ficha o una cuenta, no las dos', async () => {
+    postgrest('admin', (url) =>
+      url.pathname.endsWith('/rpc/admin_ban_ip_exception_add') ? Response.json('22222222-2222-4222-8222-222222222222') : undefined,
+    );
+    expect((await call('POST', `/api/v1/admin/ban-ips/${BAN}/exceptions`, { player_id: PLAYER })).status).toBe(201);
+    expect((await call('POST', `/api/v1/admin/ban-ips/${BAN}/exceptions`, { player_id: PLAYER, user_id: USER })).status).toBe(400);
+    expect((await call('POST', `/api/v1/admin/ban-ips/${BAN}/exceptions`, {})).status).toBe(400);
+  });
+
+  it('sacar una excepción: 204', async () => {
+    postgrest('admin', (url) => (url.pathname.endsWith('/rpc/admin_ban_ip_exception_remove') ? new Response(null, { status: 204 }) : undefined));
+    expect((await call('DELETE', `/api/v1/admin/ban-ip-exceptions/${BAN}`)).status).toBe(204);
+  });
+});

@@ -11424,6 +11424,237 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/bans/{id}/ip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Banear una IP o rango, con excepciones
+         * @description Suma una IP o rango al baneo (vence con él, como mucho a los 30 días), con las fichas y cuentas que siguen pudiendo buscar partida desde ahí.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BanIpAddBody"];
+                };
+            };
+            responses: {
+                /** @description La IP baneada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CreatedId"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ban-ips/{id}/exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Exceptuar una ficha o cuenta de una IP o rango baneado */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BanIpExceptionBody"];
+                };
+            };
+            responses: {
+                /** @description La excepción */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CreatedId"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ban-ip-exceptions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Sacar una excepción */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Hecho */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No existe */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/teams": {
         parameters: {
             query?: never;
@@ -32573,11 +32804,18 @@ export interface components {
         IpRangeAccount: {
             /** Format: uuid */
             player_id: string | null;
+            /**
+             * Format: uuid
+             * @description La cuenta (para exceptuar una cuenta sin ficha)
+             */
+            user_id: string | null;
             alias: string | null;
             sources: ("servidor" | "web")[];
             /** @description Cuántas IPs distintas del rango usó */
             ips: number;
             last_seen_at: string;
+            /** @description Su ficha tiene un baneo activo */
+            banned: boolean;
         };
         BanIpList: {
             items: components["schemas"]["BanIp"][];
@@ -32598,6 +32836,16 @@ export interface components {
             created_at: string;
             created_by_alias: string | null;
             active: boolean;
+            /** @description Fichas o cuentas que siguen buscando partida desde esta IP o rango (replanteo 150) */
+            exceptions: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                player_id: string | null;
+                /** Format: uuid */
+                user_id: string | null;
+                alias: string | null;
+            }[];
         };
         BanIpsResult: {
             count: number;
@@ -32605,6 +32853,24 @@ export interface components {
         BanIpsBody: {
             /** @description Las IPs o rangos que quedan baneados con este baneo (reemplaza la lista). Rangos de hasta /16 en IPv4 o /32 en IPv6 */
             ips: string[];
+        };
+        CreatedId: {
+            /** Format: uuid */
+            id: string;
+        };
+        BanIpAddBody: {
+            /** @description IP o rango (hasta /16 en IPv4 o /32 en IPv6) */
+            ip: string;
+            /** @description Fichas exceptuadas */
+            except_players?: string[];
+            /** @description Cuentas sin ficha exceptuadas */
+            except_users?: string[];
+        };
+        BanIpExceptionBody: {
+            /** Format: uuid */
+            player_id?: string;
+            /** Format: uuid */
+            user_id?: string;
         };
         AdminTeamCreate: {
             name: string;
