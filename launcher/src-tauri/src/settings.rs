@@ -81,9 +81,15 @@ pub fn settings_set(app: tauri::AppHandle, mut settings: Settings) -> Result<Set
     // La carpeta de ClientMod solo la cambia game_pick_dir (el selector de Windows): CMLauncher.exe se abre como
     // administrador, así que ninguna ventana puede mandar una ruta.
     settings.clientmod_dir = before.clientmod_dir.clone();
-    apply_autostart(&app, settings.start_with_windows)?;
+    // Lo demás se guarda aunque falle "Abrir con Windows" (toca el registro): si falla, queda como estaba y se avisa
+    // solo de eso.
+    let autostart = apply_autostart(&app, settings.start_with_windows);
+    if autostart.is_err() {
+        settings.start_with_windows = before.start_with_windows;
+    }
     save(&app, &settings)?;
     crate::status::refresh(&app);
+    autostart?;
     if before.shop_theme != settings.shop_theme {
         // La web vuelve a leer la configuración y pone o saca el tema.
         if let Some(w) = app.get_webview_window("main") {

@@ -147,21 +147,30 @@
             window.__okTimer = setTimeout(() => { if ($("msg").textContent === "Guardado.") say($("msg"), "") }, 2500)
           } catch (e) {
             say($("msg"), `No se guardó: ${errText(e)}`, true)
+            // Pudo guardarse una parte (por ejemplo, todo menos "Abrir con Windows"): se muestra lo que quedó.
+            current = await invoke("settings_get").catch(() => current)
           }
           if (current) paint()
         })
       )
 
       $("save-dir").addEventListener("click", async () => {
+        $("save-dir").disabled = true
+        say($("dir-msg"), "Elige la carpeta en la ventana que se abrió…")
         try {
           // El selector de carpetas de Windows: la ruta no se escribe a mano (CMLauncher.exe se abre como administrador).
           const game = await invoke("game_pick_dir")
-          if (!game) return
+          if (!game) {
+            say($("dir-msg"), $("dir").value ? "" : "No elegiste ninguna carpeta.")
+            return
+          }
           current = await invoke("settings_get")
           $("dir").value = game.dir
           say($("dir-msg"), `Guardado: ${game.dir}.`)
         } catch (e) {
           say($("dir-msg"), errText(e), true)
+        } finally {
+          $("save-dir").disabled = false
         }
       })
 
