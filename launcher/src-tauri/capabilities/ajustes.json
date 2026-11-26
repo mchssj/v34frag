@@ -7,7 +7,7 @@
     "allow-settings-get",
     "allow-settings-set",
     "allow-game-detect",
-    "allow-game-set-dir",
+    "allow-game-pick-dir",
     "allow-update-check",
     "allow-update-install",
     "allow-app-version"

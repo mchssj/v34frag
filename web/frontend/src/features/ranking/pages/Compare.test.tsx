@@ -29,6 +29,84 @@ describe("Comparador", () => {
     elo_history: [1000, elo],
   })
 
+  const together = {
+    same_team: { matches: 7, wins: 4 },
+    against: { matches: 3, a_wins: 2 },
+  }
+  const vipProfile = {
+    ...profile,
+    vip: { active: true, lifetime: true, until: null, since: "2026-10-26" },
+  }
+
+  it("con VIP compara hasta cinco: columnas, gráfico y los mixes con A", async () => {
+    const asked = vi.fn()
+    const onChange = vi.fn()
+    server.use(
+      http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(vipProfile)),
+      http.get(`${API}/api/v1/players/compare`, ({ request }) => {
+        asked(Object.fromEntries(new URL(request.url).searchParams))
+        return HttpResponse.json({
+          a: side("Zeta", 1200),
+          b: side("kova", 1100),
+          together,
+          others: [{ player: side("fako", 1300), together }],
+        })
+      })
+    )
+    const search = { b: "kova", d: "fako" }
+    const { user } = renderWithQuery(
+      <Compare search={search} onChange={onChange} />
+    )
+    expect(
+      await screen.findByRole("img", { name: /ELO de Zeta, kova y fako/ })
+    ).toBeInTheDocument()
+    expect(asked).toHaveBeenLastCalledWith({ a: "Zeta", b: "kova", c: "fako" })
+    expect(screen.getAllByRole("columnheader")).toHaveLength(4)
+    expect(screen.getByText("Con fako")).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Agregar jugador" })
+    ).toBeInTheDocument()
+    // Solo se quitan los agregados, y cada uno deja su letra.
+    expect(
+      screen.queryByRole("button", { name: "Quitar a kova" })
+    ).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Quitar a fako" }))
+    expect(onChange).toHaveBeenCalledWith({ b: "kova", d: undefined })
+  })
+
+  it("sin VIP, un link con más se compara con los dos primeros y avisa", async () => {
+    const asked = vi.fn()
+    server.use(
+      http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(profile)),
+      http.get(`${API}/api/v1/players/compare`, ({ request }) => {
+        asked(Object.fromEntries(new URL(request.url).searchParams))
+        return HttpResponse.json({
+          a: side("Zeta", 1200),
+          b: side("kova", 1100),
+          together,
+          others: [],
+        })
+      })
+    )
+    const { user } = renderWithQuery(
+      <Compare
+        search={{ b: "kova", c: "fako", d: "KOVA" }}
+        onChange={vi.fn()}
+      />
+    )
+    expect(
+      await screen.findByText(/El link trae 3 jugadores/)
+    ).toBeInTheDocument()
+    await screen.findByRole("img", { name: /ELO de Zeta y kova/ })
+    expect(asked).toHaveBeenLastCalledWith({ a: "Zeta", b: "kova" })
+    await user.click(
+      screen.getByRole("button", { name: /Con VIP comparas hasta 5/ })
+    )
+    expect(
+      await screen.findByRole("dialog", { name: "Cómo ser VIP" })
+    ).toBeInTheDocument()
+  })
+
   it("sin B pide elegir un jugador, con A por defecto el usuario", async () => {
     server.use(
       http.get(`${API}/api/v1/me/profile`, () => HttpResponse.json(profile))
@@ -49,10 +127,8 @@ describe("Comparador", () => {
         HttpResponse.json({
           a: side("Zeta", 1200),
           b: side("kova", 1100),
-          together: {
-            same_team: { matches: 7, wins: 4 },
-            against: { matches: 3, a_wins: 2 },
-          },
+          together,
+          others: [],
         })
       )
     )

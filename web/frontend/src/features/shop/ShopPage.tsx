@@ -129,7 +129,10 @@ export function withItem(
   return { ...e, [i.kind]: on ? i.id : null }
 }
 
-type Show = "all" | "buy" | "mine" | "vip" | "free"
+/** Lleva la etiqueta Nuevo: entró hace menos de 3 días (replanteo 132) y no lo tienes. */
+const isNew = (c: ShopItem) => c.is_new && !c.owned
+
+type Show = "all" | "buy" | "mine" | "new" | "vip" | "free"
 type Sort = "sort" | "cheap" | "exp" | "name"
 
 /**
@@ -244,6 +247,7 @@ export function ShopPage({
         )
       }
       if (show === "mine") return c.owned
+      if (show === "new") return isNew(c)
       if (show === "vip") return c.vip_only
       if (show === "free") return !c.vip_only
       return true
@@ -621,6 +625,7 @@ export function ShopPage({
                   <SelectItem value="all">Todo</SelectItem>
                   <SelectItem value="buy">Puedo comprar</SelectItem>
                   <SelectItem value="mine">Lo mío</SelectItem>
+                  <SelectItem value="new">Nuevo</SelectItem>
                   <SelectItem value="vip">Solo VIP</SelectItem>
                   <SelectItem value="free">Para todos</SelectItem>
                 </SelectContent>
@@ -689,6 +694,8 @@ export function ShopPage({
                 )
               ) : show === "buy" ? (
                 "Con tu saldo todavía no te alcanza para nada de acá: ¡juega unos mixes!"
+              ) : show === "new" && !q && !col ? (
+                "No hay nada nuevo de este tipo por ahora."
               ) : (
                 "Nada coincide con el filtro."
               )}
@@ -1112,8 +1119,7 @@ export function ItemCard({
           pick={pick}
         />
         <span className="absolute top-2 left-2 flex gap-1">
-          {/* Entró hace menos de 3 días (replanteo 132); en lo que ya tienes no hace falta. */}
-          {c.is_new && !c.owned && (
+          {isNew(c) && (
             <Chip className="bg-win text-background">
               <SparklesIcon className="size-3" />
               Nuevo

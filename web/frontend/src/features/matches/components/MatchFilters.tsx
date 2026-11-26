@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { SearchIcon, UserCheckIcon } from "lucide-react"
+import { SearchIcon, StarIcon, UserCheckIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { KIND_LABEL } from "@/components/brand/KindBadge"
@@ -21,7 +21,20 @@ import { mapsOptions } from "@/features/maps/api/queries"
 import type { MapEntry } from "@/features/maps/types"
 import { Soon } from "@/components/brand/Soon"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
-import { KINDS, type MatchesSearch } from "../lib/search"
+import {
+  FilterPills,
+  FilterToggle,
+  SavedSearches,
+} from "@/features/search/components/FilterPanel"
+import { savable } from "@/features/search/lib/search"
+import { useVip } from "@/features/vip/useVip"
+import {
+  KINDS,
+  matchChips,
+  matchesSearchSchema,
+  type MatchesSearch,
+} from "../lib/search"
+import { MatchAdvancedFilters } from "./MatchAdvancedFilters"
 
 // Listado /matches: mixes, PCW y torneos juntos (bitácora 2026-10-30-partidas-unificadas). Los
 // filtros, la página y el tamaño viven en la URL. Los mixes en juego salen de /mixes, porque
@@ -69,73 +82,117 @@ export function Filters({
     if ((q.trim() || undefined) !== search.q) setQ(search.q ?? "")
   }
 
+  const { vip } = useVip()
+  const [open, setOpen] = useState(false)
+  const chips = matchChips(search)
+  // Cambiar un filtro vuelve a la primera página.
+  const set = (patch: Patch) => onChange({ ...patch, page: undefined })
+
   const dashed =
     "h-8 gap-1.5 border border-dashed px-2.5 text-[13px] font-normal hover:bg-accent data-[state=on]:bg-accent"
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b p-3">
-      <FilterChips
-        size="sm"
-        label="Tipo"
-        options={KIND_OPTIONS}
-        value={search.kind}
-        onChange={(kind) => onChange({ kind, page: undefined })}
-      />
-      <Separator
-        orientation="vertical"
-        className="mx-1 h-5 data-vertical:self-center"
-      />
-      <InputGroup className="max-w-[300px] min-w-[200px] flex-1">
-        <InputGroupAddon>
-          <SearchIcon aria-hidden className="size-3.5" />
-        </InputGroupAddon>
-        <InputGroupInput
-          type="search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          // Los nicks llegan con el pedido E18 (hoy /matches busca en equipos, bandos y torneo).
-          placeholder="Equipo, bando o torneo"
-          aria-label="Buscar partidas"
-          className="text-[13px]"
+    <>
+      <div className="flex flex-wrap items-center gap-2 border-b p-3">
+        <FilterChips
+          size="sm"
+          label="Tipo"
+          options={KIND_OPTIONS}
+          value={search.kind}
+          onChange={(kind) => onChange({ kind, page: undefined })}
         />
-      </InputGroup>
-      {/* Sale del catálogo de mapas; si viene vacío, no hay select. */}
-      {maps.length > 0 && (
-        <Select
-          value={search.map ?? ALL_MAPS}
-          onValueChange={(v) =>
-            onChange({ map: v === ALL_MAPS ? undefined : v, page: undefined })
-          }
-        >
-          <SelectTrigger
-            size="sm"
-            aria-label="Mapa"
-            className="h-8 text-[13px]"
+        <Separator
+          orientation="vertical"
+          className="mx-1 h-5 data-vertical:self-center"
+        />
+        <InputGroup className="max-w-[300px] min-w-[200px] flex-1">
+          <InputGroupAddon>
+            <SearchIcon aria-hidden className="size-3.5" />
+          </InputGroupAddon>
+          <InputGroupInput
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            // Los nicks llegan con el pedido E18 (hoy /matches busca en equipos, bandos y torneo).
+            placeholder="Equipo, bando o torneo"
+            aria-label="Buscar partidas"
+            className="text-[13px]"
+          />
+        </InputGroup>
+        {/* Sale del catálogo de mapas; si viene vacío, no hay select. */}
+        {maps.length > 0 && (
+          <Select
+            value={search.map ?? ALL_MAPS}
+            onValueChange={(v) =>
+              onChange({ map: v === ALL_MAPS ? undefined : v, page: undefined })
+            }
           >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_MAPS}>Todos los mapas</SelectItem>
-            {maps.map((m) => (
-              <SelectItem key={m} value={m}>
-                {m}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-      {/* Pedidos E15 (mine) y E14 (varios estados): hasta entonces, deshabilitados. */}
-      <Soon label="Solo donde jugué · Próximamente">
-        <Toggle disabled className={dashed}>
-          <UserCheckIcon aria-hidden className="size-3.5" />
-          Solo donde jugué
+            <SelectTrigger
+              size="sm"
+              aria-label="Mapa"
+              className="h-8 text-[13px]"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_MAPS}>Todos los mapas</SelectItem>
+              {maps.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        <Toggle
+          pressed={!!search.fav}
+          onPressedChange={(on) => set({ fav: on || undefined })}
+          className={dashed}
+        >
+          <StarIcon aria-hidden className="size-3.5" />
+          Favoritas
         </Toggle>
-      </Soon>
-      <Soon label="Ocultar canceladas · Próximamente">
-        <Toggle disabled className={dashed}>
-          Ocultar canceladas
-        </Toggle>
-      </Soon>
-    </div>
+        {/* Pedidos E15 (mine) y E14 (varios estados): hasta entonces, deshabilitados. */}
+        <Soon label="Solo donde jugué · Próximamente">
+          <Toggle disabled className={dashed}>
+            <UserCheckIcon aria-hidden className="size-3.5" />
+            Solo donde jugué
+          </Toggle>
+        </Soon>
+        <Soon label="Ocultar canceladas · Próximamente">
+          <Toggle disabled className={dashed}>
+            Ocultar canceladas
+          </Toggle>
+        </Soon>
+        <FilterToggle
+          open={open}
+          onOpen={setOpen}
+          count={chips.length}
+          vip={vip}
+        />
+      </div>
+      {open && <MatchAdvancedFilters s={search} vip={vip} set={set} />}
+      <FilterPills
+        chips={chips}
+        vip={vip}
+        onClear={(keys) =>
+          set(Object.fromEntries(keys.map((k) => [k, undefined])))
+        }
+      />
+      <SavedSearches
+        kind="matches"
+        vip={vip}
+        current={savable(search)}
+        onApply={(query) =>
+          onChange({
+            // Reemplaza todo lo que había.
+            ...Object.fromEntries(
+              Object.keys(search).map((k) => [k, undefined])
+            ),
+            ...matchesSearchSchema.parse(query),
+          })
+        }
+      />
+    </>
   )
 }

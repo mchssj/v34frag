@@ -15,6 +15,6 @@ Arriba a la derecha está **Buscar…**. También se abre con **Ctrl + K** (**�
 - **Jugadores:** por su nick o por el equipo en el que juegan. Al lado ves la sigla de su equipo o su ELO.
 - **Equipos:** por el nombre o la sigla.
 - **Torneos:** por el nombre, con su estado (inscripciones, en curso, finalizado…). Solo aparecen los que puedes ver.
-- **Páginas:** las secciones del menú y algunas más, como **Comparar jugadores** y **Mi perfil**. También puedes **Cerrar sesión** desde ahí.
+- **Páginas:** las secciones del menú y algunas más, como **Comparar jugadores**, **Desglose de ELO**, **Tarjeta de stats** y **Mi perfil**. También puedes **Cerrar sesión** desde ahí.
 
 No importan las mayúsculas ni las tildes.

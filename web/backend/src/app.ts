@@ -25,6 +25,7 @@ import { bans } from './routes/bans';
 import { mm } from './routes/mm';
 import { bookings } from './routes/bookings';
 import { vip } from './routes/vip';
+import { vipExtras } from './routes/vip-extras';
 import { shop } from './routes/shop';
 import { codes } from './routes/codes';
 import { hud } from './routes/hud';
@@ -107,6 +108,7 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', medals); // antes que players: /players/{id}/medals/progress
   app.route('/', pins); // (replanteo 123) antes que players: /players/{id}/showcase
   app.route('/', tierlists); // (replanteo 137) antes que players: /players/{id}/tierlists
+  app.route('/', vipExtras); // (replanteos 140 a 142)
   app.route('/', players);
   app.route('/', teams);
   app.route('/', roster);

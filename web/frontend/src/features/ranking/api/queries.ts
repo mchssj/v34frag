@@ -12,31 +12,34 @@ import {
 
 export const rankingKeys = {
   all: ["ranking"] as const,
-  players: (s: PlayerRankingSearch) =>
-    ["ranking", "players", toPlayerRankingQuery(s)] as const,
+  players: (s: PlayerRankingSearch, vip: boolean) =>
+    ["ranking", "players", toPlayerRankingQuery(s, vip)] as const,
   podium: ["ranking", "players", "podium"] as const,
   seasons: ["ranking", "seasons"] as const,
   current: ["ranking", "seasons", "current"] as const,
-  standings: (id: string, s: PlayerRankingSearch) =>
-    ["ranking", "standings", id, toStandingsQuery(s)] as const,
+  standings: (id: string, s: PlayerRankingSearch, vip: boolean) =>
+    ["ranking", "standings", id, toStandingsQuery(s, vip)] as const,
   standingsPodium: (id: string) =>
     ["ranking", "standings", id, "podium"] as const,
   teams: (s: TeamRankingSearch) =>
     ["ranking", "teams", toTeamRankingQuery(s)] as const,
   teamsPodium: (pcw: boolean) => ["ranking", "teams", "podium", pcw] as const,
-  compare: (a: string, b: string) => ["ranking", "compare", a, b] as const,
+  compare: (nicks: string[]) => ["ranking", "compare", ...nicks] as const,
   playerSearch: (q: string) => ["ranking", "player-search", q] as const,
 }
 
 const MINUTE = 60_000
 
-export function playerRankingOptions(search: PlayerRankingSearch) {
+export function playerRankingOptions(
+  search: PlayerRankingSearch,
+  vip: boolean
+) {
   return queryOptions({
-    queryKey: rankingKeys.players(search),
+    queryKey: rankingKeys.players(search, vip),
     queryFn: ({ signal }) =>
       unwrap(
         api.GET("/api/v1/ranking/players", {
-          params: { query: toPlayerRankingQuery(search) },
+          params: { query: toPlayerRankingQuery(search, vip) },
           signal,
         })
       ),
@@ -88,13 +91,17 @@ export const currentSeasonOptions = queryOptions({
   staleTime: 5 * MINUTE,
 })
 
-export function standingsOptions(id: string, search: PlayerRankingSearch) {
+export function standingsOptions(
+  id: string,
+  search: PlayerRankingSearch,
+  vip: boolean
+) {
   return queryOptions({
-    queryKey: rankingKeys.standings(id, search),
+    queryKey: rankingKeys.standings(id, search, vip),
     queryFn: ({ signal }) =>
       unwrap(
         api.GET("/api/v1/seasons/{id}/standings", {
-          params: { path: { id }, query: toStandingsQuery(search) },
+          params: { path: { id }, query: toStandingsQuery(search, vip) },
           signal,
         })
       ),
@@ -152,13 +159,23 @@ export function teamPodiumOptions(pcw: boolean) {
   })
 }
 
-export function compareOptions(a: string, b: string) {
+/** De dos a cinco jugadores (más de dos, con VIP: la API da 403). */
+export function compareOptions(nicks: string[]) {
+  const [a = "", b = "", c, d, e] = nicks
   return queryOptions({
-    queryKey: rankingKeys.compare(a, b),
+    queryKey: rankingKeys.compare(nicks),
     queryFn: ({ signal }) =>
       unwrap(
         api.GET("/api/v1/players/compare", {
-          params: { query: { a, b } },
+          params: {
+            query: {
+              a,
+              b,
+              ...(c ? { c } : {}),
+              ...(d ? { d } : {}),
+              ...(e ? { e } : {}),
+            },
+          },
           signal,
         })
       ),
@@ -166,6 +183,8 @@ export function compareOptions(a: string, b: string) {
     retry: (failures, e) =>
       failures < 2 &&
       !isApiError(e, "NOT_FOUND") &&
+      // Sin VIP, más de dos.
+      !isApiError(e, "FORBIDDEN") &&
       !isApiError(e, "VALIDATION_ERROR"),
   })
 }

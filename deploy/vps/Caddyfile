@@ -37,17 +37,12 @@ cmleague.lat {
 	# Usuario y contraseña durante el ensayo; vacío después del corte.
 	import /etc/caddy/acceso-web.caddy
 	root * /srv/cmleague/web/current
-	# Instaladores del launcher de escritorio y su latest.json (docs/bitacora/2026-11-24-launcher-escritorio): fuera de
-	# web/current, así un despliegue de la web no los borra. /descargas/launcher/x sale de /srv/cmleague/descargas/launcher/x.
-	@descargas path /descargas/*
-	root @descargas /srv/cmleague
 	# Los archivos de Vite llevan hash en el nombre: caché de un año. El resto (index.html) se revalida siempre.
 	@assets path /assets/*
 	header @assets Cache-Control "public, max-age=31536000, immutable"
 	@resto not path /assets/*
 	header @resto Cache-Control "no-cache"
-	@spa not path /descargas/*
-	try_files @spa {path} /index.html
+	try_files {path} /index.html
 	file_server
 }
 

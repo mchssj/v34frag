@@ -67,6 +67,20 @@ En **Qué se verificó** escribe lo que se lee en la ficha de la insignia, hasta
 
 **Nueva ficha** crea un jugador sin cuenta, al que después le sumas SteamID o una cuenta.
 
+## Agregar un SteamID a mano
+
+En el detalle de la ficha, sección **SteamID**, toca **Agregar SteamID** y escribe el SteamID: `STEAM_0:X:Y`, SteamID64 o el link del perfil de Steam. Si la ficha ya tiene uno, el nuevo queda como adicional (hasta 4). Sus partidas pasan a la ficha y se recalcula su ELO.
+
+Antes de agregarlo, la web revisa de quién es:
+
+| Si el SteamID… | Qué ves |
+|---|---|
+| No es de ninguna ficha | Puedes agregarlo |
+| Es de otra ficha | El nombre de esa ficha y **Abrir esa ficha**. No se puede agregar: primero quítalo de esa ficha y después vuelve a esta |
+| Ya es de esta ficha | "Ese SteamID ya es de esta ficha" |
+
+Sirve cuando un jugador no puede usar `!claim` porque le sale "Ese SteamID es de otra ficha": búscalo aquí y verás en cuál está.
+
 ## Pedidos de SteamID
 
 Cuando un jugador llegó al tope de SteamID por ficha (hoy {{claim.max_steam_ids}}) y quiere sumar otro, o pide desvincular uno, el pedido aparece en **Pedidos de SteamID**:

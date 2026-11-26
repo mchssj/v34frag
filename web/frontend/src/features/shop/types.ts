@@ -48,6 +48,7 @@ export const COLLECTIONS: Record<string, string> = {
   anime: "Anime",
   memes: "Memes",
   tactico: "Equipo táctico",
+  texturas: "Texturas",
   vip: "VIP",
 }
 

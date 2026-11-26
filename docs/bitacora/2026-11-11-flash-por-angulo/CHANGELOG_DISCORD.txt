@@ -1,0 +1,10 @@
+CMLeague 2.9.30 --  Changelog
+
+Flash nueva: ahora importa cómo la agarras
+
+- Hasta ahora, en el v34 la flash te cegaba casi igual aunque te dieras vuelta: de espaldas la pantalla igual quedaba casi toda blanca. Eso premiaba tirar flashes a lo loco y castigaba al que reaccionaba bien.
+- Ahora funciona parecido a CS:GO y CS2. Si la miras de frente, te ciega completa como siempre. De costado te ciega menos, y de espaldas es solo un destello corto que deja ver.
+- De lejos también dura menos que antes.
+- La idea es que reaccionar sirva: si escuchas la flash y te das vuelta a tiempo, sigues en la pelea. Y las flashes bien tiradas, de frente y de cerca, siguen siendo igual de fuertes.
+- Nunca ciega más que antes: solo baja.
+- Ya está en los tres servidores. Si estabas en una partida, empieza a funcionar en el próximo mapa.

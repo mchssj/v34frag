@@ -24,7 +24,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { fmt2, roleCountry } from "../lib/labels"
+import { fmtAgo } from "@/features/player/lib/labels"
+import { useVip } from "@/features/vip/useVip"
+import { playerChips } from "../lib/filters"
+import { fmt2, fmtPct, roleCountry } from "../lib/labels"
 import {
   Podium,
   RankingHeader,
@@ -47,6 +50,7 @@ import { SearchBox } from "@/components/brand/SearchBox"
 import { Card } from "@/components/ui/card"
 import { Progress as UiProgress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
+import { RankingToolbar } from "../components/RankingFilters"
 import { SeasonBar } from "../components/SeasonBar"
 import {
   DEFAULT_PER,
@@ -214,11 +218,16 @@ const HISTORIC_COLUMNS: DataColumn<RankingPlayer>[] = [
 
 function HistoricView({ search, onChange }: Props) {
   const podium = useQuery(playerPodiumOptions)
-  const list = useQuery(playerRankingOptions(search))
+  const { vip, enabled, on } = useAdvanced(search)
+  const list = useQuery({ ...playerRankingOptions(search, vip), enabled })
   const mine = useMine()
   const navigate = useNavigate()
+  const columns = useMemo(
+    () => [...HISTORIC_COLUMNS, ...foundColumns<RankingPlayer>(on)],
+    [on]
+  )
   const table = useServerTable({
-    columns: HISTORIC_COLUMNS,
+    columns,
     data: list.data?.items,
     total: list.data?.total,
     getRowId: (p) => p.player.id,
@@ -250,7 +259,12 @@ function HistoricView({ search, onChange }: Props) {
         variant="outline"
         className="overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
       >
-        <div className="flex flex-wrap items-center gap-2 border-b p-3">
+        <RankingToolbar
+          search={search}
+          onChange={onChange}
+          vip={vip}
+          total={list.data?.total}
+        >
           <SearchBox
             value={search.q}
             placeholder="Alias o sigla del equipo"
@@ -258,10 +272,7 @@ function HistoricView({ search, onChange }: Props) {
             onChange={(q) => onChange({ q, page: undefined })}
           />
           <LevelFilter search={search} onChange={onChange} />
-          <span className="ml-auto text-xs text-muted-foreground">
-            {list.data ? `${list.data.total} jugadores` : ""}
-          </span>
-        </div>
+        </RankingToolbar>
         <DataTable
           table={table}
           query={list}
@@ -290,7 +301,15 @@ function LevelFilter({ search, onChange }: Props) {
       label="Nivel"
       options={LEVELS}
       value={search.level}
-      onChange={(level) => onChange({ level, page: undefined })}
+      // Reemplaza al rango de niveles de los filtros avanzados.
+      onChange={(level) =>
+        onChange({
+          level,
+          lvMin: undefined,
+          lvMax: undefined,
+          page: undefined,
+        })
+      }
     />
   )
 }
@@ -415,13 +434,20 @@ function seasonColumns(
 
 function SeasonView({ season, search, onChange }: Props & { season: Season }) {
   const podium = useQuery(standingsPodiumOptions(season.id))
-  const list = useQuery(standingsOptions(season.id, search))
+  const { vip, enabled, on } = useAdvanced(search)
+  const list = useQuery({
+    ...standingsOptions(season.id, search, vip),
+    enabled,
+  })
   const mine = useMine()
   const navigate = useNavigate()
   const active = season.status === "active"
   const columns = useMemo(
-    () => seasonColumns(active, season.min_matches),
-    [active, season.min_matches]
+    () => [
+      ...seasonColumns(active, season.min_matches),
+      ...foundColumns<SeasonStanding>(on),
+    ],
+    [active, season.min_matches, on]
   )
   const table = useServerTable({
     columns,
@@ -456,7 +482,13 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
         variant="outline"
         className="overflow-hidden shadow-[0_1px_2px_rgb(0_0_0/.04)]"
       >
-        <div className="flex flex-wrap items-center gap-2 border-b p-3">
+        <RankingToolbar
+          search={search}
+          onChange={onChange}
+          vip={vip}
+          total={list.data?.total}
+          seasonal
+        >
           <SearchBox
             value={search.q}
             placeholder="Alias del jugador"
@@ -473,10 +505,7 @@ function SeasonView({ season, search, onChange }: Props & { season: Season }) {
             Solo con puesto
           </Toggle>
           <LevelFilter search={search} onChange={onChange} />
-          <span className="ml-auto text-xs text-muted-foreground">
-            {list.data ? `${list.data.total} jugadores` : ""}
-          </span>
-        </div>
+        </RankingToolbar>
         <DataTable
           table={table}
           query={list}
@@ -528,6 +557,37 @@ function Progress({ matches, min }: { matches: number; min: number }) {
 }
 
 // ---------- Compartido ----------
+
+/** Con filtros avanzados en la URL se espera a saber si es VIP, para no buscar dos veces. */
+function useAdvanced(search: PlayerRankingSearch) {
+  const { vip, ready } = useVip()
+  const some = playerChips(search).length > 0
+  return { vip, enabled: ready || !some, on: vip && some }
+}
+
+/** Con filtros avanzados, las columnas de lo que se filtra y la tabla no muestra. */
+function foundColumns<
+  T extends { hs: number | null; last_played_at: string | null },
+>(on: boolean): DataColumn<T>[] {
+  if (!on) return []
+  return [
+    {
+      id: "hs",
+      header: "HS %",
+      headClassName: "text-center",
+      cellClassName: "text-center font-mono tabular-nums",
+      cell: ({ row }) => fmtPct(row.original.hs),
+    },
+    {
+      id: "last_played_at",
+      header: "Última partida",
+      headClassName: "pr-4 text-right",
+      cellClassName: "pr-4 text-right text-muted-foreground",
+      cell: ({ row }) =>
+        row.original.last_played_at ? fmtAgo(row.original.last_played_at) : "—",
+    },
+  ]
+}
 
 function PlayerLink({ alias, cover }: { alias: string; cover?: boolean }) {
   return (

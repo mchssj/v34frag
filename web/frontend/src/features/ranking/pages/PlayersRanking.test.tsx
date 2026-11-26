@@ -9,6 +9,7 @@ import {
   beta,
   common,
   page,
+  profile,
   ranked,
   server,
   standing,
@@ -214,6 +215,90 @@ describe("Ranking → Jugadores", () => {
 
     await user.click(screen.getByRole("radio", { name: "Nivel 10" }))
     expect(onChange).toHaveBeenCalledWith({ level: "10", page: undefined })
+  })
+
+  describe("filtros avanzados", () => {
+    function api(vip: boolean) {
+      common()
+      const asked: Record<string, string>[] = []
+      server.use(
+        http.get(`${API}/api/v1/me/profile`, () =>
+          HttpResponse.json({
+            ...profile,
+            vip: vip ? { active: true, lifetime: true, until: null } : null,
+          })
+        ),
+        http.get(`${API}/api/v1/me/searches`, () =>
+          HttpResponse.json(
+            page(
+              vip
+                ? [
+                    {
+                      id: "b1",
+                      kind: "players",
+                      name: "Finos",
+                      query: { hs: 50 },
+                      created_at: "2026-11-24T00:00:00Z",
+                    },
+                  ]
+                : []
+            )
+          )
+        ),
+        http.get(`${API}/api/v1/maps`, () => HttpResponse.json(page([]))),
+        http.get(`${API}/api/v1/ranking/players`, ({ request }) => {
+          const p = Object.fromEntries(new URL(request.url).searchParams)
+          if (p.per !== "3") asked.push(p)
+          return HttpResponse.json(page([ranked("musul", { hs: 48.2 })]))
+        })
+      )
+      return asked
+    }
+
+    it("con VIP se mandan, suman su columna y una guardada reemplaza lo que había", async () => {
+      const asked = api(true)
+      const { user, onChange } = renderPlayers({
+        season: "all",
+        hs: 40,
+        level: "10",
+      })
+      expect(
+        await screen.findByRole("columnheader", { name: "HS %" })
+      ).toBeInTheDocument()
+      expect(await screen.findByText("48%")).toBeInTheDocument()
+      // Una sola búsqueda, ya con el filtro.
+      expect(asked).toHaveLength(1)
+      expect(asked[0]).toMatchObject({ hs_min: "40", level: "10" })
+
+      await user.click(
+        screen.getByRole("button", { name: "Quitar HS desde 40 %" })
+      )
+      expect(onChange).toHaveBeenLastCalledWith({
+        hs: undefined,
+        page: undefined,
+      })
+      await user.click(await screen.findByRole("button", { name: "Finos" }))
+      expect(onChange).toHaveBeenLastCalledWith({ hs: 50 })
+    })
+
+    it("sin VIP no se mandan y el panel dice cómo tenerlos", async () => {
+      const asked = api(false)
+      const { user } = renderPlayers({ season: "all", hs: 40 })
+      await screen.findByText("No se aplican sin VIP.")
+      await within(await screen.findByRole("table")).findByRole("link", {
+        name: "musul",
+      })
+      expect(asked[0]).not.toHaveProperty("hs_min")
+      expect(
+        screen.queryByRole("columnheader", { name: "HS %" })
+      ).not.toBeInTheDocument()
+      await user.click(
+        screen.getByRole("button", { name: /Filtros avanzados/ })
+      )
+      expect(
+        screen.getByText(/son para los VIP\. Buscar, el nivel y el orden/)
+      ).toBeInTheDocument()
+    })
   })
 
   it("clic en una fila abre el perfil", async () => {

@@ -1,0 +1,6 @@
+CMLeague 2.9.69 --  Changelog
+
+Desglose de tu ELO
+- En tu perfil, en Evolución de ELO, toca Ver desglose: ahí están todos tus mixes con lo que ganaste o perdiste en cada uno.
+- Con VIP ves la cuenta paso a paso: la probabilidad que tenía tu equipo, tu rating, las rondas que jugaste, los abandonos, el tope y el mínimo.
+- También con VIP, un simulador para ver cuánto ganarías o perderías en un mix.

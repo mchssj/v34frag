@@ -1,0 +1,10 @@
+CMLeague 2.9.36 --  Changelog
+
+Ya no hace falta escribir !ready
+
+- En los mixes y en el matchmaking, apenas entras a un equipo ya quedas listo solo. La partida arranca en cuanto están todos.
+- En el matchmaking arranca cuando entró toda la sala. En un mix, apenas se llega al mínimo de jugadores.
+- Si necesitas un momento antes de que arranque (cargar la config, ir al baño), escribe !unready. No vuelves a quedar listo hasta que escribas !ready.
+- En torneos y PCW no cambia nada: cada uno sigue escribiendo !ready.
+
+Empieza a funcionar en el próximo mapa de cada servidor.

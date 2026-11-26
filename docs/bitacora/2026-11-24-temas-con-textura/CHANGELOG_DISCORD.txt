@@ -1,0 +1,8 @@
+CMLeague 2.9.72 --  Changelog
+
+- Llegaron 20 temas nuevos a la Tienda, en la colección Texturas: 10 para todos y 10 solo VIP.
+- Ya no cambian solo un color: las tarjetas de tu perfil tienen su propia textura y tu página, su propio fondo.
+- Para todos, a 350 puntos: Ficha de una hora, Paño verde, Dominó, Ajedrez, Historieta, Dos tintas, Fileteado, Azulejo y Fibra de carbono.
+- Para todos, a 450 puntos: Monitor de tubo, el primer tema con movimiento que no es VIP.
+- Solo VIP, a 300 monedas VIP: Pantallazo azul, Cuaderno de clase, Baraja española, Plano técnico, Curvas de nivel, Salar, Bus pintado, Zona de obra, y los animados Páramo y Luciérnagas.
+- Cuaderno de clase es el primer tema claro.

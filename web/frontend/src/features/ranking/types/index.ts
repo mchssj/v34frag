@@ -13,3 +13,5 @@ export type SeasonStanding = Schemas["SeasonStanding"]
 export type ComparePlayer = Schemas["ComparePlayer"]
 
 export type Compare = Schemas["Compare"]
+
+export type CompareTogether = Compare["together"]

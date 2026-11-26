@@ -1,0 +1,8 @@
+CMLeague 2.9.66 --  Changelog
+
+- Llegaron 4 marcos nuevos para los VIP, todos animados:
+- Nevada: una chibi de gorro rosa se asoma entre la nieve mientras caen copos sobre tu foto.
+- Celda: dos puños esposados trepan por los barrotes y los doblan para escapar.
+- Polaroid: fotos instantáneas viejas con clip y cinta, y un filtro de película antigua que parpadea sobre tu foto.
+- Pintura: una ventana de programa de dibujo de los 90 en rosa pastel, con tu foto como lienzo.
+- Los encuentras en la Tienda, en Marcos, a 450 monedas VIP.

@@ -28,3 +28,7 @@ tauri-plugin-opener = "2"
 # Colores de la barra de título nativa (DwmSetWindowAttribute, Windows 11). Ya viene con Tauri: no suma descargas.
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Graphics_Dwm"] }
+
+[features]
+# Solo para la prueba de Configuración en GitHub Actions (CMLEAGUE_AUTOPRUEBA). El instalador no la trae.
+autoprueba = []

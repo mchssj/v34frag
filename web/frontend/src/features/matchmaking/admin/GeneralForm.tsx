@@ -55,6 +55,7 @@ const schema = z
     party_max_elo_gap: int(0, 3000),
     accept_seconds: int(10, 60),
     veto_seconds: int(5, 60),
+    vip_preveto_max: int(0, 10),
     connect_minutes: int(1, 15),
     server_wait_minutes: int(1, 15),
     elo_window_start: int(0, 1000),
@@ -289,6 +290,19 @@ function Form({ initial }: { initial: MmAdminConfig }) {
             control={c}
             name="party_max_elo_gap"
             label="Diferencia de ELO máxima en el grupo"
+          />
+        </Grid>
+      </Section>
+
+      <Section
+        title="Preveto de mapas (VIP)"
+        description="Cada VIP elige en Jugar un mapa del pool del modo. Al empezar el veto se banean los mapas con más prevetos de la sala, hasta este máximo; entre empatados, al azar. Siempre quedan al menos 2 mapas para los capitanes. En 0 está apagado."
+      >
+        <Grid>
+          <NumberField
+            control={c}
+            name="vip_preveto_max"
+            label="Mapas prevetados por partida (máximo)"
           />
         </Grid>
       </Section>

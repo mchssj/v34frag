@@ -21,6 +21,7 @@ No se le suma una sanción de la cola: el baneo ya es la sanción.
 1. Toca **Banear**.
 2. En **Jugador o SteamID**, busca por el nick de su ficha o pega su SteamID (`STEAM_0:…` o SteamID64).
    - Si eliges una **ficha**, el baneo vale para todos sus SteamID y para los que sume después.
+   - Una ficha **sin SteamID** también se puede banear: no puede buscar partida en el matchmaking y, si después vincula un SteamID, tampoco entrar a los servidores.
    - Si pegas un SteamID que tiene ficha, se banea la ficha entera.
 3. Escribe el **motivo**. Se ve en la lista y al intentar entrar al servidor: escríbelo claro y sin insultos.
 4. Elige la duración: **Horas** (escribe cuántas, de 1 a 72), **1 día**, **3 días**, **1 semana**, **1 mes** o **Hasta una fecha**. Abajo ves el día y la hora en que vence.

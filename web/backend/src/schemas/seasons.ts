@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import { boolParam, Envelope, listQuery } from '../lib/list';
+import { foundShape, playerFilterShape } from '../services/playerFilters';
 import { confirmField } from './common';
 import { FeaturedClip } from './clips';
 import { MedalDesign } from './medals';
@@ -113,6 +114,7 @@ export const Standing = z
     teams: z.array(TeamRef).openapi({ description: 'Equipos oficiales actuales (también en las temporadas cerradas)' }),
     rating: z.number().nullable().openapi({ description: 'Rating de los mixes de la temporada; `null` sin mixes' }),
     kd: z.number().nullable().openapi({ description: 'K/D de los mixes de la temporada; `null` sin mixes' }),
+    ...foundShape,
   })
   .openapi('SeasonStanding');
 export const StandingQuery = listQuery(['rank', 'elo', 'matches', 'alias', 'rating', 'kd'], { sort: 'rank', order: 'asc' }).extend({
@@ -120,10 +122,11 @@ export const StandingQuery = listQuery(['rank', 'elo', 'matches', 'alias', 'rati
   eligible: boolParam('`true` solo los que llegan al mínimo de mixes'),
   level: z.enum(LEVEL_RANGES).optional().openapi({ description: 'Nivel según el ELO de la temporada: `10`, `7-9` o `1-6`' }),
   team: z.uuid().optional().openapi({ description: 'Jugadores activos de un equipo oficial' }),
+  ...playerFilterShape,
 });
 export const StandingList = Envelope(Standing).openapi('SeasonStandingList');
 
-export const PlayerSeason = Standing.omit({ player: true, teams: true, rating: true, kd: true })
+export const PlayerSeason = Standing.omit({ player: true, teams: true, rating: true, kd: true, hs: true, last_played_at: true })
   .extend({
     season: z.object({
       id: z.uuid(),

@@ -48,7 +48,7 @@ Agregados después del inventario (vistos el 2026-10-22 por SFTP, sin md5):
 
 | Plugin | Tamaño | Instalado | Qué hace |
 |---|---|---|---|
-| `Anti_Wallhack_Lite.smx` 1.3.0 (BrokenT) | 14857 | 2026-10-20 01:45 | Anti-wallhack: oculta jugadores, armas y sonidos. Movido a `plugins/disabled/` el 2026-10-22, devuelto a `plugins/` ese mismo día como prueba A/B y **también subido a RBK** (md5 `373446f5…`) ([bitácora](bitacora/2026-10-22-anti-wallhack-y-humo/)) |
+| `Anti_Wallhack_Lite.smx` 1.3.0 (BrokenT) | 14857 | 2026-10-20 01:45 | Anti-wallhack: oculta jugadores, armas y sonidos. Movido a `plugins/disabled/` el 2026-10-22, devuelto a `plugins/` ese mismo día como prueba A/B y **también subido a RBK** (md5 `373446f5…`). **En `disabled/` en #1, #2 y #3 desde el 2026-11-25**, en prueba ([bitácora](bitacora/2026-11-25-sin-anti-wallhack-prueba/)) ([bitácora](bitacora/2026-10-22-anti-wallhack-y-humo/)) |
 | `soft_detector.smx` | 3089 | 2026-10-20 01:46 | Detecta software de trampas (`logs/softdetector.log`) |
 | `clientmod_emulator.smx` (+ `.sp`) | 7183 | 2026-10-20 14:27 | Bloquea el emulador de ClientMod (`plugin.clientmod_emulator.cfg`) |
 | `convar_detector.smx` (+ `.sp`) | 5198 | 2026-10-20 14:27 | Revisa cvars de los clientes |

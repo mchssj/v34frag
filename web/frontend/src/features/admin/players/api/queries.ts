@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query"
 
 import { api, unwrap } from "@/api/client"
+import { ApiError } from "@/api/errors"
 import { playerDetailOptions } from "@/features/profile/api/queries"
 import type { SteamRequest, PlayerPatch, FichaFilter } from "../types"
 
@@ -238,6 +239,28 @@ export function useLinkSteam() {
     mutationFn: (body: { steam_id: string; player_id: string }) =>
       unwrap(api.POST("/api/v1/admin/steam/link", { body })),
     onSuccess: (_, v) => touched(qc, v.player_id),
+  })
+}
+
+/** De qué ficha es un SteamID64 (`null` si de ninguna). */
+export function steamOwnerOptions(steamid: string) {
+  return queryOptions({
+    queryKey: ["admin", "players", "steam-owner", steamid] as const,
+    queryFn: async ({ signal }) => {
+      try {
+        const r = await unwrap(
+          api.GET("/api/v1/players/steam/{steamid}", {
+            params: { path: { steamid } },
+            signal,
+          })
+        )
+        return r.player_id
+      } catch (e) {
+        // 404: nunca jugó y no es de ninguna ficha.
+        if (e instanceof ApiError && e.code === "NOT_FOUND") return null
+        throw e
+      }
+    },
   })
 }
 

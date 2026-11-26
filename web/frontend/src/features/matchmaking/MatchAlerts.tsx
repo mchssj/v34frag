@@ -95,17 +95,15 @@ export function GlobalMatchAlerts({ away }: { away?: boolean } = {}) {
     []
   )
 
-  // El título de la pestaña avisa aunque estés en otra pestaña o en otra ventana.
+  // El título de la pestaña avisa aunque estés en otra pestaña; el de la partida encontrada lo pone AcceptDialog.
   useEffect(() => {
-    if (onPlay || (!accepting && !searching)) return
+    if (onPlay || !searching) return
     const before = document.title
-    document.title = accepting
-      ? "¡Partida encontrada! · CM League"
-      : `Buscando partida · ${before}`
+    document.title = `Buscando partida · ${before}`
     return () => {
       document.title = before
     }
-  }, [onPlay, accepting, searching])
+  }, [onPlay, searching])
 
   if (onPlay || !lobby || !accepting) return null
   return (
@@ -122,6 +120,7 @@ export function GlobalMatchAlerts({ away }: { away?: boolean } = {}) {
       }
       onDecline={() => decline.mutate()}
       auto={!!state?.auto_accept?.allowed && !!state.auto_accept.enabled}
+      sound={selected}
     />
   )
 }

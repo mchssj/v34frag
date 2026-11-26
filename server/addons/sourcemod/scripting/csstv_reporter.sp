@@ -13,6 +13,8 @@
  * del mix al final de cada ronda (mixes en vivo en la web) y recupera un mix cortado por una caída.
  * csstv/claim.inc (!claim) vincula el SteamID del jugador a su cuenta de la web (csstv_claim lo apaga).
  * csstv/whois.inc (!whois, admins y moderadores): nicks que usó un jugador en las partidas y su perfil en la web.
+ * csstv/webnick.inc: los nombres de los jugadores: el nick de la ficha (csstv_web_names) y el bloqueo con la partida
+ * empezada (csstv_lock_names). Ningún otro plugin nuestro los toca.
  * csstv/clips.inc anota las jugadas destacadas de cada ronda (ticks de cada kill y clutches) y las
  * manda con el resultado; la web arma los clips (csstv_clips lo apaga).
  * csstv/mm.inc toma las salas del matchmaking de la web (csstv_mm lo prende).
@@ -36,7 +38,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.10.0"
+#define PLUGIN_VERSION "2.10.3"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -151,8 +153,10 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/status.inc"
 #include "csstv/claim.inc"
 #include "csstv/whois.inc"
+#include "csstv/webnick.inc"
 #include "csstv/tips.inc"
 #include "csstv/ips.inc"
+#include "csstv/autoready.inc"
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -204,6 +208,7 @@ public void OnPluginStart()
 
 	CreateTimer(1.0, Timer_AbandonCheck, _, TIMER_REPEAT);
 	Ips_Init();
+	AutoReady_Init();
 
 	HookEventEx("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEventEx("round_end", Event_RoundEnd);
@@ -230,6 +235,7 @@ public void OnPluginStart()
 	Status_Init();
 	Claim_Init();
 	Whois_Init();
+	WebNick_Init();
 	Tips_Init();
 	Clips_Init();
 }
@@ -297,11 +303,13 @@ public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
 public void OnClientPutInServer(int client)
 {
 	g_bReady[client] = false;
+	AutoReady_ClientReset(client);
 	Gg_ClientReset(client);
 	Stats_ClientReset(client);
 	Board_OnClientPut(client);
 	Claim_ClientReset(client);
 	Whois_ClientReset(client);
+	WebNick_ClientReset(client);
 	Clips_ClientReset(client);
 }
 
@@ -311,6 +319,7 @@ public void OnClientPostAdminCheck(int client)
 	Match_OnClientJoin(client);
 	Mm_OnClientJoin(client);
 	Ips_OnJoin(client);
+	WebNick_Request(client);
 }
 
 public void OnClientDisconnect(int client)
@@ -450,6 +459,7 @@ public Action Cmd_Ready(int client, int args)
 		ReplyToCommand(client, "[%s] Uníte a CT o T para marcarte listo.", g_sTag);
 		return Plugin_Handled;
 	}
+	AutoReady_SetOff(client, false);
 	if (!g_bReady[client])
 	{
 		g_bReady[client] = true;
@@ -463,6 +473,8 @@ public Action Cmd_Unready(int client, int args)
 {
 	if (client <= 0 || !IsClientInGame(client))
 		return Plugin_Handled;
+	if (g_State == State_Warmup)
+		AutoReady_SetOff(client, true);
 	if (g_State == State_Warmup && g_bReady[client])
 	{
 		g_bReady[client] = false;
@@ -548,9 +560,15 @@ public Action Timer_ReadyReminder(Handle timer)
 		PrintToChatAll("%s Este servidor no tiene una licencia válida de CSSTV (%s). Los mixes están desactivados.", PREFIX, why);
 		return Plugin_Continue;
 	}
+	AutoReady_Sweep();
+	if (g_State != State_Warmup)
+		return Plugin_Continue;
 	char names[256];
 	int missing = ReadyMissing(names, sizeof(names), 6);
-	PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Escribí !ready para empezar.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
+	if (AutoReady_Applies())
+		PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Entrás listo solo; !unready si necesitás un momento.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
+	else
+		PrintToChatAll("%s Calentamiento. Listos %d/%d (mínimo %d). Escribí !ready para empezar.", PREFIX, total - missing, total, g_cvMinPlayers.IntValue);
 	if (missing)
 		PrintToChatAll("%s Faltan: %s%s", PREFIX, names, missing > 6 ? "…" : "");
 	if (g_LinkState == Link_Active)
@@ -662,6 +680,7 @@ void ResetMatch()
 	}
 	for (int i = 1; i <= MaxClients; i++)
 		g_bReady[i] = false;
+	AutoReady_Reset();
 	Stats_Reset();
 	Clips_Clear();
 	Qol_Reset();

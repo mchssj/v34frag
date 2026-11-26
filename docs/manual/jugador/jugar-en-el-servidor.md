@@ -1,6 +1,6 @@
 ---
 titulo: Jugar en el servidor
-resumen: Cómo arranca la partida, el calentamiento, el formato, las pausas, la rendición, pedir un arma y los espectadores.
+resumen: Cómo arranca la partida, el calentamiento, el formato, las pausas, la rendición, pedir un arma, la flash, tu nombre y los espectadores.
 orden: 4
 ---
 
@@ -9,8 +9,8 @@ Todos los servidores de CMLeague se juegan igual. Los comandos se escriben en el
 ## Cómo arranca
 
 1. Mientras entran todos, el servidor está en **calentamiento**. Si mueres, reapareces enseguida con un arma gratis (la eliges con `!armas`) y chaleco con casco. Puedes practicar granadas con `!nades`.
-2. Cuando estés listo, escribe `!ready` (`!unready` lo quita, `!faltan` dice quiénes faltan). La partida arranca cuando están todos listos.
-3. Primero se juega una **ronda de cuchillo**. El equipo que gana tiene 60 segundos para elegir lado: `!stay` se queda donde está y `!switch` cambia.
+2. En los mixes y en el matchmaking, apenas entras a un equipo ya quedas **listo** solo. Si necesitas un momento, escribe `!unready` (y `!ready` cuando estés). En torneos y PCW, cada uno escribe `!ready`. `!faltan` dice quiénes faltan. La partida arranca cuando están todos listos.
+3. Primero se juega una **ronda de cuchillo**. El equipo que gana tiene 60 segundos para elegir lado: `!stay` se queda donde está y `!switch` cambia. Si se acaba el tiempo de la ronda sin que un equipo mate a todos los del otro, gana el que **sume más vida entre sus vivos**; si empatan, se juega otra.
 4. Después, la partida en vivo.
 
 En el matchmaking, la partida no arranca hasta que entraron todos los jugadores de la sala.
@@ -42,12 +42,24 @@ Si no te alcanza la plata, un compañero te puede comprar el arma:
 1. Al empezar la ronda, mientras están todos quietos, aprieta **R** (recargar) y elige el arma en el menú.
 2. Tu equipo ve el pedido. El primero que aprieta **E** (usar) en la zona de compra te la compra, con su plata.
 
+## La flash
+
+La flash ciega según cómo la agarres, parecido a CS:GO. Si la miras de frente, te ciega completa. De costado te ciega menos, y de espaldas es solo un destello corto. De lejos también dura menos. Si la escuchas venir, darte vuelta a tiempo sirve.
+
+## Tu nombre en el servidor
+
+Si tu SteamID está vinculado a tu perfil (con `!claim`), al entrar al servidor te aparece tu alias de la web, el mismo del ranking y las partidas. Vale en los mixes, el matchmaking, los torneos y las PCW. Si te lo cambias, vuelve solo. Para usar otro, cambia tu alias en tu perfil de la web y entra de nuevo.
+
+- Con **VIP** usas el nombre que quieras y te lo cambias cuando quieras.
+- Si no vinculaste tu SteamID o tu perfil es **privado**, sigues con tu nombre, pero no te lo puedes cambiar con la partida empezada.
+- El juego no muestra todo: los emojis y los caracteres invisibles de tu alias no aparecen, y un nombre muy largo se corta.
+
 ## Si algo pasa
 
 Si alguien hace trampa, insulta o hay un problema que necesita a alguien ya, escribe `!calladmin`: avisa a los moderadores en Discord.
 
 ## Si estás de espectador
 
-Durante la partida, los espectadores no escriben en el chat general y los jugadores no los escuchan. Nadie se puede cambiar el nombre hasta que termina.
+Durante la partida, los espectadores no escriben en el chat general y los jugadores no los escuchan. Los nombres tampoco se cambian (ver "Tu nombre en el servidor").
 
 Los modos aparte (deathmatch, retake y 2v2) están en [Deathmatch, retake y 2v2](/help/jugador/otros-modos).

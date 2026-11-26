@@ -44,6 +44,7 @@ import {
   mapLabel,
   secondsLeft,
   steamConnectUrl,
+  prevetoLabel,
   sideLabel,
 } from "../labels"
 import { LobbyChat } from "../LobbyChat"
@@ -880,7 +881,7 @@ function VetoHistory({ lobby }: { lobby: MmLobby }) {
               <BanIcon aria-hidden className="size-3.5 text-destructive" />
               <span className="font-medium">{label(b.map)}</span>
               <span className="ml-auto text-xs text-muted-foreground">
-                {sideLabel(lobby, b.team)}
+                {b.team ? sideLabel(lobby, b.team) : prevetoLabel(b)}
                 {b.auto && " · automático"}
               </span>
             </li>

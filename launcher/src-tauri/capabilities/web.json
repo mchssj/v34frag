@@ -6,7 +6,7 @@
   "remote": { "urls": ["https://cmleague.lat/*", "https://www.cmleague.lat/*"] },
   "permissions": [
     "allow-game-detect",
-    "allow-game-set-dir",
+    "allow-game-pick-dir",
     "allow-game-launch",
     "allow-window-attention",
     "allow-launcher-status",

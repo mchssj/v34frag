@@ -104,6 +104,22 @@ describe("Administración › Matchmaking", () => {
     ).not.toBeChecked()
   })
 
+  it("General: el máximo de mapas prevetados empieza en 2 y llega hasta 0", async () => {
+    const { user, source } = setup()
+    const max = await screen.findByLabelText(
+      "Mapas prevetados por partida (máximo)"
+    )
+    expect(max).toHaveValue(2)
+    await user.clear(max)
+    await user.type(max, "11")
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }))
+    expect(await screen.findByText("Máximo 10")).toBeInTheDocument()
+    await user.clear(max)
+    await user.type(max, "0")
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }))
+    expect((await source.adminConfig()).vip_preveto_max).toBe(0)
+  })
+
   it("General: 2v2 no da ELO por defecto y se puede cambiar", async () => {
     const { user, source } = setup()
     const elo = await screen.findByRole("switch", { name: "2v2 da ELO" })

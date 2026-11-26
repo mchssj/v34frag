@@ -266,19 +266,22 @@ export function BanDialog({
               )}
               {debounced &&
                 !typedSteam &&
-                players.data?.items
-                  .filter((p) => p.has_steam)
-                  .map((p) => (
-                    <Option
-                      key={p.id}
-                      on={target?.kind === "player" && target.id === p.id}
-                      label={p.alias}
-                      info="Banea la ficha y todos sus SteamID"
-                      onClick={() =>
-                        setTarget({ kind: "player", id: p.id, label: p.alias })
-                      }
-                    />
-                  ))}
+                // Las fichas sin SteamID también (replanteo 147): el baneo las saca del matchmaking.
+                players.data?.items.map((p) => (
+                  <Option
+                    key={p.id}
+                    on={target?.kind === "player" && target.id === p.id}
+                    label={p.alias}
+                    info={
+                      p.has_steam
+                        ? "Banea la ficha y todos sus SteamID"
+                        : "Ficha sin SteamID: no puede buscar partida y, cuando vincule uno, tampoco entrar a los servidores"
+                    }
+                    onClick={() =>
+                      setTarget({ kind: "player", id: p.id, label: p.alias })
+                    }
+                  />
+                ))}
             </div>
           </div>
         )}

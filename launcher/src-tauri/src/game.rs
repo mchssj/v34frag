@@ -26,8 +26,23 @@ const COMMON_DIRS: &[&str] = &[
     r"E:\ClientMod",
 ];
 
+/// Solo una carpeta de un disco de esta PC (`C:\...`): nunca una ruta de red (`\\equipo\carpeta`, `//equipo/...`),
+/// ni escrita así ni detrás de un enlace o de una unidad de red (la ruta real, ya resuelta, no puede ser `\\?\UNC\`).
+/// CMLauncher.exe se abre como administrador: si la carpeta viniera de afuera, se podría abrir cualquier programa.
+pub fn is_local_dir(dir: &str) -> bool {
+    let b = dir.as_bytes();
+    let drive = b.len() >= 3 && b[0].is_ascii_alphabetic() && b[1] == b':' && (b[2] == b'\\' || b[2] == b'/');
+    drive
+        && std::fs::canonicalize(dir)
+            .map(|real| real.is_dir() && !real.to_string_lossy().to_ascii_uppercase().starts_with(r"\\?\UNC\"))
+            .unwrap_or(false)
+}
+
 /// ClientMod se abre siempre con CMLauncher.exe (nunca con hl2.exe): es el que arranca el juego con EasyAntiCheat.
 fn inspect(dir: &Path) -> Option<GameInfo> {
+    if !is_local_dir(&dir.to_string_lossy()) {
+        return None;
+    }
     let launcher = dir.join("CMLauncher.exe");
     launcher.is_file().then(|| GameInfo {
         dir: dir.to_string_lossy().into_owned(),
@@ -49,14 +64,47 @@ pub fn game_detect(app: tauri::AppHandle) -> Option<GameInfo> {
     find_game(&app)
 }
 
-/// Guarda la carpeta de ClientMod que eligió el jugador (tiene que tener CMLauncher.exe).
+/// El selector de carpetas de Windows. Devuelve la carpeta elegida, o `None` si el jugador lo cerró.
+#[cfg(windows)]
+fn pick_folder() -> Result<Option<String>, String> {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    // Un formulario invisible "siempre visible" como dueño, para que el selector no quede detrás de la ventana.
+    let script = "[Console]::OutputEncoding = [Text.Encoding]::UTF8; \
+        Add-Type -AssemblyName System.Windows.Forms; \
+        $d = New-Object System.Windows.Forms.FolderBrowserDialog; \
+        $d.Description = 'Elige la carpeta de ClientMod (la que tiene CMLauncher.exe)'; \
+        $d.ShowNewFolderButton = $false; \
+        $o = New-Object System.Windows.Forms.Form -Property @{ TopMost = $true }; \
+        if ($d.ShowDialog($o) -eq [System.Windows.Forms.DialogResult]::OK) { $d.SelectedPath }";
+    let out = Command::new("powershell")
+        .args(["-NoProfile", "-STA", "-Command", script])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .map_err(|e| format!("No pude abrir el selector de carpetas: {e}."))?;
+    let dir = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    Ok((!dir.is_empty()).then_some(dir))
+}
+
+#[cfg(not(windows))]
+fn pick_folder() -> Result<Option<String>, String> {
+    Err("ClientMod solo corre en Windows.".into())
+}
+
+/// El jugador elige la carpeta de ClientMod con el selector de Windows, y queda guardada. Nadie le manda una ruta: ni
+/// la web ni la ventana de Configuración, solo piden que se abra el selector. `None` si lo cerró sin elegir.
 #[tauri::command]
-pub fn game_set_dir(app: tauri::AppHandle, dir: String) -> Result<GameInfo, String> {
-    let info = inspect(Path::new(dir.trim())).ok_or("No encontré CMLauncher.exe en esa carpeta.")?;
+pub async fn game_pick_dir(app: tauri::AppHandle) -> Result<Option<GameInfo>, String> {
+    let picked = tauri::async_runtime::spawn_blocking(pick_folder).await.map_err(|e| e.to_string())??;
+    let Some(dir) = picked else { return Ok(None) };
+    if !is_local_dir(&dir) {
+        return Err("Elige una carpeta de un disco de esta PC, no de la red.".into());
+    }
+    let info = inspect(Path::new(&dir)).ok_or("No encontré CMLauncher.exe en esa carpeta.")?;
     let mut s = settings::load(&app);
     s.clientmod_dir = Some(info.dir.clone());
     settings::save(&app, &s)?;
-    Ok(info)
+    Ok(Some(info))
 }
 
 /// `ip:puerto` o `host:puerto`. Lo que va a la línea de comandos del juego no puede traer espacios, `;` ni comillas:
@@ -192,7 +240,7 @@ pub fn game_launch(app: tauri::AppHandle, address: String, password: Option<Stri
         }
         let _ = std::fs::write(&ini, &original);
     });
-    Ok("Abrí ClientMod: aprieta PLAY y entras directo al servidor.".into())
+    Ok("Se abrió ClientMod: aprieta PLAY y entras directo al servidor.".into())
 }
 
 
@@ -236,6 +284,28 @@ mod tests {
             std::fs::read(&ini).unwrap(),
             b"[Launcher]\r\nInstalled=true\r\n[Game]\r\nParams=-console -tickrate 128 -high +exec autoexec.cfg +connect 190.104.34.3:27022 +password abc\r\nInstalled=true\r\n"
         );
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn carpetas_de_red() {
+        assert!(!is_local_dir(r"\\equipo\carpeta"));
+        assert!(!is_local_dir("//equipo/carpeta"));
+        assert!(!is_local_dir(r"\\?\UNC\equipo\carpeta"));
+        assert!(!is_local_dir("carpeta"));
+        assert!(!is_local_dir(""));
+        assert!(inspect(Path::new(r"\\equipo\carpeta")).is_none());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn carpeta_local() {
+        let dir = std::env::temp_dir().join(format!("cmlauncher-local-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        assert!(is_local_dir(&dir.to_string_lossy()));
+        assert!(inspect(&dir).is_none());
+        std::fs::write(dir.join("CMLauncher.exe"), b"").unwrap();
+        assert!(inspect(&dir).is_some());
         std::fs::remove_dir_all(&dir).unwrap();
     }
 }

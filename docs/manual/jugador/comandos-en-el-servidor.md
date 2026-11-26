@@ -10,9 +10,9 @@ Se escriben en el chat del juego. Con `!` adelante (`!pause`) todos ven el coman
 
 | Comando | Qué hace |
 |---|---|
-| `!ready` | Te marca listo. La partida arranca cuando están todos listos |
-| `!unready` | Quita tu listo |
-| `!faltan` | Quiénes faltan escribir `!ready` |
+| `!ready` | Te marca listo. En los mixes y en el matchmaking ya entras listo solo; en torneos y PCW lo tienes que escribir. La partida arranca cuando están todos listos |
+| `!unready` | Quita tu listo, si necesitas un momento antes de que arranque. No vuelves a quedar listo solo hasta que escribas `!ready` o cambie el mapa |
+| `!faltan` | Quiénes faltan estar listos |
 | `!stay` · `!switch` | Después de la ronda de cuchillo, el capitán del equipo que ganó se queda en su lado o cambia (ver [Comandos del capitán en el servidor](/help/capitan/comandos-en-el-servidor)) |
 
 ## En el calentamiento
@@ -39,7 +39,6 @@ Si mueres, reapareces enseguida con un arma gratis y chaleco con casco.
 | `!sell` | Vende lo que compraste en la ronda, durante la compra. `!sell all` vende todo |
 | `!eq` | Qué tiene cada uno de tu equipo: armas, chaleco, kit, granadas y plata. También aparece solo unos segundos antes de que arranque cada ronda |
 | `!hp` | Quién te mató en la ronda y cuánta vida le queda |
-| `!voz` | Por defecto, cuando quedas último vivo sigues escuchando a tus compañeros muertos. Con `!voz` dejas de escucharlos cada vez que quedas solo, hasta que termina la ronda; otro `!voz` lo vuelve a apagar. Dura mientras sigas conectado |
 | `!score` | El marcador |
 
 Para pedirle un arma a un compañero no hay comando: se hace con la **R** y la **E** (ver [Jugar en el servidor](/help/jugador/jugar-en-el-servidor)).

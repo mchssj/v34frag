@@ -75,6 +75,7 @@ Se lee "Tienes **20 segundos** para tocar **Aceptar**." El marcador ya trae la u
 | `{{mm.grupo_dif_elo}}` | Diferencia de ELO máxima dentro del grupo | 500 |
 | `{{mm.aceptar}}` | Tiempo para aceptar la partida | 20 segundos |
 | `{{mm.veto}}` | Tiempo por turno del veto | 15 segundos |
+| `{{mm.preveto_max}}` | Mapas que los VIP prevetan por partida | 2 mapas |
 | `{{mm.conectar}}` | Tiempo para conectarse al servidor | 5 minutos |
 | `{{mm.espera_servidor}}` | Espera de un servidor libre | 3 minutos |
 | `{{mm.volver}}` | Tiempo para volver después de desconectarse | 3 minutos |

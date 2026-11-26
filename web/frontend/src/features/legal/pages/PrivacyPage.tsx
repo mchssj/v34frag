@@ -117,6 +117,10 @@ const RETENTION: [string, string][] = [
     "Denuncias de tierlists y de sus comentarios (motivo, nota, quién la mandó y el texto denunciado)",
     "Mientras exista tu cuenta",
   ],
+  [
+    "Partidas favoritas y búsquedas guardadas",
+    "Hasta que las borres o borres tu cuenta",
+  ],
   ["Chat del grupo en Jugar", "Hasta que el grupo se deshace"],
   [
     "Mensaje denunciado desde el chat del grupo",
@@ -198,7 +202,13 @@ const SECTIONS: LegalSection[] = [
             denuncias que mandas.
           </li>
           <li>
-            Tus preferencias del matchmaking, como el autoaceptar partida (VIP).
+            Las partidas que marcas como favoritas y las búsquedas que guardas,
+            con su nombre y sus filtros (VIP).
+          </li>
+          <li>
+            Tus preferencias del matchmaking, como el autoaceptar partida y el
+            mapa que eliges prevetar (VIP). La sala muestra cuántos votos tuvo
+            cada mapa prevetado, no quién votó.
           </li>
           <li>
             Si la liga te aplica un ajuste interno para repartir los equipos del
@@ -370,6 +380,11 @@ const SECTIONS: LegalSection[] = [
           privado.
         </p>
         <p>
+          En los servidores de la liga, si tu SteamID está vinculado a tu perfil
+          y tu perfil no es privado, apareces con tu tag de la web; con VIP, con
+          el nombre que quieras.
+        </p>
+        <p>
           Al terminar cada temporada publicamos el recap de cada jugador que
           jugó al menos un mix (sus cifras de la temporada comparadas con el
           promedio de todos, su curva de ELO, sus mapas, su mejor partida, sus
@@ -401,6 +416,14 @@ const SECTIONS: LegalSection[] = [
           como en el ranking. Si alguien copia una tierlist, la copia muestra tu
           nick como autor de la original. Al borrar una tierlist o tu cuenta, se
           borran tus tierlists con sus comentarios y me gusta.
+        </p>
+        <p>
+          Tus partidas favoritas, tus búsquedas guardadas y el desglose de tu
+          ELO los ves solo tú. Con los filtros del ranking sales con lo que ya
+          es público: tu nick, tu foto, tu equipo, tus estadísticas, si eres
+          VIP, tu mapa más jugado y tu última partida; tu país, solo si tu
+          perfil no es privado. La tarjeta de stats se arma en tu navegador: no
+          la guardamos.
         </p>
         <p>
           En un torneo histórico (el registro de un torneo jugado antes o fuera
@@ -576,9 +599,10 @@ const SECTIONS: LegalSection[] = [
           saca cuando se abre el juego. Si lo activas en su configuración,
           muestra en tu Discord lo que estás haciendo («Buscando partida»,
           «Jugando 5v5 · de_dust2»); Discord lo ve igual que el resto de tu
-          actividad. Para saber si hay una versión nueva, pregunta a{" "}
-          <code>cmleague.lat</code>. No lee tus otros programas ni archivos, y
-          no toca el juego mientras juegas.
+          actividad. Para saber si hay una versión nueva, consulta nuestro
+          almacenamiento de Cloudflare (<code>descargas.cmleague.lat</code>). No
+          lee tus otros programas ni archivos, y no toca el juego mientras
+          juegas.
         </p>
       </>
     ),

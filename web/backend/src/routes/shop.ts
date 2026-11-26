@@ -358,6 +358,7 @@ export const shop = createRouter()
     if (p.collection) q = q.eq('collection', p.collection);
     if (p.vip !== undefined) q = q.eq('vip_only', p.vip);
     if (p.weekly !== undefined) q = q.eq('weekly', p.weekly);
+    if (p.is_new !== undefined) q = q.eq('is_new', p.is_new);
     const term = nameTerm(p.q);
     if (term) q = q.ilike('name', `%${term}%`);
     if (me && p.owned !== undefined) {

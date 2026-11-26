@@ -16,11 +16,17 @@ export const CLIENTMOD = {
 }
 
 /**
- * Launcher de escritorio (docs/bitacora/2026-11-24-launcher-escritorio). Las versiones se publican en el VPS, en
- * cmleague.lat/descargas/launcher/: `latest.json` dice cuál es la última y dónde está su instalador (lo arma GitHub Actions).
+ * Launcher de escritorio (docs/bitacora/2026-11-24-launcher-escritorio). Las versiones se publican en el R2 de Daniel,
+ * en descargas.cmleague.lat/launcher/: `latest.json` dice cuál es la última y dónde está su instalador (lo arma y lo sube
+ * GitHub Actions). El bucket tiene que permitir el GET desde https://cmleague.lat (CORS).
  */
 export const LAUNCHER = {
-  latestUrl: "/descargas/launcher/latest.json",
+  /**
+   * Si ya se puede bajar. Mientras sea `false`, la web no lo promociona (el link de Jugar y el "Ver el launcher" del aviso
+   * de Conectar); `/launcher` igual se puede abrir y dice que todavía no está publicado.
+   */
+  published: false,
+  latestUrl: "https://descargas.cmleague.lat/launcher/latest.json",
   /** Abre el launcher instalado (protocolo que registra el instalador). */
   openUrl: "cmleague://play",
 }

@@ -32,9 +32,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { askNotificationPermission } from "./alert"
+import { askNotificationPermission, notificationsBlocked } from "./alert"
 import { EloMeter } from "./EloMeter"
 import { fmtClock, isCountry } from "./labels"
+import { PrevetoPicker } from "./PrevetoPicker"
 import { mmKeys, useMmAction, useMmMutation } from "./queries"
 import { useMmSource } from "./source"
 import type { InvitePref, MmState } from "./types"
@@ -93,6 +94,7 @@ export function PlayBar({
           </span>
         )}
       </Column>
+      <PrevetoPicker preveto={state.preveto} mode={mode} />
       <Column title="Últimas">
         <ul aria-label="Últimos resultados" className="flex gap-1">
           {state.me.recent.map((r, i) => (
@@ -214,6 +216,13 @@ export function PlayBar({
           >
             {state.open ? "Buscar partida" : "Cola cerrada"}
           </Button>
+        )}
+        {notificationsBlocked() && (
+          <span className="text-center text-xs text-muted-foreground">
+            Las notificaciones están bloqueadas: actívalas desde el candado de
+            la barra de direcciones para enterarte de la partida aunque estés en
+            otra ventana.
+          </span>
         )}
         {follower && (
           <span className="text-center text-xs text-muted-foreground">

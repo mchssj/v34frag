@@ -40,7 +40,9 @@ Toca el nombre de un jugador (en el grupo, en Amigos, en el chat del grupo o en 
 
 ## 2. Aceptar
 
-Cuando aparece **Partida encontrada** tienes **{{mm.aceptar}}** para tocar **Aceptar**. La ventana aparece en cualquier página de la web, no solo en Jugar, con su sonido; al aceptar te lleva a Jugar. Si tienes la web en otra pestaña, el título de esa pestaña dice "¡Partida encontrada!" y, si diste permiso, te llega una notificación del navegador: vuelve a esa pestaña para aceptar.
+Cuando aparece **Partida encontrada** tienes **{{mm.aceptar}}** para tocar **Aceptar**. La ventana aparece en cualquier página de la web, no solo en Jugar; al aceptar te lleva a Jugar. Hasta que aceptes o rechaces, el sonido se repite cada 7 segundos y el título de la pestaña parpadea con "¡Partida encontrada!". Si estás en otra pestaña, en otra ventana o en otro monitor y diste permiso, también te llega una notificación del navegador que no se borra sola: tócala para volver a la web.
+
+Si en Jugar ves que las notificaciones están bloqueadas, actívalas desde el candado de la barra de direcciones. Si juegas a otra cosa en pantalla completa mientras buscas, Windows puede ocultar las notificaciones (opción "No molestar" al jugar): usa el modo ventana sin bordes, apaga esa opción o deja el volumen de la web alto para oír el sonido.
 
 - Si todos aceptan, pasan al veto.
 - Si alguien no acepta, la partida se cancela. Los que aceptaron vuelven a la búsqueda sin perder su lugar en la cola. Un grupo vuelve solo si aceptaron todos sus integrantes.
@@ -62,18 +64,29 @@ Cada equipo tiene un capitán: el jugador con más ELO del equipo. Los capitanes
 - Cada turno dura **{{mm.veto}}**. Si el capitán no elige, se banea un mapa al azar.
 - Si eres capitán, la sala te dice **Tu turno: banea un mapa.**
 
+### Preveto de mapas (VIP)
+
+Si eres VIP, en [Jugar](/play), debajo del modo, toca **Elegir mapa** y elige el que no quieras jugar. Son los mapas que están hoy en el matchmaking de ese modo.
+
+- Antes del primer turno de los capitanes se cuentan los prevetos de los VIP de la sala, de los dos equipos, y quedan fuera los mapas con más votos: hasta **{{mm.preveto_max}}** por partida. Si empatan, se elige al azar.
+- Si nadie prevetó, el veto es el de siempre. Siempre quedan al menos 2 mapas para los capitanes, y el equipo que empieza a banear es el mismo.
+- Tu elección queda guardada para las próximas partidas, una por modo. Para sacarla, abre la misma ventana y toca **Sin preveto**. Los cambios valen para la próxima sala que empiece el veto.
+- La sala muestra qué mapas cayeron y con cuántos votos, no quién votó.
+- Si se te vence el VIP, o el mapa sale del matchmaking, tu preveto deja de contar.
+
+Si no ves la opción, la liga la tiene apagada.
+
 ## 4. Conectarte al servidor
 
 Cuando termina el veto, buscamos un servidor libre. Si están todos ocupados, la sala dice que la partida se arma cuando se libere uno; si en {{mm.espera_servidor}} no hay ninguno, la partida se cancela sin sanción para nadie.
 
 Con el servidor listo, la **Sala de la partida** te muestra la dirección y la contraseña. Para entrar:
 
-- Toca **Copiar connect** y pega el comando en la consola del juego (º). En el navegador, **Conectar** hace lo mismo: copia el comando, porque ClientMod no se abre desde la web.
-- Con el [launcher de CMLeague](/help/jugador/launcher), **Conectar** abre ClientMod y entra directo al servidor.
+- Toca **Copiar connect** y pega el comando en la consola del juego (º). **Conectar** hace lo mismo: copia el comando, porque ClientMod no se abre desde la web.
 
 Tienes **{{mm.conectar}}** para conectarte; la sala muestra cuánto queda y quiénes ya entraron. Si todavía no vinculaste tu SteamID, o entraste desde otra PC, escribe en el chat el `!claim` que te muestra la sala.
 
-La partida arranca cuando todos escriben `!ready`. Si ya entraron todos cuando se termina el tiempo para conectarse, la partida no se cancela: tienen **3 minutos** desde que entró el último para el `!ready`, y la sala muestra cuánto queda. Si en ese tiempo no arranca, se cancela sin sanción para nadie.
+La partida arranca cuando todos están listos: al entrar a tu equipo quedas listo solo, y si necesitas un momento escribes `!unready` (y `!ready` para volver). Si ya entraron todos cuando se termina el tiempo para conectarse, la partida no se cancela: tienen **3 minutos** desde que entró el último para el `!ready`, y la sala muestra cuánto queda. Si en ese tiempo no arranca, se cancela sin sanción para nadie.
 
 > **Ojo:** la contraseña es solo para los jugadores de la partida. No la compartas.
 
@@ -103,7 +116,7 @@ Cuando alguien abandona, puede salir un aviso en el Discord de la liga con un li
 4. Te lleva a la sala: tu fila ocupa el lugar del que se fue, con la etiqueta **Reemplazo**, y arriba ves **Entra al servidor** con la cuenta regresiva. Ahí están el servidor y la contraseña. Tienes {{mm.conectar}} para entrar. Si no entras, se te sanciona como a quien no se conecta a su partida y se busca otro reemplazo.
 5. En el servidor entras directo al equipo del que abandonó.
 
-Ganas o pierdes ELO como cualquiera, según las rondas que juegues: si entras muy tarde y juegas pocas, la partida no te cuenta.
+Ganas o pierdes ELO como cualquiera, según las rondas que juegues: si entras muy tarde y juegas pocas, la partida no te cuenta. Irte en la última ronda tampoco es abandono para ti. Si te vas antes sí lo es, y las rondas de antes de que entraras no cuentan como no jugadas.
 
 Al terminar, la sala muestra el resultado, el MVP, los destacados y los clips.
 

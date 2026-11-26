@@ -24,13 +24,13 @@ En la Tienda, **Historial** muestra cada mix, cada compra, cada código que canj
 ## 1. Comprar
 
 1. Entra a la [Tienda](/shop).
-2. Elige el tipo arriba (**Marcos**, **Avatares**, **Stickers**, **Temas**, **Nombres** o **Fondos de miniperfil**). Puedes filtrar por colección, buscar por nombre, mostrar **Puedo comprar** o **Lo mío**, y ordenar por precio.
+2. Elige el tipo arriba (**Marcos**, **Avatares**, **Stickers**, **Temas**, **Nombres** o **Fondos de miniperfil**). Puedes filtrar por colección, buscar por nombre, mostrar **Puedo comprar**, **Lo mío** o **Nuevo**, y ordenar por precio.
 3. Toca **Probar** (o la imagen) para verlo en la **Vista previa** de arriba, con lo que ya tienes puesto.
 4. Toca **Comprar** y confirma. Si te faltan puntos, la tarjeta te dice cuántos y más o menos cuántos mixes son.
 
 Las **Ofertas de la semana** tienen descuento y cambian cada lunes a las 00:00 (hora de Argentina).
 
-Lo que llegó a la tienda en los últimos 3 días lleva la etiqueta **Nuevo** (si ya lo tienes, no).
+Lo que llegó a la tienda en los últimos 3 días lleva la etiqueta **Nuevo** (si ya lo tienes, no). Para ver solo eso, elige **Mostrar › Nuevo**: muestra lo nuevo del tipo que tienes elegido.
 
 ## 2. Ponértelo
 
@@ -97,7 +97,7 @@ Donde la foto es grande (tu perfil, tu tarjeta del lobby, Quiénes somos, tu men
 
 ## Temas
 
-Un tema pinta toda tu página de jugador con sus colores: la tarjeta de arriba, el nivel, el gráfico de ELO, las estadísticas y las pestañas, con un brillo de su color arriba. Algunos temas, además, hacen brillar el borde de la tarjeta de tu nombre. Tu página se ve siempre en oscuro con el tema, aunque quien la mire use el modo claro.
+Un tema pinta toda tu página de jugador con sus colores: la tarjeta de arriba, el nivel, el gráfico de ELO, las estadísticas y las pestañas, con un brillo de su color arriba. Algunos temas, además, hacen brillar el borde de la tarjeta de tu nombre. Los de la colección **Texturas** (la mitad para todos y la mitad solo VIP) cambian también el fondo de la página y el de las tarjetas, con su propio dibujo, y algunos se mueven. Tu página se ve siempre en oscuro con el tema, aunque quien la mire use el modo claro. La excepción es **Cuaderno de clase**, que se ve siempre claro.
 
 ## Lo VIP
 

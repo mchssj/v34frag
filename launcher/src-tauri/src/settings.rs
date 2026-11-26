@@ -21,11 +21,11 @@ pub struct Settings {
     pub discord_presence: bool,
     /// Buscar actualizaciones al abrir y cada 6 horas.
     pub auto_update: bool,
-    /// Pintar el launcher con el tema de la tienda que tenés equipado en tu perfil (solo se pueden equipar los que
-    /// tenés). Apagado de fábrica; no cambia la web en el navegador.
+    /// Pintar el launcher con el tema de la tienda que tienes equipado en tu perfil (solo se pueden equipar los que
+    /// tienes). Apagado de fábrica; no cambia la web en el navegador.
     pub shop_theme: bool,
     /// Tema elegido para el launcher (id de la tienda); sin él, el equipado en el perfil. Lo elige la web en
-    /// Perfil › Preferencias, solo entre los que tenés.
+    /// Perfil › Preferencias, solo entre los que tienes.
     pub shop_theme_id: Option<String>,
     /// Carpeta de ClientMod elegida a mano; sin ella se busca en las rutas comunes.
     pub clientmod_dir: Option<String>,
@@ -76,9 +76,12 @@ pub fn settings_get(app: tauri::AppHandle) -> Settings {
 
 /// Guarda y aplica lo que cambia en el momento (arranque con Windows y Discord).
 #[tauri::command]
-pub fn settings_set(app: tauri::AppHandle, settings: Settings) -> Result<Settings, String> {
-    apply_autostart(&app, settings.start_with_windows)?;
+pub fn settings_set(app: tauri::AppHandle, mut settings: Settings) -> Result<Settings, String> {
     let before = load(&app);
+    // La carpeta de ClientMod solo la cambia game_pick_dir (el selector de Windows): CMLauncher.exe se abre como
+    // administrador, así que ninguna ventana puede mandar una ruta.
+    settings.clientmod_dir = before.clientmod_dir.clone();
+    apply_autostart(&app, settings.start_with_windows)?;
     save(&app, &settings)?;
     crate::status::refresh(&app);
     if before.shop_theme != settings.shop_theme {

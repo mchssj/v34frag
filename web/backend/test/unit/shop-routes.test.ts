@@ -146,6 +146,19 @@ describe('catálogo', () => {
     },
   );
 
+  it('is_new filtra lo nuevo; sin el parámetro no filtra y con otro valor es 400', async () => {
+    const calls = postgrest('user', (url) => (url.pathname.endsWith('/shop_catalog') ? listed([item({ is_new: true })]) : undefined));
+    expect((await call('GET', '/api/v1/shop/items?is_new=true', undefined, false)).status).toBe(200);
+    expect(restUrl(calls, 'shop_catalog')).toContain('is_new=eq.true');
+    calls.length = 0;
+    expect((await call('GET', '/api/v1/shop/items?is_new=false', undefined, false)).status).toBe(200);
+    expect(restUrl(calls, 'shop_catalog')).toContain('is_new=eq.false');
+    calls.length = 0;
+    expect((await call('GET', '/api/v1/shop/items', undefined, false)).status).toBe(200);
+    expect(restUrl(calls, 'shop_catalog')).not.toContain('is_new=eq');
+    expect((await call('GET', '/api/v1/shop/items?is_new=quizas', undefined, false)).status).toBe(400);
+  });
+
   it('owned=true siendo VIP: lo suyo más el premio VIP', async () => {
     const calls = postgrest('user', (url) => {
       const p = url.pathname;

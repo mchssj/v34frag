@@ -20,11 +20,7 @@ export async function fetchLatestLauncher(
   const url = json?.platforms?.["windows-x86_64"]?.url
   if (typeof json?.version !== "string" || typeof url !== "string") return null
   // Solo instaladores de nuestro dominio.
-  if (
-    !/^https:\/\/(www\.)?cmleague\.lat\/descargas\/launcher\/[^/?#]+\.exe$/.test(
-      url
-    )
-  )
+  if (!/^https:\/\/descargas\.cmleague\.lat\/launcher\/[^/?#]+\.exe$/.test(url))
     return null
   return {
     version: json.version,

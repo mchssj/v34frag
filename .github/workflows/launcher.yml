@@ -1,22 +1,35 @@
 # Compila el instalador del launcher de escritorio en Windows (docs/bitacora/2026-11-24-launcher-escritorio).
 # Así no hace falta instalar Rust ni las Build Tools de Visual Studio en una PC para probarlo.
-# El instalador queda como artefacto de la corrida ("cmleague-launcher-windows").
+# El instalador queda como artefacto de la corrida ("cmleague-launcher-windows"). Solo se publica (R2 de Daniel, en
+# https://descargas.cmleague.lat/launcher/) al correrlo a mano con "Publicar en R2" marcado.
 name: Launcher
 
 on:
   workflow_dispatch:
+    inputs:
+      publicar:
+        description: "Publicar en R2 (los launcher instalados se actualizan a esta versión)"
+        type: boolean
+        default: false
   push:
     paths:
       - "launcher/**"
       - ".github/workflows/launcher.yml"
+      # Cambiar solo la documentación no arma otro instalador.
+      - "!launcher/**/*.md"
 
 permissions:
   contents: read
 
+# Dos push seguidos a la misma rama: se cancela la corrida vieja y queda la del último. Una publicación no se cancela.
+concurrency:
+  group: launcher-${{ github.ref }}-${{ inputs.publicar && 'publicar' || 'prueba' }}
+  cancel-in-progress: ${{ !inputs.publicar }}
+
 jobs:
   windows:
     runs-on: windows-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: launcher
@@ -96,10 +109,13 @@ jobs:
           Write-Host "Sigue abierto y con capturas."
           Stop-Process -Id $p.Id -Force
 
-      # Configuración: un cambio hecho desde su ventana (como un clic) tiene que quedar en ajustes.json.
+      # Configuración: un cambio hecho desde su ventana (como un clic) tiene que quedar en ajustes.json. Usa un build
+      # aparte con --features autoprueba (solo recompila el launcher, no las dependencias): el instalador de arriba no la
+      # trae. Pisa target/release/cmleague-launcher.exe, pero el instalador ya está armado en bundle/.
       - name: Configuración se guarda
         shell: pwsh
         run: |
+          pnpm tauri build --no-bundle --features autoprueba
           $archivo = Join-Path $env:APPDATA "lat.cmleague.launcher/ajustes.json"
           Remove-Item $archivo -ErrorAction SilentlyContinue
           $env:CMLEAGUE_AUTOPRUEBA = "1"
@@ -122,7 +138,7 @@ jobs:
           path: launcher/capturas/*.png
           retention-days: 14
 
-      # latest.json para https://cmleague.lat/descargas/launcher/ (solo con la clave de firma).
+      # latest.json para https://descargas.cmleague.lat/launcher/ (solo con la clave de firma).
       - name: latest.json
         if: ${{ hashFiles('launcher/src-tauri/target/release/bundle/nsis/*.sig') != '' }}
         shell: pwsh
@@ -135,7 +151,7 @@ jobs:
             version = $version
             notes = ""
             pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-            platforms = @{ "windows-x86_64" = @{ signature = $sig.Trim(); url = "https://cmleague.lat/descargas/launcher/$($exe.Name)" } }
+            platforms = @{ "windows-x86_64" = @{ signature = $sig.Trim(); url = "https://descargas.cmleague.lat/launcher/$($exe.Name)" } }
           } | ConvertTo-Json -Depth 5 | Set-Content "$dir/latest.json" -Encoding utf8
 
       - uses: actions/upload-artifact@v4
@@ -147,3 +163,28 @@ jobs:
             launcher/src-tauri/target/release/bundle/nsis/latest.json
           if-no-files-found: error
           retention-days: 14
+
+      # Publicar: solo a mano y con "Publicar en R2". Primero el instalador y después latest.json, así un launcher
+      # instalado nunca ve una versión cuyo instalador todavía no está. Datos que pone Daniel en GitHub:
+      # - variables R2_ACCOUNT_ID y R2_BUCKET;
+      # - secretos R2_ACCESS_KEY_ID y R2_SECRET_ACCESS_KEY, de un token de R2 que solo escribe en ese bucket.
+      - name: Publicar en R2
+        if: ${{ inputs.publicar }}
+        shell: pwsh
+        env:
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          $dir = "src-tauri/target/release/bundle/nsis"
+          if (-not (Test-Path "$dir/latest.json")) { throw "Sin latest.json: falta la clave de firma del actualizador (TAURI_SIGNING_PRIVATE_KEY y CMLEAGUE_UPDATER_PUBKEY)." }
+          if (-not $env:R2_ACCOUNT_ID -or -not $env:R2_BUCKET -or -not $env:AWS_ACCESS_KEY_ID) { throw "Faltan los datos de R2 en GitHub (R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY)." }
+          $endpoint = "https://$($env:R2_ACCOUNT_ID).r2.cloudflarestorage.com"
+          $exe = Get-ChildItem "$dir/*-setup.exe" | Select-Object -First 1
+          aws s3 cp $exe.FullName "s3://$($env:R2_BUCKET)/launcher/$($exe.Name)" --endpoint-url $endpoint --content-type application/octet-stream
+          if ($LASTEXITCODE -ne 0) { throw "No se subió el instalador." }
+          aws s3 cp "$dir/latest.json" "s3://$($env:R2_BUCKET)/launcher/latest.json" --endpoint-url $endpoint --content-type application/json --cache-control no-cache
+          if ($LASTEXITCODE -ne 0) { throw "No se subió latest.json." }
+          Write-Host "Publicado: https://descargas.cmleague.lat/launcher/$($exe.Name)"

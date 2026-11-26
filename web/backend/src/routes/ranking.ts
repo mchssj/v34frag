@@ -7,8 +7,9 @@ import { createRouter } from '../lib/router';
 import type { Db } from '../lib/supabase';
 import { errorResponses, json } from '../schemas/common';
 import { Compare, type ComparePlayer, CompareQuery, RankingPlayerList, RankingPlayerQuery, type TeamRef } from '../schemas/players';
+import { applyPlayerFilters, FOUND, type FoundRow, toFound, wantsPlayerFilters } from '../services/playerFilters';
 import { resolvePlayer, verifiedPlayers } from '../services/players';
-import { vipPlayers } from '../services/vip';
+import { requireVip, vipPlayers } from '../services/vip';
 import { cosmeticsLight, type Light } from '../services/shop';
 
 // Ranking de jugadores y comparador (plan docs/bitacora/2026-10-24-api-mixes-perfil-ranking). Vistas player_ranking y
@@ -21,19 +22,21 @@ const rankingPlayers = createRoute({
   summary: 'Ranking de jugadores',
   description:
     'Jugadores con ELO (solo cuentan los mixes del servidor, con todos sus SteamID), por posición global. La posición no cambia al filtrar. ' +
-    'Nivel: `10` (2001 o más), `7-9` (1351 a 2000) o `1-6` (menos de 1351). `elo_trend`: su ELO en sus últimos 30 mixes.',
+    'Nivel: `10` (2001 o más), `7-9` (1351 a 2000) o `1-6` (menos de 1351). `elo_trend`: su ELO en sus últimos 30 mixes. ' +
+    'Los filtros marcados VIP piden sesión (401) y VIP (403 `VIP_REQUIRED`).',
   request: { query: RankingPlayerQuery },
-  responses: { 200: { description: 'Ranking', ...json(RankingPlayerList) }, ...errorResponses(400, 401) },
+  responses: { 200: { description: 'Ranking', ...json(RankingPlayerList) }, ...errorResponses(400, 401, 403) },
 });
 
 const compare = createRoute({
   method: 'get', path: '/api/v1/players/compare', tags: ['Jugadores'], middleware: [optionalUser] as const,
-  summary: 'Comparar dos jugadores',
+  summary: 'Comparar de dos a cinco jugadores',
   description:
     'Stats de los dos (ELO, rating, K/D, HS %, ADR, % de victorias y partidas), su ELO en los últimos 30 mixes y los mixes que jugaron ' +
-    'juntos (mismo bando) o como rivales. `a` y `b` aceptan el id o el nick.',
+    'juntos (mismo bando) o como rivales. Aceptan el id o el nick. Con `c`, `d` o `e` (hasta 5 en total) pide sesión y VIP ' +
+    '(403 `VIP_REQUIRED`); vienen en `others`.',
   request: { query: CompareQuery },
-  responses: { 200: { description: 'Comparación', ...json(Compare) }, ...errorResponses(400, 401, 404) },
+  responses: { 200: { description: 'Comparación', ...json(Compare) }, ...errorResponses(400, 401, 403, 404) },
 });
 
 /** ELO después de cada uno de los últimos `TREND` mixes de cada ficha, del más viejo al más nuevo. */
@@ -92,16 +95,21 @@ export const ranking = createRouter()
   .openapi(rankingPlayers, async (c) => {
     const p = c.req.valid('query');
     const sb = c.var.sb;
+    // (replanteo 141) Con un filtro avanzado (VIP), la vista que trae esas columnas; no está en los tipos generados.
+    const advanced = await wantsPlayerFilters(c, p);
     let q = sb
-      .from('player_ranking')
-      .select('id, nick, photo_url, elo, elo_matches, maps, rating, kd, teams, position, country, game_role', { count: 'exact' });
+      .from((advanced ? 'player_ranking_search' : 'player_ranking') as 'player_ranking')
+      .select(`id, nick, photo_url, elo, elo_matches, maps, rating, kd, teams, position, country, game_role${advanced ? `, ${FOUND}` : ''}` as '*', {
+        count: 'exact',
+      });
+    if (advanced) q = applyPlayerFilters(q as never, p, 'maps');
     const term = searchTerm(p.q);
     if (term) q = q.ilike('search', `%${term}%`);
     if (p.team) q = q.contains('teams', JSON.stringify([{ id: p.team }]));
     const lv = levelBounds(p.level);
     if (lv.gte !== undefined) q = q.gte('elo', lv.gte);
     if (lv.lt !== undefined) q = q.lt('elo', lv.lt);
-    type Row = OverviewRow & { position: number | null; country: string | null; game_role: string | null };
+    type Row = OverviewRow & FoundRow & { position: number | null; country: string | null; game_role: string | null };
     const { rows, total } = await runList<Row, typeof q>(q, p, { matches: 'maps' });
     const ids = rows.map((r) => r.id!);
     const [trends, vip, verified, cosmetics] = await Promise.all([eloTrends(sb, ids), vipPlayers(sb, ids), verifiedPlayers(sb, ids), cosmeticsLight(sb, ids)]);
@@ -123,6 +131,7 @@ export const ranking = createRouter()
           country: r.country,
           game_role: r.game_role,
           elo_trend: trends.get(r.id!) ?? [],
+          ...toFound(r),
         })),
         total,
         p,
@@ -131,27 +140,34 @@ export const ranking = createRouter()
     );
   })
   .openapi(compare, async (c) => {
-    const { a, b } = c.req.valid('query');
+    const p = c.req.valid('query');
     const sb = c.var.sb;
-    const [ida, idb] = await Promise.all([resolvePlayer(sb, a), resolvePlayer(sb, b)]);
-    if (ida === idb) throw new AppError(400, 'VALIDATION_ERROR', 'Elige dos jugadores distintos.');
+    const refs = [p.a, p.b, p.c, p.d, p.e].filter((x): x is string => !!x);
+    // (bitácora 2026-11-24-comparador-y-favoritas-vip) Dos para todos, hasta cinco con VIP.
+    if (refs.length > 2) await requireVip(c, 'Comparar más de dos jugadores es para los VIP.');
+    const ids = await Promise.all(refs.map((r) => resolvePlayer(sb, r)));
+    if (new Set(ids).size < ids.length) throw new AppError(400, 'VALIDATION_ERROR', 'Elige jugadores distintos.');
     const [trends, vip, verified, cosmetics] = await Promise.all([
-      eloTrends(sb, [ida, idb]), vipPlayers(sb, [ida, idb]), verifiedPlayers(sb, [ida, idb]), cosmeticsLight(sb, [ida, idb]),
+      eloTrends(sb, ids), vipPlayers(sb, ids), verifiedPlayers(sb, ids), cosmeticsLight(sb, ids),
     ]);
-    const [pa, pb, together] = await Promise.all([
-      comparePlayer(sb, ida, trends.get(ida) ?? [], vip, verified, cosmetics),
-      comparePlayer(sb, idb, trends.get(idb) ?? [], vip, verified, cosmetics),
-      sb.rpc('players_together', { p_a: ida, p_b: idb }).then(mustHave),
+    const [players, pairs] = await Promise.all([
+      Promise.all(ids.map((id) => comparePlayer(sb, id, trends.get(id) ?? [], vip, verified, cosmetics))),
+      Promise.all(
+        ids.slice(1).map(async (id) => {
+          const t = mustHave(await sb.rpc('players_together', { p_a: ids[0]!, p_b: id }))[0];
+          return {
+            same_team: { matches: t?.same_matches ?? 0, wins: t?.same_wins ?? 0 },
+            against: { matches: t?.against_matches ?? 0, a_wins: t?.a_wins ?? 0 },
+          };
+        }),
+      ),
     ]);
-    const t = together[0];
     return c.json(
       {
-        a: pa,
-        b: pb,
-        together: {
-          same_team: { matches: t?.same_matches ?? 0, wins: t?.same_wins ?? 0 },
-          against: { matches: t?.against_matches ?? 0, a_wins: t?.a_wins ?? 0 },
-        },
+        a: players[0]!,
+        b: players[1]!,
+        together: pairs[0]!,
+        others: players.slice(2).map((player, i) => ({ player, together: pairs[i + 2 - 1]! })),
       },
       200,
     );

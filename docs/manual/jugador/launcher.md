@@ -1,7 +1,8 @@
 ---
 titulo: Usar el launcher de CMLeague
 resumen: La web en su propia ventana para Windows, con aviso de partida, entrada al servidor con un clic y su configuración.
-orden: 19
+orden: 24
+oculta: true
 ---
 
 El launcher de CMLeague es la misma web, con tu misma cuenta, en una ventana propia para Windows. Suma lo que el navegador no puede hacer: abrir ClientMod ya conectado a tu sala y avisarte cuando aparece la partida aunque estés haciendo otra cosa. No es un anticheat y no toca el juego mientras juegas.
@@ -32,7 +33,7 @@ En la sala, toca **Conectar**. El launcher abre ClientMod ya conectado a tu serv
 
 Si el juego ya estaba abierto, el launcher no puede pasarle la dirección: la copia, y tú la pegas en la consola (º) con Ctrl+V y Enter.
 
-La primera vez, si tu ClientMod no está en una carpeta común, el launcher te pregunta en qué carpeta está (la que tiene **CMLauncher.exe**).
+La primera vez, si tu ClientMod no está en una carpeta común, el launcher te pide que elijas su carpeta (la que tiene **CMLauncher.exe**) en una ventana de Windows. Queda guardada, y la puedes cambiar en **Configuración › ClientMod › Elegir carpeta**.
 
 > **Ojo:** el tiempo para conectarte corre igual. Si algo falla, usa **Copiar connect** y pégalo en la consola.
 
@@ -53,7 +54,7 @@ Clic derecho en el ícono de la bandeja › **Configuración**. Se guarda en tu 
 - **Avisos de Windows** y **Traer la ventana al frente**.
 - **Mostrar en Discord**: tu Discord muestra lo que estás haciendo en CMLeague («En el launcher», «En el juego», «Buscando partida · 5v5», «Jugando 5v5 · de_dust2»). Tiene que estar abierta la app de Discord y prendido **Compartir tu actividad** en su configuración.
 - **Tema de la tienda**: pinta el launcher con uno de tus temas (ver abajo).
-- **ClientMod**: la carpeta donde está el juego.
+- **ClientMod**: la carpeta donde está el juego. Se elige con **Elegir carpeta**.
 - **Actualizaciones**: el launcher busca versiones nuevas solo y las instala cuando tú lo eliges.
 
 ## Usar un tema de la tienda

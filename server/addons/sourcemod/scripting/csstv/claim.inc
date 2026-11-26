@@ -162,7 +162,10 @@ public void Claim_OnResponse(bool success, const char[] error, System2HTTPReques
 			strcopy(auth, sizeof(auth), "?");
 		LogMessage("!claim de %N [%s]: %s", client, auth, message);
 		if (isOk && !isPending)
+		{
 			Mm_OnClaimLinked();
+			WebNick_Request(client);
+		}
 		if (isOk && !isPending && alias[0])
 			QolReply(client, "[%s] {#verde}%s{#normal} (cuenta {#amarillo}%s{#normal}).", g_sTag, message, alias);
 		else

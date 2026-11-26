@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { steam2 } from "@/lib/steam"
+import { steam2, steam64 } from "@/lib/steam"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import { XIcon } from "lucide-react"
@@ -42,7 +42,9 @@ import {
   playerDetailOptions,
   playerIpsOptions,
   playersListOptions,
+  steamOwnerOptions,
   useAddMedal,
+  useLinkSteam,
   useCreatePlayer,
   useDeleteMedal,
   useDeletePlayer,
@@ -586,7 +588,7 @@ function FichaForm({
         )}
       </PanelSection>
 
-      <SteamIds p={p} onGoUnlinked={onGoUnlinked} />
+      <SteamIds p={p} onGoUnlinked={onGoUnlinked} onOpen={onOpen} />
       <Ips p={p} onOpen={onOpen} />
       <Medals playerId={p.id} />
 
@@ -719,13 +721,16 @@ function LinkAccount({ playerId }: { playerId: string }) {
 function SteamIds({
   p,
   onGoUnlinked,
+  onOpen,
 }: {
   p: PlayerDetail
   onGoUnlinked: () => void
+  onOpen: (id: string) => void
 }) {
   const remove = useRemoveSteam(p.id)
   const primary = useMakePrimary(p.id)
   const [target, setTarget] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
   const ids = p.steam_ids
   const only = ids.length === 1
 
@@ -734,12 +739,27 @@ function SteamIds({
       title={`SteamID ${ids.length}/4`}
       aside={
         ids.length < 4 && (
-          <Button variant="link" size="sm" onClick={onGoUnlinked}>
-            Sumar uno sin vincular
-          </Button>
+          <span className="flex flex-wrap gap-1">
+            <Button variant="link" size="sm" onClick={() => setAdding(true)}>
+              Agregar SteamID
+            </Button>
+            <Button variant="link" size="sm" onClick={onGoUnlinked}>
+              Sumar uno sin vincular
+            </Button>
+          </span>
         )
       }
     >
+      {adding && (
+        <AddSteamDialog
+          p={p}
+          onClose={() => setAdding(false)}
+          onOpen={(id) => {
+            setAdding(false)
+            onOpen(id)
+          }}
+        />
+      )}
       {ids.length === 0 && (
         <span className="text-[13px] text-muted-foreground">
           Sin SteamID: sus partidas no se reconocen hasta que vincule uno con
@@ -817,6 +837,90 @@ function SteamIds({
         }
       />
     </PanelSection>
+  )
+}
+
+/** Agregar un SteamID escrito a mano. Antes de confirmar avisa si ya es de otra ficha. */
+export function AddSteamDialog({
+  p,
+  onClose,
+  onOpen,
+}: {
+  p: PlayerDetail
+  onClose: () => void
+  onOpen: (id: string) => void
+}) {
+  const inputId = useId()
+  const [text, setText] = useState("")
+  const s64 = steam64(useDebouncedValue(text, 250))
+  const owner = useQuery({ ...steamOwnerOptions(s64 ?? ""), enabled: !!s64 })
+  const otherId = owner.data && owner.data !== p.id ? owner.data : null
+  const other = useQuery({
+    ...playerDetailOptions(otherId ?? ""),
+    enabled: !!otherId,
+  })
+  const mine = !!s64 && owner.data === p.id
+  const link = useLinkSteam()
+
+  return (
+    <ConfirmDialog
+      open
+      onOpenChange={(o) => !o && onClose()}
+      title={`Agregar un SteamID a ${p.alias}`}
+      description="Si la ficha ya tiene SteamID, queda como adicional (hasta 4). Sus partidas pasan a esta ficha y se recalcula su ELO."
+      confirmLabel="Agregar SteamID"
+      incomplete={!s64 || !owner.isSuccess || owner.data !== null}
+      pending={link.isPending}
+      error={link.error}
+      onConfirm={() =>
+        s64 &&
+        link.mutate(
+          { steam_id: s64, player_id: p.id },
+          {
+            onSuccess: () => {
+              toast.success("SteamID agregado.")
+              onClose()
+            },
+          }
+        )
+      }
+    >
+      <Label htmlFor={inputId}>SteamID</Label>
+      <Input
+        id={inputId}
+        placeholder="STEAM_0:0:123456, SteamID64 o link del perfil"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        autoComplete="off"
+      />
+      {text.trim() && !steam64(text) && (
+        <span className="text-xs text-muted-foreground">
+          No es un SteamID válido.
+        </span>
+      )}
+      {owner.isError && (
+        <QueryError error={owner.error} onRetry={() => void owner.refetch()} />
+      )}
+      {mine && (
+        <span className="text-xs text-muted-foreground">
+          Ese SteamID ya es de esta ficha.
+        </span>
+      )}
+      {otherId && (
+        <Alert variant="warning">
+          <AlertDescription>
+            Ese SteamID está en la ficha{" "}
+            <strong>{other.data?.alias ?? "…"}</strong>. Quítalo de esa ficha
+            antes de agregarlo acá.
+          </AlertDescription>
+          <AlertAction>
+            <Button variant="outline" size="sm" onClick={() => onOpen(otherId)}>
+              Abrir esa ficha
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
+    </ConfirmDialog>
   )
 }
 

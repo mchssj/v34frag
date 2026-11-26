@@ -4,22 +4,21 @@
 
 Compilado y probado en Windows por GitHub Actions: abre, sigue abierto y saca capturas. **Sin desplegar ni publicar** (2026-11-26).
 
-Faltan:
+Está en la rama `feat/launcher` (worktree `v34frag-launcher`), que sale de `main`. Trae lo de Kyan (`claude/relaxed-einstein-sl0cme`, hasta `29a6600a`) sin su base vieja: tomar sus archivos de la web tal cual borraba cosas desplegadas después (el preveto VIP en `RoomOverview.tsx`), así que van como parche, y `MatchAlerts.tsx`, `alert.ts` y los legales se unieron a mano. La revisión del 2026-11-25 y el 2026-11-26 está en "Decisiones y revisión" de [`DOCUMENTACION.md`](DOCUMENTACION.md).
 
-- probar el `+connect` en una PC con ClientMod;
-- desplegar la web;
-- publicar la primera versión en el VPS;
-- que Daniel encienda las actualizaciones y Discord.
+Faltan, en orden:
 
-Todo está en la rama `claude/relaxed-einstein-sl0cme`.
+1. Daniel: probar el `+connect` a mano en su PC (ver "Pruebas").
+2. Pasar `feat/launcher` a `main` y desplegar la web.
+3. Instalar el `.exe` de prueba de GitHub Actions y probarlo con una sala real.
+4. Daniel: el bucket de R2, su dominio, las claves en GitHub y publicar la primera versión.
 
 ## Archivos
 
 | Archivo | Cambio |
 |---|---|
 | `launcher/` | Proyecto nuevo (Tauri 2, pnpm): `package.json`, `pnpm-workspace.yaml`, `README.md`, `local/` (Configuración e `index.html`) y `src-tauri/` (Rust, íconos, permisos) |
-| `.github/workflows/launcher.yml` | Nuevo. En Windows: pruebas de Rust, instalador (firmado si están las claves), prueba de que abre, capturas, `latest.json` y artefactos |
-| `deploy/vps/Caddyfile` | `/descargas/*` sale de `/srv/cmleague/descargas`, fuera de la web |
+| `.github/workflows/launcher.yml` | Nuevo. En Windows: pruebas de Rust, instalador (firmado si están las claves), prueba de que abre, capturas, prueba de Configuración (build aparte con `--features autoprueba`), `latest.json`, artefactos y, solo a mano con **Publicar en R2**, la subida a R2. No corre por cambios de `.md` y cancela la corrida vieja de la misma rama |
 | `web/frontend/src/lib/launcher.ts` | Nuevo: el puente con el launcher y el "Conectar" del navegador (copia el `connect`) |
 | `web/frontend/src/features/launcher/` | Nuevo: `LauncherTheme`, `LauncherThemeCard`, `useLauncherPrefs`, `latest.ts` y la página `/launcher` |
 | `web/frontend/src/routes/launcher.tsx` | Nuevo: ruta pública `/launcher` |
@@ -27,42 +26,38 @@ Todo está en la rama `claude/relaxed-einstein-sl0cme`.
 | `web/frontend/src/features/matchmaking/MatchAlerts.tsx` | Estado para el launcher (`launcherStatusOf`) y Aceptar desde la bandeja |
 | `web/frontend/src/features/matchmaking/alert.ts` | Avisos al launcher en partida encontrada y servidor listo |
 | `web/frontend/src/features/matchmaking/room/RoomOverview.tsx`, `ReconnectBanner.tsx`, `features/pcw/components/SeriesPanel.tsx`, `features/shell/components/NowBar.tsx`, `features/mixes/components/parts.tsx` | Los "Conectar" y "Ver en TV" usan `launchOnClick` |
-| `web/frontend/src/features/matchmaking/PlayPage.tsx` | Link "Launcher para Windows" fuera del launcher |
+| `web/frontend/src/features/matchmaking/PlayPage.tsx` | Link "Launcher para Windows" fuera del launcher, solo con `LAUNCHER.published` |
 | `web/frontend/src/features/profile/pages/PreferencesSection.tsx` | Tarjeta **Tema del launcher**, solo en el launcher |
-| `web/frontend/src/config/site.ts` | `LAUNCHER` (dónde está `latest.json` y el link `cmleague://play`) |
+| `web/frontend/src/config/site.ts` | `LAUNCHER`: `published` (hoy `false`), dónde está `latest.json` (R2) y el link `cmleague://play` |
 | `web/frontend/src/features/legal/pages/PrivacyPage.tsx`, `TermsPage.tsx`, `terms/privacidad.html`, `terms/terminos.html` | Párrafo del launcher, "En preparación" |
 | Pruebas | `src/lib/launcher.test.ts`, `features/launcher/lib/latest.test.ts`, `features/matchmaking/launcherStatus.test.ts` y las de Rust en `game.rs`, `settings.rs`, `status.rs` y `lib.rs` |
-| `docs/manual/jugador/launcher.md` | Nueva |
-| `docs/manual/jugador/buscar-partida.md` | Conectar en el navegador y en el launcher |
+| `docs/manual/jugador/launcher.md` | Nueva, con `oculta: true` hasta publicarlo |
+| `docs/manual/jugador/buscar-partida.md` y `capitan/jugar-pcw.md` | **Conectar** y **Entrar** en el navegador copian el connect. El link al launcher se suma al publicarlo |
 
 ## Despliegue (no hecho)
 
-1. **Probar el `connect`** en una PC con ClientMod (ver "Pruebas"). Si no funciona, hay que cambiar cómo se abre el juego antes de seguir.
-2. **Web** (Daniel). Pasar los cambios de `web/frontend` a la rama de la que despliega y, desde su PC:
+1. **Probar el `connect`** en la PC de Daniel, que tiene ClientMod en `C:\CSSv34_ClientMod` (ver "Pruebas"). Si no funciona, hay que cambiar cómo se abre el juego antes de seguir.
+2. **Web.** Pasar `feat/launcher` a `main` y, desde la PC de Daniel:
    ```bash
    deploy/vps/desplegar.sh web
    ```
-3. **Caddy** (Daniel). Copiar `deploy/vps/Caddyfile` al VPS, crear la carpeta y recargar Caddy:
-   ```bash
-   sudo install -d -o deploy -g deploy /srv/cmleague/descargas/launcher
-   ```
-   ```bash
-   sudo caddy validate --config /etc/caddy/Caddyfile
-   ```
-   ```bash
-   sudo systemctl reload caddy
-   ```
-   **No se validó acá**: no había Caddy en el entorno.
-4. **Claves en GitHub** (Daniel), en Settings › Secrets and variables › Actions. Los pasos están en `launcher/README.md`:
-   - `TAURI_SIGNING_PRIVATE_KEY` y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (secretos);
-   - `CMLEAGUE_UPDATER_PUBKEY` (variable);
-   - `CMLEAGUE_DISCORD_APP_ID` (variable), con la imagen `cmleague` en Rich Presence › Art Assets.
-5. **Publicar la versión.** Volver a correr el workflow, bajar el artefacto `cmleague-launcher-windows` y copiar el `.exe` y `latest.json` a `/srv/cmleague/descargas/launcher/`.
+   Fuera del launcher solo cambia que **Conectar**, **Entrar** (PCW) y **Ver en TV** copian el connect en vez de abrir `steam://`. Después, los mismos commits de la web en `feat/frontend-fase-1`.
+3. **R2** (Daniel, en su cuenta de Cloudflare):
+   - Un bucket para el launcher (o una carpeta `launcher/` en uno suyo) con el dominio propio `descargas.cmleague.lat`.
+   - CORS del bucket: `GET` desde `https://cmleague.lat` (la página `/launcher` lee `latest.json`).
+   - Un token de R2 de **escritura solo para ese bucket**.
+4. **Datos en GitHub** (Daniel), en Settings › Secrets and variables › Actions. Los pasos de las llaves están en `launcher/README.md`:
+   - secretos `TAURI_SIGNING_PRIVATE_KEY` y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, y variable `CMLEAGUE_UPDATER_PUBKEY` (actualizaciones). **La llave privada se guarda también fuera de GitHub**: si se pierde, los launcher instalados no aceptan más actualizaciones;
+   - variable `CMLEAGUE_DISCORD_APP_ID` (Discord), con la imagen `cmleague` en Rich Presence › Art Assets;
+   - variables `R2_ACCOUNT_ID` y `R2_BUCKET`, y secretos `R2_ACCESS_KEY_ID` y `R2_SECRET_ACCESS_KEY`.
+5. **Publicar la versión.** En GitHub › Actions › Launcher › **Run workflow**, con **Publicar en R2** marcado. Sube primero el instalador y después `latest.json`.
 6. **Después de publicar:**
+   - `LAUNCHER.published = true` en `web/frontend/src/config/site.ts` y desplegar la web;
+   - sacar `oculta: true` de `docs/manual/jugador/launcher.md` y sumar el link al launcher en `jugador/buscar-partida.md` (sección 4) y `capitan/jugar-pcw.md`, con el despliegue de la API (el manual lo sirve la API);
    - quitar "En preparación" del párrafo del launcher en `/privacidad` y `/terminos` (web y `.html`);
    - publicar el `CHANGELOG_DISCORD.txt`.
 
-No toca la base, la API ni los servidores de juego.
+No toca la base, la API (salvo el manual), el VPS ni los servidores de juego.
 
 ## Pruebas
 
@@ -94,7 +89,7 @@ No toca la base, la API ni los servidores de juego.
   - Ya no hace falta tocar `CORS_ORIGINS`, ni `tauri-plugin-http`, ni guardar la sesión en el Administrador de credenciales, porque la sesión es la de la web.
 - **Siempre `CMLauncher.exe`, sin `-hijack`** (Agus). No hay `hl2.exe` en la raíz de ClientMod. El juego se reconoce por la ventana `CS:S v34 ClientMod`.
 - **Más de lo que tenía la versión 1 del plan:** Configuración propia, bandeja con estado y Aceptar, avisos de Windows, Discord, actualizaciones, tema de la tienda, una sola instancia, `--ajustes`, `cmleague://` y la página `/launcher`. Estaban en "Fuera de la versión 1" o los pidió Agus.
-- **Descargas en `/descargas/launcher/`** y no en `/launcher/`, que es la página de la web y vive en `web/current`, que se reemplaza en cada despliegue.
+- **Descargas en el R2 de Daniel** (`descargas.cmleague.lat/launcher/`), no en el VPS: decidido por Daniel el 2026-11-25. La rama de Kyan las servía desde `/srv/cmleague/descargas` con un cambio al `Caddyfile`, que no se trae.
 - **"Conectar" en el navegador** copia el `connect` en lugar de `steam://connect`. El plan lo proponía como una preferencia "Tengo el launcher"; se hizo sin preferencia: dentro del launcher abre el juego y fuera copia.
 - **La guía de la primera vez** no enlaza al launcher. Está en tres idiomas y no se tradujo. Lo enlazan Jugar y el manual.
 - **Barra de título nativa con colores** (Windows 11) en lugar de una barra propia, para no tocar el diseño de la web.
@@ -113,6 +108,6 @@ No toca la base, la API ni los servidores de juego.
 ## Cómo revertir
 
 - **Web:** revertir los commits del launcher en `web/frontend`, o volver a desplegar la versión anterior con `desplegar.sh` (guarda 5). Fuera del launcher, lo único que cambia es el "Conectar" del navegador.
-- **Caddy:** sacar el bloque `@descargas` y `@spa` del Caddyfile y recargar.
+- **R2:** borrar `launcher/latest.json` del bucket: los instalados dejan de ver versiones nuevas.
 - **Launcher:** dejar de publicar `latest.json`. Los instalados siguen funcionando, sin actualizarse. Para sacarlo de una PC, se desinstala desde Windows.
 - **GitHub:** borrar `.github/workflows/launcher.yml` y las claves.

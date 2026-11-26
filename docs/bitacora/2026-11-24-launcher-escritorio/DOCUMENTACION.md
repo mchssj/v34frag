@@ -1,5 +1,7 @@
 # Launcher de escritorio: documentación
 
+> Estado al 2026-11-26: **sin publicar.** Rama `feat/launcher` (worktree `v34frag-launcher`), que sale de `main` y trae lo de Kyan (`claude/relaxed-einstein-sl0cme`, hasta `29a6600a`) con la revisión de Daniel de la sección "Decisiones y revisión". Lo que falta está en [`GUIA_IMPLEMENTACION.md`](GUIA_IMPLEMENTACION.md).
+
 ## Qué hace
 
 El launcher de CMLeague es una aplicación de Windows hecha con Tauri 2 (`launcher/`). Abre la web de la liga (`https://cmleague.lat/play`) en una ventana propia, con la misma sesión y las mismas secciones, como el cliente de FACEIT. No es un anticheat.
@@ -34,6 +36,22 @@ sequenceDiagram
   L->>C: Restaura clientmod.ini al aparecer el juego
 ```
 
+## Decisiones y revisión (2026-11-25 y 2026-11-26)
+
+El `PLAN.md` no se edita. Esto lo cambia:
+
+| Tema | Decisión | Por qué |
+|---|---|---|
+| Enfoque | La web entera en una ventana, no una interfaz chica aparte | Kyan lo hizo así; Daniel lo aprobó el 2026-11-25. Ahorra otro login, otro socket y `CORS_ORIGINS` |
+| Firma de Windows | **Sin firma** por ahora. El aviso de SmartScreen ("Windows protegió su PC") se explica en `/launcher` y en el manual. Un certificado OV (US$ 65 a 300 al año) se compra al abrirlo a todos | Daniel, 2026-11-25. Desde 2024 ni el EV quita el aviso, y Azure Artifact Signing no está disponible para personas fuera de EE. UU. y Canadá |
+| Actualización automática | Sí, con `tauri-plugin-updater` y su propia llave (gratis, distinta de la firma de Windows) | Daniel, 2026-11-25. El arreglo de seguridad de abajo tiene que llegar a los que ya lo instalaron |
+| Dónde se publica | **R2 de Daniel**, en `https://descargas.cmleague.lat/launcher/` (el instalador y `latest.json`). GitHub Actions lo sube con un token que solo escribe en ese bucket, y solo al correrlo a mano con **Publicar en R2** | Daniel, 2026-11-25. Para subir al VPS haría falta una llave SSH del servidor de producción en GitHub. Reemplaza `/srv/cmleague/descargas` y el cambio al `Caddyfile` de la rama de Kyan, que no se traen |
+| Carpeta de ClientMod | Solo con el selector de carpetas de Windows (`game_pick_dir`), nunca una ruta que mande la web o la ventana de Configuración. Solo carpetas de un disco de la PC: `is_local_dir` rechaza `\equipo\carpeta` y la ruta real no puede ser de red (también detrás de un enlace o una unidad mapeada). `settings_set` no cambia `clientmod_dir` | `CMLauncher.exe` se abre como administrador. Con `game_set_dir(dir)` abierto a la web, un script inyectado en cmleague.lat podía apuntar a un `CMLauncher.exe` ajeno en la red y el jugador aceptaría el UAC que espera |
+| Links de afuera | Solo `https`, `http` y `mailto` (`can_open_outside`). No `steam://` ni `discord://` | La app no pregunta antes de abrir un programa, como el navegador. Un `steam://run/...` en una bio se abriría con un clic. Los "Conectar" no pasan por ahí |
+| Prueba de Configuración en GitHub Actions | `CMLEAGUE_AUTOPRUEBA` solo existe con `--features autoprueba`, en un build aparte del workflow | Era código de prueba dentro del instalador que se reparte |
+| Promoción antes de publicar | `LAUNCHER.published = false` (`web/frontend/src/config/site.ts`) apaga el link "Launcher para Windows" de Jugar y el "Ver el launcher" del aviso de Conectar. `/launcher` se puede abrir y dice que todavía no está publicado | Para no mandar a nadie a una app que no se puede bajar |
+| Manual | `jugador/launcher.md` (la de Kyan) con `oculta: true` hasta publicarlo. `buscar-partida.md` y `capitan/jugar-pcw.md` ya cuentan que **Conectar** y **Entrar** copian el connect en el navegador | El validador del manual no deja enlazar una página oculta; el link al launcher se suma al publicarlo |
+
 ## Abrir ClientMod conectado
 
 ClientMod se abre siempre con `CMLauncher.exe`, nunca con `hl2.exe`. En la PC de Agus, `hl2.exe` ni existe en la raíz: el juego y cinco procesos de ayuda corren todos como `CMLauncher.exe`, y el juego arranca con EasyAntiCheat (`ClientModEAC.exe`).
@@ -43,7 +61,7 @@ flowchart TD
   A[Conectar en la web] --> B{¿En el launcher?}
   B -- No --> C[Copia el connect: pégalo en la consola]
   B -- Sí --> D{¿Encontró CMLauncher.exe?}
-  D -- No --> E[Pide la carpeta una vez]
+  D -- No --> E[Selector de carpetas de Windows, una vez]
   E --> D
   D -- Sí --> F{¿Juego abierto?}
   F -- Sí --> G[Solo copia el connect]
@@ -55,7 +73,7 @@ flowchart TD
 - **Juego abierto:** se reconoce por un `CMLauncher.exe` con la ventana `CS:S v34 ClientMod` (`tasklist`).
 - **`clientmod.ini`:** se edita a nivel de bytes, para no cambiarle la codificación, y se restaura exactamente.
 - **Validación:** la dirección y la contraseña se validan en Rust (`valid_address`, `valid_password`), así no pueden meter otro comando en la línea del juego. Sin contraseña (SourceTV), solo `+connect`.
-- **Carpeta:** se busca en `C:\CSSv34_ClientMod`, `C:\ClientMod`, `Program Files` y los mismos en `D:` y `E:`. La que elige el jugador se guarda en la configuración.
+- **Carpeta:** se busca en `C:\CSSv34_ClientMod`, `C:\ClientMod`, `Program Files` y los mismos en `D:` y `E:`. La que elige el jugador con el selector de Windows se guarda en la configuración; tiene que ser de un disco de la PC (`is_local_dir`), igual que las comunes y la guardada.
 - El `connect` siempre queda copiado como respaldo.
 
 ## Estado, bandeja, avisos y Discord
@@ -110,7 +128,7 @@ Un `ajustes.json` viejo, con menos campos, toma los valores de fábrica para el 
 | Quién | Puede |
 |---|---|
 | La web, solo `https://cmleague.lat` y `www` (`capabilities/web.json`) | Abrir el juego, contar el estado, traer la ventana, pintar la barra, elegir el tema del launcher y abrir Configuración |
-| La ventana de Configuración (`capabilities/ajustes.json`) | Leer y guardar la configuración, la carpeta de ClientMod y las actualizaciones |
+| La ventana de Configuración (`capabilities/ajustes.json`) | Leer y guardar la configuración (menos la carpeta de ClientMod), abrir el selector de carpetas y las actualizaciones |
 
 La web no puede leer ni cambiar el resto de la configuración, ni archivos, ni procesos, ni otras APIs de Tauri.
 
@@ -123,7 +141,7 @@ Si está prendido, `LauncherTheme` le pone a `<html>` la clase del tema (las de 
 
 ## Actualizaciones
 
-`tauri-plugin-updater`, con la clave pública puesta al compilar (`CMLEAGUE_UPDATER_PUBKEY`). Busca en `https://cmleague.lat/descargas/launcher/latest.json`. Se instala solo cuando el jugador lo elige, desde la bandeja o desde Configuración, así nunca corta una partida.
+`tauri-plugin-updater`, con la clave pública puesta al compilar (`CMLEAGUE_UPDATER_PUBKEY`). Busca en `https://descargas.cmleague.lat/launcher/latest.json` (R2 de Daniel). Se instala solo cuando el jugador lo elige, desde la bandeja o desde Configuración, así nunca corta una partida.
 
 Sin la clave, el plugin no se registra. Además, `tauri.conf.json` lleva `plugins.updater.pubkey` vacío, porque sin ese campo la app se cerraba al arrancar.
 
@@ -133,18 +151,18 @@ Sin la clave, el plugin no se registra. Además, `tauri.conf.json` lleva `plugin
 
 ## Links de afuera y descargas
 
-La ventana solo navega por `https://cmleague.lat` (y `www`). Cualquier otro link, incluidos los de "Ver demo" y "Descargar demo" (el `.dem` está en otro dominio), Discord, Steam o YouTube, se abre en el navegador predeterminado (`tauri-plugin-opener`), que descarga la demo como siempre. Así la ventana no sale de la web. Los links que abren otra pestaña van al navegador, salvo que sean de `cmleague.lat`, que se abren en la misma ventana. Las descargas de la propia web (por ejemplo, un recap) van a la carpeta **Descargas**, con un aviso de Windows al terminar. Solo se abren afuera `https`, `http`, `mailto`, `steam` y `discord`: nunca `file:` ni programas.
+La ventana solo navega por `https://cmleague.lat` (y `www`). Cualquier otro link, incluidos los de "Ver demo" y "Descargar demo" (el `.dem` está en otro dominio), Discord, Steam o YouTube, se abre en el navegador predeterminado (`tauri-plugin-opener`), que descarga la demo como siempre. Así la ventana no sale de la web. Los links que abren otra pestaña van al navegador, salvo que sean de `cmleague.lat`, que se abren en la misma ventana. Las descargas de la propia web (por ejemplo, un recap) van a la carpeta **Descargas**, con un aviso de Windows al terminar. Solo se abren afuera `https`, `http` y `mailto`: nunca `file:` ni protocolos de programas (`steam://`, `discord://`).
 
 ## Página de descarga
 
-`/launcher` es pública. Lee `latest.json` del mismo lugar que el actualizador y ofrece **Descargar para Windows**, que solo acepta instaladores de `cmleague.lat/descargas/launcher/`, y **Ya lo tengo: abrirlo**. Sin publicar, dice "Todavía no está publicado". **Jugar** la enlaza ("Launcher para Windows") cuando no estás en el launcher.
+`/launcher` es pública. Lee `latest.json` del mismo lugar que el actualizador y ofrece **Descargar para Windows**, que solo acepta instaladores de `descargas.cmleague.lat/launcher/`, y **Ya lo tengo: abrirlo**. Sin publicar, dice "Todavía no está publicado". Con `LAUNCHER.published`, **Jugar** la enlaza ("Launcher para Windows") cuando no estás en el launcher. El bucket tiene que permitir el GET de `latest.json` desde `https://cmleague.lat` (CORS).
 
 ## Qué cambia para cada rol
 
 | Rol | Qué cambia | Página del manual |
 |---|---|---|
-| Jugador | Puede usar el launcher: aviso de partida, Aceptar desde la bandeja, Conectar abre ClientMod y Configuración propia. En el navegador, Conectar copia el `connect` | [`jugador/launcher.md`](../../manual/jugador/launcher.md) (nueva) y [`jugador/buscar-partida.md`](../../manual/jugador/buscar-partida.md) |
-| Capitán | En las PCW, **Entrar** hace lo mismo que Conectar: abre ClientMod en el launcher y copia el `connect` en el navegador | Sin página propia: lo cuenta `jugador/launcher.md` |
+| Jugador | Puede usar el launcher: aviso de partida, Aceptar desde la bandeja, Conectar abre ClientMod y Configuración propia. En el navegador, Conectar copia el `connect` | [`jugador/launcher.md`](../../manual/jugador/launcher.md) (nueva, oculta hasta publicarlo) y [`jugador/buscar-partida.md`](../../manual/jugador/buscar-partida.md) |
+| Capitán | En las PCW, **Entrar** hace lo mismo que Conectar: abre ClientMod en el launcher y copia el `connect` en el navegador | [`capitan/jugar-pcw.md`](../../manual/capitan/jugar-pcw.md) (el navegador) y `jugador/launcher.md` |
 | Streamer | "Ver en TV" copia el `connect` de la SourceTV en el navegador y abre ClientMod en el launcher | Sin cambios: `streamer/panel-y-retraso.md` ya habla del `connect` |
 | Organizador, soporte, moderador, admin y dueño de un servidor externo | Nada | — |
 
@@ -152,8 +170,8 @@ No hay comandos del servidor nuevos.
 
 ## Términos y privacidad
 
-- **`/privacidad`:** un párrafo nuevo, "Launcher de escritorio", en "Lo que guarda tu navegador", marcado "En preparación". Cuenta qué guarda en la PC, que escribe un momento en `clientmod.ini`, Discord si se activa, que pregunta a `cmleague.lat` por versiones nuevas, y que no lee otros programas ni toca el juego.
-- **`/terminos`:** un párrafo en "Servicio recreativo, «tal cual está»": que el launcher se ofrece tal cual, que no es parte de ClientMod y que modifica `clientmod.ini` por un momento. También "En preparación".
+- **`/privacidad`:** un párrafo nuevo, "Launcher de escritorio", en "Lo que guarda tu navegador", marcado "En preparación". Cuenta qué guarda en la PC, que escribe un momento en `clientmod.ini`, Discord si se activa, que consulta el almacenamiento de Cloudflare (`descargas.cmleague.lat`) por versiones nuevas, y que no lee otros programas ni toca el juego.
+- **`/terminos`:** un párrafo en "Servicio recreativo, «tal cual está»": que el launcher se ofrece tal cual, que no es parte de ClientMod, que modifica `clientmod.ini` por un momento, que abre ClientMod como administrador porque ClientMod lo pide y que no es un anticheat. También "En preparación".
 - Los dos están en la web (`features/legal/pages/`) y en `terms/*.html`. La marca se quita al publicar el launcher.
 
 ## Dónde está cada cosa
@@ -169,5 +187,5 @@ No hay comandos del servidor nuevos.
 | Tema y su tarjeta | `web/frontend/src/features/launcher/` |
 | Página de descarga | `web/frontend/src/features/launcher/pages/LauncherPage.tsx`, ruta `/launcher` |
 | Estado para la bandeja | `launcherStatusOf` en `web/frontend/src/features/matchmaking/MatchAlerts.tsx` |
-| Descargas en el VPS | `/srv/cmleague/descargas/launcher/`, servido por `deploy/vps/Caddyfile` |
+| Descargas | R2 de Daniel, `https://descargas.cmleague.lat/launcher/`, subidas por el paso **Publicar en R2** del workflow |
 | Cómo encender las actualizaciones y Discord | `launcher/README.md` |

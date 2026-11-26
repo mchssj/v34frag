@@ -1,4 +1,6 @@
-CMLeague 2.9.65 --  Changelog
+CMLeague X.Y.Z --  Changelog
+
+(Borrador: se publica junto con el launcher. El número de versión se pone al publicarlo.)
 
 LLEGÓ EL LAUNCHER DE CMLEAGUE PARA WINDOWS
 

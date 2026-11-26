@@ -40,10 +40,16 @@ fn stays_in_app(url: &tauri::Url) -> bool {
     }
 }
 
+/// Solo direcciones web y correo. Nada de `file:` ni de protocolos de programas (`steam://`, `discord://`…): el
+/// navegador pregunta antes de abrir un programa y la app no, y un link así en una bio o un comentario (por ejemplo
+/// `steam://run/...` con argumentos) se abriría con un clic. Los "Conectar" no pasan por acá: abren ClientMod.
+fn can_open_outside(url: &tauri::Url) -> bool {
+    matches!(url.scheme(), "https" | "http" | "mailto")
+}
+
 fn open_outside(app: &tauri::AppHandle, url: &tauri::Url) {
     use tauri_plugin_opener::OpenerExt;
-    // Solo direcciones web: nada de file:, ni programas.
-    if matches!(url.scheme(), "https" | "http" | "mailto" | "steam" | "discord") {
+    if can_open_outside(url) {
         let _ = app.opener().open_url(url.as_str(), None::<&str>);
     }
 }
@@ -291,7 +297,9 @@ pub fn run() {
                 open_settings(handle);
             }
             // Prueba de GitHub Actions: con CMLEAGUE_AUTOPRUEBA=1, la ventana de Configuración guarda un cambio por la
-            // misma vía que un clic (IPC y permisos), y el workflow revisa ajustes.json.
+            // misma vía que un clic (IPC y permisos), y el workflow revisa ajustes.json. Solo en el build de prueba
+            // (`--features autoprueba`): el instalador que se reparte no la trae.
+            #[cfg(feature = "autoprueba")]
             if std::env::var("CMLEAGUE_AUTOPRUEBA").as_deref() == Ok("1") {
                 open_settings(handle);
                 let h = handle.clone();
@@ -343,7 +351,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             game::game_detect,
-            game::game_set_dir,
+            game::game_pick_dir,
             game::game_launch,
             status::window_attention,
             status::launcher_status,
@@ -388,5 +396,16 @@ mod tests {
         assert!(!ok("https://cmleague.lat.otro.com/"));
         assert!(!ok("http://cmleague.lat/"));
         assert!(!ok("file:///C:/Windows"));
+    }
+
+    #[test]
+    fn afuera_solo_web() {
+        let out = |s: &str| can_open_outside(&s.parse().unwrap());
+        assert!(out("https://discord.gg/abc"));
+        assert!(out("mailto:hola@cmleague.lat"));
+        assert!(!out("steam://run/240//-novid"));
+        assert!(!out("discord://-/channels/1"));
+        assert!(!out("file:///C:/Windows/System32/calc.exe"));
+        assert!(!out("ms-settings:privacy"));
     }
 }

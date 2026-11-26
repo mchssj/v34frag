@@ -22,7 +22,7 @@ export const Ban = z
     }),
     nick: z.string().nullable().openapi({ description: 'Alias de la ficha o último nick conocido del SteamID' }),
     steam_id: z.string().nullable().openapi({
-      description: 'SteamID baneado. Sin ficha es público (como los perfiles sin reclamar); con ficha, solo para moderadores y admins',
+      description: 'SteamID baneado. Sin ficha es público (como los perfiles sin reclamar); con ficha, solo para moderadores y admins. `null`: ficha sin SteamID (replanteo 147)',
     }),
     reason: z.string(),
     created_at: z.string(),
@@ -67,7 +67,7 @@ export const BanIdParam = z.object({ id: z.uuid().openapi({ param: { name: 'id',
 
 export const BanCreate = z
   .object({
-    player_id: z.uuid().optional().openapi({ description: 'Ficha a banear (todos sus SteamID). Necesita SteamID' }),
+    player_id: z.uuid().optional().openapi({ description: 'Ficha a banear: todos sus SteamID y los que sume después. Sin SteamID también (replanteo 147): no puede buscar partida, y el baneo les llega a los servidores cuando vincule uno' }),
     steam_id: z.string().regex(STEAM64, 'SteamID64 inválido').optional().openapi({
       description: 'SteamID64 sin ficha. Si tiene ficha, se banea la ficha',
     }),

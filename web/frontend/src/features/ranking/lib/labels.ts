@@ -67,6 +67,12 @@ export function barPct(v: number | null, other: number | null): number {
   return Math.round((v / max) * 100)
 }
 
+/** El mejor valor de una fila con varios jugadores; null si nadie tiene. */
+export function bestOf(values: (number | null)[]): number | null {
+  const known = values.filter((v) => v !== null)
+  return known.length ? Math.max(...known) : null
+}
+
 /** Lado que gana una fila del comparador ("a" en empate, como el handoff); null si falta uno. */
 export function compareWinner(
   a: number | null,

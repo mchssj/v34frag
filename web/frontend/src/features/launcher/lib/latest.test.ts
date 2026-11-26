@@ -18,13 +18,13 @@ describe("fetchLatestLauncher", () => {
       pub_date: "2026-11-26T10:00:00Z",
       platforms: {
         "windows-x86_64": {
-          url: "https://cmleague.lat/descargas/launcher/CMLeague_0.2.0_x64-setup.exe",
+          url: "https://descargas.cmleague.lat/launcher/CMLeague_0.2.0_x64-setup.exe",
         },
       },
     })
     expect(await fetchLatestLauncher()).toEqual({
       version: "0.2.0",
-      url: "https://cmleague.lat/descargas/launcher/CMLeague_0.2.0_x64-setup.exe",
+      url: "https://descargas.cmleague.lat/launcher/CMLeague_0.2.0_x64-setup.exe",
       date: "2026-11-26T10:00:00Z",
     })
   })

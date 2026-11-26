@@ -1,5 +1,7 @@
 import { toast } from "sonner"
 
+import { LAUNCHER } from "@/config/site"
+
 // Puente con el launcher de escritorio (launcher/ en el repo, docs/bitacora/2026-11-24-launcher-escritorio): la misma
 // web abierta en una ventana propia. Fuera del launcher no hace nada y la web se comporta como siempre.
 //
@@ -124,7 +126,7 @@ const message = (e: unknown) =>
 
 /**
  * Abre ClientMod conectado al servidor (por CMLauncher.exe y clientmod.ini). El connect también queda copiado, por si
- * hay que pegarlo en la consola. Si no encuentra ClientMod, pide la carpeta una vez. Sin contraseña: SourceTV.
+ * hay que pegarlo en la consola. Si no encuentra ClientMod, abre una vez el selector de carpetas. Sin contraseña: SourceTV.
  */
 export async function openGame(address: string, password?: string | null) {
   const t = tauri()
@@ -144,16 +146,17 @@ export async function openGame(address: string, password?: string | null) {
       )
       return
     }
-    const dir = window.prompt(
-      "No encontré ClientMod. ¿En qué carpeta lo instalaste? (la que tiene CMLauncher.exe)",
-      "C:\\CSSv34_ClientMod"
+    // El selector de carpetas de Windows: la web nunca manda una ruta (el launcher abre CMLauncher.exe como
+    // administrador).
+    toast.info(
+      "No encontramos ClientMod: elige la carpeta donde lo instalaste (la que tiene CMLauncher.exe)."
     )
-    if (!dir) {
-      toast.info("El connect quedó copiado: pégalo en la consola (º).")
-      return
-    }
     try {
-      await t.invoke("game_set_dir", { dir })
+      const picked = await t.invoke<unknown>("game_pick_dir")
+      if (!picked) {
+        toast.info("El connect quedó copiado: pégalo en la consola (º).")
+        return
+      }
       toast.success(await launch())
     } catch (e2) {
       toast.error(
@@ -167,13 +170,18 @@ export async function openGame(address: string, password?: string | null) {
 async function copyForConsole(address: string, password?: string | null) {
   try {
     await navigator.clipboard.writeText(connectCommand(address, password))
-    toast.success("Connect copiado: pégalo en la consola del juego (º)", {
-      description: "Con el launcher de CMLeague entras con un clic.",
-      action: {
-        label: "Ver el launcher",
-        onClick: () => window.location.assign("/launcher"),
-      },
-    })
+    toast.success(
+      "Connect copiado: pégalo en la consola del juego (º)",
+      LAUNCHER.published
+        ? {
+            description: "Con el launcher de CMLeague entras con un clic.",
+            action: {
+              label: "Ver el launcher",
+              onClick: () => window.location.assign("/launcher"),
+            },
+          }
+        : undefined
+    )
   } catch {
     toast.error(
       `No se pudo copiar. Escribe en la consola: ${connectCommand(address, password)}`

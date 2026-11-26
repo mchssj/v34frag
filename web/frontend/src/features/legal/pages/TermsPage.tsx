@@ -221,9 +221,10 @@ const SECTIONS: LegalSection[] = [
           lo revisan.
         </li>
         <li>
-          Un baneo alcanza a tu ficha y a todos sus SteamID, también a los que
-          sumes después. La lista de baneos <Wip /> va a ser pública y va a
-          mostrar a quién, desde cuándo, hasta cuándo y el motivo.
+          Un baneo alcanza a tu ficha, aunque todavía no tenga SteamID, y a
+          todos sus SteamID, también a los que sumes después. La lista de baneos{" "}
+          <Wip /> va a ser pública y va a mostrar a quién, desde cuándo, hasta
+          cuándo y el motivo.
         </li>
         <li>
           Si te banean mientras buscas partida en el matchmaking, sales de la
@@ -298,6 +299,12 @@ const SECTIONS: LegalSection[] = [
           administradores pueden bloquear sin ser VIP y sin estos límites, y
           marcar un bloqueo suyo como super bloqueo: ese siempre se respeta,
           aunque los equipos queden desparejos.
+        </li>
+        <li>
+          En los servidores de la liga juegas con el nombre de tu ficha de la
+          web, si tu SteamID está vinculado y tu perfil no es privado, también
+          en los torneos y las PCW. Con VIP usas el nombre que quieras. Los
+          caracteres que el juego no muestra se quitan.
         </li>
         <li>
           Si alguien abandona una partida del matchmaking, la liga puede
@@ -481,19 +488,29 @@ const SECTIONS: LegalSection[] = [
             exista CMLeague y tu cuenta.
           </li>
           <li>
-            Al vencer hay unos días de gracia. Después se apagan las ventajas:
-            los cosméticos y las monedas VIP quedan congelados y vuelven si
-            renuevas.
+            Al vencer se apagan las ventajas: los cosméticos y las monedas VIP
+            quedan congelados y vuelven si renuevas. Las partidas favoritas y
+            las búsquedas que guardaste se siguen viendo y las puedes borrar,
+            pero no sumas nuevas.
           </li>
           <li>
-            El VIP da ventajas de comodidad y estética (cosméticos, estadísticas
-            avanzadas, comparador, favoritas, configs, créditos, ver quién
-            visitó tu perfil y visitar hasta 15 perfiles por semana sin dejar
-            rastro, autoaceptar las partidas del matchmaking, bloquear a un
-            jugador para que no te toque en tu equipo, como preferencia, y
-            similares). <strong>Nunca da ventaja dentro de la partida</strong>{" "}
-            ni sobre el ELO ni sobre las sanciones: con el autoaceptar, si no te
-            conectas a tiempo, la sanción es la misma.
+            El VIP da ventajas de comodidad y estética (cosméticos, el desglose
+            de tu ELO, comparar hasta 5 jugadores, partidas favoritas, filtros
+            avanzados y búsquedas guardadas, descargar tu tarjeta de stats,
+            configs, créditos, ver quién visitó tu perfil y visitar hasta 15
+            perfiles por semana sin dejar rastro, autoaceptar las partidas del
+            matchmaking, prevetar mapas, bloquear a un jugador para que no te
+            toque en tu equipo, como preferencia, y similares).{" "}
+            <strong>Nunca da ventaja dentro de la partida</strong> ni sobre el
+            ELO ni sobre las sanciones: con el autoaceptar, si no te conectas a
+            tiempo, la sanción es la misma.
+          </li>
+          <li>
+            Prevetar mapas: cada VIP elige un mapa y, antes del veto de los
+            capitanes, quedan fuera los más votados por los VIP de los dos
+            equipos, hasta el máximo que fija la liga (puede ser ninguno).
+            Influye en qué mapa se juega, no en lo que pasa dentro de la
+            partida. Si el mapa elegido no está en el matchmaking, no cuenta.
           </li>
           <li>
             Podemos cambiar, sumar o quitar ventajas del VIP. Si quitamos una
@@ -636,9 +653,10 @@ const SECTIONS: LegalSection[] = [
     body: (
       <p>
         El nombre y la marca CMLeague, la web, los diseños, los cosméticos, el
-        HUD, los plugins y la aplicación del anticheat son de CMLeague o de sus
-        autores. No puedes usarlos fuera de la liga sin permiso. Los mapas,
-        modelos y sonidos del juego son de sus respectivos dueños.
+        HUD, los plugins, la aplicación del anticheat y la aplicación de
+        escritorio son de CMLeague o de sus autores. No puedes usarlos fuera de
+        la liga sin permiso. Los mapas, modelos y sonidos del juego son de sus
+        respectivos dueños.
       </p>
     ),
   },
@@ -671,7 +689,9 @@ const SECTIONS: LegalSection[] = [
           CMLeague para Windows también se ofrece «tal cual está». No es parte
           de ClientMod ni lo reemplaza: para abrir el juego conectado a una
           sala, usa <code>CMLauncher.exe</code> y modifica por un momento{" "}
-          <code>clientmod.ini</code>. Lo usas bajo tu responsabilidad, y puedes
+          <code>clientmod.ini</code>, y abre ClientMod con permisos de
+          administrador porque ClientMod los pide: Windows te lo pregunta cada
+          vez. No es un anticheat. Lo usas bajo tu responsabilidad, y puedes
           desinstalarlo cuando quieras.
         </p>
       </>

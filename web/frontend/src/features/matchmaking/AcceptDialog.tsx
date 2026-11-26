@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useMatchFoundRepeat } from "./alert"
 import { secondsLeft } from "./labels"
 import type { MmLobby } from "./types"
 import { useNow } from "./useNow"
@@ -23,6 +24,7 @@ export function AcceptDialog({
   onDecline,
   pending,
   auto = false,
+  sound,
 }: {
   lobby: MmLobby
   onAccept: () => void
@@ -30,11 +32,14 @@ export function AcceptDialog({
   pending: boolean
   /** Tiene autoaceptar (VIP): la partida ya llega aceptada. */
   auto?: boolean
+  /** Sonido elegido para la partida encontrada; se repite cada 7 s mientras no aceptaste. */
+  sound?: string | null
 }) {
   const now = useNow(true, 250)
   const left = secondsLeft(lobby.accept_deadline, now)
   const accepted = lobby.players.filter((p) => p.accepted).length
   const meAccepted = lobby.players.some((p) => p.is_me && p.accepted)
+  useMatchFoundRepeat(!meAccepted, sound)
 
   return (
     // Se cierra solo cuando cambia el estado; no con Escape ni clic afuera.

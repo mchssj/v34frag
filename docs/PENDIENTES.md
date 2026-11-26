@@ -1,32 +1,76 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-26**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-22**.
 
-## Launcher de escritorio (2026-11-24): compilado y probado en Windows, sin desplegar
+## Beneficios VIP en la web y preveto de mapas (2026-11-24 y 2026-11-25): desplegado el 2026-11-25
 
-- **Qué es:** la web en una ventana propia para Windows, como el cliente de FACEIT, pedido por Agus. Suma:
-  - **Conectar** que abre ClientMod (`CMLauncher.exe` con `+connect` en `clientmod.ini`);
-  - avisos de Windows;
-  - bandeja con el estado y **Aceptar partida**;
-  - Discord Rich Presence;
-  - actualizaciones firmadas;
-  - Configuración propia;
-  - tema de la tienda;
-  - links `cmleague://`;
-  - la página `/launcher`.
+- **Qué es:** comparar hasta 5, partidas favoritas, tarjeta de stats, filtros avanzados del ranking y de Partidas con búsquedas guardadas, desglose de ELO (los puntos 1 a 3 de la revisión de `origin/kyan/vip`) y el preveto de mapas para VIP. Detalle: [`2026-11-24-comparador-y-favoritas-vip`](bitacora/2026-11-24-comparador-y-favoritas-vip/), [`2026-11-24-exportar-stats-y-buscador-vip`](bitacora/2026-11-24-exportar-stats-y-buscador-vip/), [`2026-11-24-desglose-elo-vip`](bitacora/2026-11-24-desglose-elo-vip/) y [`2026-11-25-preveto-vip`](bitacora/2026-11-25-preveto-vip/).
+- **Hecho:** commit `affd6e60` en `main` (la `146` también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`). El 2026-11-25 a las 19:23 (00:23 UTC del 26), sin salas ni mixes abiertos: respaldo (`~/respaldos/antes_140_146_202611260023.sql.gz` en el VPS), replanteos `140`, `141`, `142` y `146` en producción, y la API y la web en `affd6e60867e`. El preveto quedó en 2.
+- **Falta:**
+  1. Publicar `terms/terminos.html` y `terms/privacidad.html`, y los changelog 2.9.67, 2.9.68, 2.9.69 y 2.9.74.
+  2. Probar **Compartir** la tarjeta desde un teléfono y ver una sala real con prevetos.
+- **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
+- **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
 
-  En el navegador, Conectar copia el `connect`, porque `steam://` no abre ClientMod. Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
-- **Hecho:**
-  - commiteado en `claude/relaxed-einstein-sl0cme`;
-  - GitHub Actions lo compila en Windows, prueba que abre y saca capturas;
-  - pasan las 855 pruebas de la web.
-- **Falta, en orden:**
-  1. Probar el `+connect` en `Params=` con ClientMod (Agus avisa cuándo), y ver el título de la ventana del launcher de ClientMod con el juego cerrado.
-  2. Daniel: pasar los cambios de `web/frontend` a la rama de la que despliega y `deploy/vps/desplegar.sh web`.
-  3. Daniel: el Caddyfile nuevo (`/descargas/`, sin validar acá) y la carpeta `/srv/cmleague/descargas/launcher/`.
-  4. Daniel: la clave de firma y el ID de Discord en GitHub (`launcher/README.md`). Antes de repartir el launcher, si no, quien lo instale va a tener que reinstalar.
-  5. Publicar el `.exe` y `latest.json`, sacar el "En preparación" de los legales y publicar el changelog (CMLeague 2.9.65).
-  6. Decidir si se paga la firma de código: sin firma, aparece el aviso de SmartScreen.
+## App de escritorio (launcher) (2026-11-24): en curso, sin publicar
+
+- **Qué es:** la web de CMLeague en una ventana de Windows, de Kyan (Tauri 2, `launcher/`): avisos de Windows, la ventana al frente con la partida encontrada, **Aceptar partida** desde la bandeja, **Conectar** que abre ClientMod conectado, Configuración propia, Discord, tema de la tienda, links `cmleague://` y actualización automática. En el navegador, **Conectar**, **Entrar** (PCW) y **Ver en TV** pasan a copiar el connect (antes `steam://`, que no abre ClientMod). Detalle: [`2026-11-24-launcher-escritorio`](bitacora/2026-11-24-launcher-escritorio/).
+- **Decidido por Daniel (2026-11-25):** el enfoque de la web en una ventana; sin firma de Windows por ahora (el certificado OV, al abrirlo a todos); con actualización automática; el instalador y `latest.json` en su R2 (`descargas.cmleague.lat/launcher/`), subidos por GitHub Actions solo con **Publicar en R2**; descarga desde `/launcher`.
+- **Hecho:** rama `feat/launcher` (worktree `v34frag-launcher`) desde `main`, con lo de Kyan hasta `29a6600a` sin su base vieja ni su `Caddyfile`. Revisión: la carpeta de ClientMod solo con el selector de Windows y nunca de la red; afuera solo `https`, `http` y `mailto`; la prueba `CMLEAGUE_AUTOPRUEBA` fuera del instalador; `LAUNCHER.published = false` apaga la promoción; manual `jugador/launcher.md` oculto; legales "En preparación"; tuteo. Web: lint, tipos y 892 de 892 pruebas.
+- **Falta** (en orden, detalle en la [guía](bitacora/2026-11-24-launcher-escritorio/GUIA_IMPLEMENTACION.md)):
+  1. Daniel: probar a mano `+connect` en `Params=` de `clientmod.ini` y anotar el título de la ventana de CMLauncher con el juego cerrado.
+  2. Pasar `feat/launcher` a `main`, desplegar la web y copiar sus commits a `feat/frontend-fase-1`.
+  3. Instalar el `.exe` de prueba de GitHub Actions y probarlo con una sala real (conectar, aviso, bandeja, links de afuera, iframes de clips y Twitch, sesión).
+  4. Daniel: bucket de R2 con `descargas.cmleague.lat` y CORS, token de escritura solo de ese bucket, llaves del actualizador y datos de Discord en GitHub. Publicar con **Run workflow › Publicar en R2**.
+  5. Al publicar: `LAUNCHER.published = true`, manual visible con su link en `buscar-partida.md` y `capitan/jugar-pcw.md` (despliegue de la API), sacar "En preparación" de los legales y el changelog.
+  6. Avisarle a Kyan que la rama del launcher es `feat/launcher`.
+
+## Aviso de partida encontrada y agregar SteamID a mano (2026-11-23 y 2026-11-25): web desplegada el 2026-11-26
+
+- **Qué es:** el aviso de partida encontrada se repite hasta aceptar ([`2026-11-23-aviso-partida-encontrada`](bitacora/2026-11-23-aviso-partida-encontrada/)) y el botón **Agregar SteamID** en la ficha ([`2026-11-25-admin-agregar-steamid`](bitacora/2026-11-25-admin-agregar-steamid/)).
+- **Hecho:** commits `27261262` y `6982d3ec` en `main`; web `6982d3ec6ac5` en producción el 2026-11-26 (03:50 UTC). Sin la API ni la base.
+- **Falta:**
+  1. El manual (`jugador/buscar-partida.md` y `admin/usuarios-y-fichas.md`) lo sirve la API: sale en `/help` con el próximo `desplegar.sh api`.
+  2. Commit en `feat/frontend-fase-1`.
+  3. Probar el aviso con una partida real (ventana sin foco y otro monitor) y agregar un SteamID real.
+  4. Publicar el changelog del aviso.
+
+## Banear una ficha sin SteamID (2026-11-25): desplegado el 2026-11-26
+
+- **Qué es:** no se podía banear a aura67 porque su ficha no tiene SteamID; el baneo tiene que sacarlo del matchmaking igual. Detalle: [`2026-11-25-banear-ficha-sin-steamid`](bitacora/2026-11-25-banear-ficha-sin-steamid/).
+- **Hecho:** replanteo `147` aplicado en producción el 2026-11-25 (23:27 UTC, respaldo `20261125T232659Z`), web `edf75ed2853f` (después reemplazada por `affd6e60867e`, que la incluye) y API `affd6e60867e`, que lo incluye. Commit `edf75ed2` en `main`.
+- **Falta:**
+  1. Commitear el replanteo `147` (y su inversa) también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+  2. `pnpm gen:api` en el frontend (solo descripciones).
+  3. Banear a aura67. Si su cuenta todavía no tiene ficha (nunca buscó partida), no aparece en el buscador: queda fuera de este cambio.
+
+## Pasos que no se oyen al quedar solo (2026-11-25): silencio del clutch sacado, falta el anti-wallhack
+
+- **Qué es:** jugadores reportan que no oyen los pasos cuando quedan solos. Daniel pidió sacar el silencio del clutch (`!voz`). Detalle: [`2026-11-25-sin-silencio-en-el-clutch`](bitacora/2026-11-25-sin-silencio-en-el-clutch/).
+- **Hecho:** `csstv_qol` **1.5.0** (md5 `a2a8f43e…`, 1.4.0 menos el silencio) y `csstv_qol.cfg` sin `csstv_qol_clutch_mute` en **#1, #2 y #3** el 2026-11-25, sin recargar: entra en el próximo cambio de mapa. El de retake no se tocó (no se pudo entrar, y ahí el silencio no corre porque el reporter está en `disabled/`). En el worktree, `csstv_qol.sp` es **1.5.1**: lo mismo más el cambio de nombres de la ficha sin desplegar (antes 1.4.1).
+- **Anti-wallhack:** `Anti_Wallhack_Lite` a `disabled/` en **#1, #2 y #3** el 2026-11-25, a prueba (pedido de Daniel), sin recargar. Su código descarta pasos para el vivo y no para el espectador en primera persona, que es lo que dicen los jugadores ([`2026-11-25-sin-anti-wallhack-prueba`](bitacora/2026-11-25-sin-anti-wallhack-prueba/)).
+- **Falta:**
+  1. Verificar después de un cambio de mapa en #1, #2 y #3: `csstv_qol` 1.6.0 (trae lo de la 1.5.0) y sin "Anti-Wallhack Lite" en `sm plugins list` (`node docs/bitacora/2026-11-25-sin-anti-wallhack-prueba/pruebas/consola.mjs "sm plugins list"`).
+  2. Uno o dos mixes y preguntar por los pasos. Si se oyen, decidir si `Anti_Wallhack_Lite` queda afuera; si no, devolverlo a `plugins/`.
+  3. El `csstv_qol` subido después (1.6.0, sin el bloqueo de nombres) conserva este cambio.
+  4. Que el manual salga con el próximo despliegue de la API, y publicar el changelog 2.9.75.
+
+## El reporter de los servidores, en `main` (2026-11-25): hecho, falta lo que sigue
+
+- **Qué es:** #1, #2 y #3 corren el reporter **2.10.2** de Kyan desde el 2026-11-13 y `main` tenía la 2.10.0. Ya están en `main` el código y el mismo binario. Detalle: [`2026-11-25-reporter-de-los-servidores-en-main`](bitacora/2026-11-25-reporter-de-los-servidores-en-main/).
+- **Falta:**
+  - Que el manual (cuchillo por vida y `!ready` automático) salga con el próximo despliegue de la API.
+  - **Nombre de la web (`134`):** aplicada en producción el 2026-11-25 (16:15 UTC) con el reporter 2.10.3 y `csstv_qol` 1.6.0 subidos a **#1, #2 y #3**. El #1 ya los cargó; **#2 y #3, en su próximo cambio de mapa** (hasta entonces, ahí los plugins viejos se pelean por el nombre si alguien entra en vivo con otro). Falta: que alguien lo pruebe (reconexión, reemplazo, caracteres, anticheat), avisar en Discord, y desplegar la web y la API (legales y manual). Apagado rápido: `csstv_web_names 0`. Detalle: [`2026-11-22-nick-de-la-web-en-produccion`](bitacora/2026-11-22-nick-de-la-web-en-produccion/).
+  - Pedirle a Kyan el código de `csstv_ff`, que no está en ninguna rama y corre en los tres servidores. (`csstv_flash` está en `main` desde el 2026-11-25.)
+  - Descartar (o no) el reporter 2.11.0 sin commit (`names.inc`; rama local `archivo/reporter-2.11.0`): la 2.10.3 ya hace lo mismo. **No se puede subir como está.**
+
+## Abandono del reemplazo y ELO de quien abandona si su equipo gana (2026-11-25): desplegado, falta publicar el changelog
+
+- **Qué es:** un reemplazo que se iba en la última ronda quedaba como abandono (Artemis, −18), y quien abandona perdía lo de una derrota aunque su equipo ganara. Detalle: [`2026-11-25-abandono-del-reemplazo`](bitacora/2026-11-25-abandono-del-reemplazo/).
+- **Hecho:** replanteo `145` aplicado en producción el 2026-11-25 (14:14 UTC, respaldo `20261125T141403Z`), con su inversa, pruebas, tipos y manual, en `main`; el replanteo, también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`. Daniel compensó a mano a Artemis (+18) y a 1GRIM (+40), y el nivel de sanción de Artemis volvió a 0.
+- **Manual:** sale con la API, desplegada el 2026-11-25 (15:03 UTC, `171e7fbcec55`).
+- **Falta:** publicar el changelog 2.9.73. No toca los servidores de juego.
+- **Sin decidir:** compensar o no a los otros 10 que abandonaron y ganaron desde el 2026-11-09 (perdieron de 18 a 20 y pico, en vez de 10 a 15). Algunos ya tienen ajuste a mano.
 
 ## Tierlists de jugadores y equipos (2026-11-22): desplegado el 2026-11-23
 

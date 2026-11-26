@@ -6,6 +6,7 @@ import { notModified } from '../lib/etag';
 import { AppError, fromPostgrest } from '../lib/errors';
 import { envelope, runList } from '../lib/list';
 import { createRouter } from '../lib/router';
+import type { Db } from '../lib/supabase';
 import { bearer, errorResponses, json } from '../schemas/common';
 import {
   ChatBody,
@@ -31,6 +32,8 @@ import {
 } from '../schemas/matches';
 import type { MixMvp } from '../schemas/live';
 import { eloBySteam, eloLevel, LIVE_LIST, toLiveGame, type LiveRow } from '../services/live';
+import { resolvePlayer } from '../services/players';
+import { requireVip } from '../services/vip';
 import { clutchesOf, demoUrl, markHistoricSides, MATCH_LIST, mixReview, sumSeries, toSummary, vetoState, type MatchRow, type StatRow } from '../services/matches';
 
 const DETAIL = 'maps, server_id, server_ip, cancel_reason, external_id, advantage_side, demo_size';
@@ -52,9 +55,12 @@ const done = { 204: { description: 'Hecho' } } as const;
 
 const list = createRoute({
   method: 'get', path: '/api/v1/matches', tags: ['Partidas'], middleware: [optionalUser] as const,
-  summary: 'Partidas', description: 'Torneo, PCW y mixes (sin byes). Por defecto, la más nueva primero. Sin sesión.',
+  summary: 'Partidas',
+  description:
+    'Torneo, PCW y mixes (sin byes). Por defecto, la más nueva primero. Sin sesión, salvo `mine` y `favorites` (401) y los filtros VIP: ' +
+    '`with`, `against`, `max_diff`, `demo` y los órdenes `round_diff` y `mvp_rating` (401 sin sesión, 403 `VIP_REQUIRED` sin VIP).',
   request: { query: MatchListQuery },
-  responses: { 200: { description: 'Partidas', ...json(MatchList) }, ...errorResponses(400, 401) },
+  responses: { 200: { description: 'Partidas', ...json(MatchList) }, ...errorResponses(400, 401, 403, 404) },
 });
 
 const detail = createRoute({
@@ -179,6 +185,34 @@ type DetailRow = {
   advantage_side: number | null; demo_size: number | null;
 };
 
+/** Las filas del listado: el resumen, el MVP de los mixes (E17, sale de mix_list) y si está entre las favoritas (replanteo 140). */
+async function listItems(sb: Db, rows: MatchRow[], signedIn: boolean) {
+  const mixIds = rows.filter((r) => r.kind === 'mix').map((r) => r.id);
+  const mvps = new Map<string, z.infer<typeof MixMvp>>();
+  const [found, favorites] = await Promise.all([
+    mixIds.length
+      ? sb.from('mix_list').select('match_id, mvp_player_id, mvp_alias, mvp_game_nick, mvp_elo, mvp_rating').in('match_id', mixIds).then(mustHave)
+      : [],
+    signedIn && rows.length
+      ? // La RLS deja ver solo las propias.
+        sb.from('match_favorites' as 'match_player_stats').select('match_id').in('match_id', rows.map((r) => r.id)).then(mustHave)
+      : [],
+  ]);
+  for (const m of found) {
+    if (!m.match_id || (m.mvp_player_id === null && m.mvp_game_nick === null)) continue;
+    mvps.set(m.match_id, {
+      player_id: m.mvp_player_id,
+      alias: m.mvp_alias,
+      game_nick: m.mvp_game_nick,
+      elo: m.mvp_elo,
+      level: levelOf(m.mvp_elo),
+      rating: m.mvp_rating === null ? null : Number(m.mvp_rating),
+    });
+  }
+  const mine = new Set(favorites.map((f) => f.match_id));
+  return rows.map((r) => ({ ...toSummary(r), mvp: mvps.get(r.id) ?? null, favorite: mine.has(r.id) }));
+}
+
 export const matches = createRouter()
   .openapi(list, async (c) => {
     const p = c.req.valid('query');
@@ -190,6 +224,34 @@ export const matches = createRouter()
       me = must(await sb.from('players').select('id').eq('user_id', user.id).maybeSingle())?.id ?? null;
       if (!me) return c.json({ ...envelope([], 0, p), counts: { all: 0, mix: 0, pcw: 0, official: 0 } }, 200);
     }
+    // (replanteo 141) Lo que no sale filtrando match_list lo busca match_search. Los filtros avanzados son para VIP.
+    const vipSort = p.sort === 'round_diff' || p.sort === 'mvp_rating';
+    const vipFilter = vipSort || !!p.with || !!p.against || p.max_diff !== undefined || p.demo !== undefined;
+    if ((p.with || p.against) && !p.player) throw new AppError(400, 'VALIDATION_ERROR', 'Elige primero el jugador.');
+    if (vipFilter) await requireVip(c, 'Los filtros avanzados son para los VIP.');
+    if (p.favorites && !currentUser(c)) throw new AppError(401, 'UNAUTHORIZED', 'Para ver tus favoritas tienes que iniciar sesión.');
+    const refs = async (ref: string | undefined) => (ref ? resolvePlayer(sb, ref) : null);
+    const [player, mate, rival] = await Promise.all([refs(p.player), refs(p.with), refs(p.against)]);
+    if (vipFilter || p.favorites) {
+      const term = searchTerm(p.q);
+      const filters = {
+        ...(p.kind ? { kind: p.kind } : {}), ...(p.status ? { status: p.status } : {}), ...(p.review ? { review: p.review } : {}),
+        ...(p.event ? { event: p.event } : {}), ...(p.team ? { team: p.team } : {}), ...(p.server ? { server: p.server } : {}),
+        ...(player ? { player } : {}), ...(me ? { me } : {}), ...(mate ? { with: mate } : {}), ...(rival ? { against: rival } : {}),
+        ...(p.map ? { map: searchTerm(p.map) ?? '' } : {}), ...(p.from ? { from: p.from } : {}), ...(p.to ? { to: p.to } : {}),
+        ...(p.max_diff !== undefined ? { max_diff: p.max_diff } : {}), ...(p.demo !== undefined ? { demo: p.demo } : {}),
+        ...(p.favorites ? { favorites: true } : {}), ...(term ? { q: term } : {}),
+      };
+      const found = mustHave(
+        await sb.rpc('match_search' as never, { p: filters, p_sort: p.sort, p_order: p.order, p_limit: p.per, p_offset: (p.page - 1) * p.per } as never),
+      ) as unknown as { ids: string[]; total: number; counts: { all: number; mix: number; pcw: number; official: number } };
+      const rows = found.ids.length
+        ? (mustHave(await sb.from('match_list').select(MATCH_LIST).in('id', found.ids)) as unknown as MatchRow[])
+        : [];
+      const at = new Map(found.ids.map((id, i) => [id, i]));
+      rows.sort((x, y) => at.get(x.id)! - at.get(y.id)!);
+      return c.json({ ...envelope(await listItems(sb, rows, !!currentUser(c)), found.total, p), counts: found.counts }, 200);
+    }
     // Los mismos filtros para la página y para los contadores por tipo (E16), que no filtran por `kind`.
     const filtered = <Q extends Filters<Q>>(q: Q): Q => {
       let r = q.eq('bye', false);
@@ -197,7 +259,7 @@ export const matches = createRouter()
       if (p.review) r = r.eq('review', p.review);
       if (p.event) r = r.eq('event_id', p.event);
       if (p.team) r = r.or(`team1_id.eq.${p.team},team2_id.eq.${p.team}`);
-      if (p.player) r = r.contains('player_ids', [p.player]);
+      if (player) r = r.contains('player_ids', [player]);
       if (me) r = r.contains('player_ids', [me]);
       if (p.server) r = r.eq('server_id', p.server);
       if (p.map) r = r.ilike('map', `%${searchTerm(p.map) ?? ''}%`);
@@ -226,26 +288,7 @@ export const matches = createRouter()
       p.kind === 'official' ? null : countOf('official'),
     ]);
     const counts = { all: all ?? total, mix: mix ?? total, pcw: pcw ?? total, official: official ?? total };
-    // (E17) El MVP de los mixes de la página sale de mix_list, que ya lo calcula.
-    const mixIds = rows.filter((r) => r.kind === 'mix').map((r) => r.id);
-    const mvps = new Map<string, z.infer<typeof MixMvp>>();
-    if (mixIds.length) {
-      const found = mustHave(
-        await sb.from('mix_list').select('match_id, mvp_player_id, mvp_alias, mvp_game_nick, mvp_elo, mvp_rating').in('match_id', mixIds),
-      );
-      for (const m of found) {
-        if (!m.match_id || (m.mvp_player_id === null && m.mvp_game_nick === null)) continue;
-        mvps.set(m.match_id, {
-          player_id: m.mvp_player_id,
-          alias: m.mvp_alias,
-          game_nick: m.mvp_game_nick,
-          elo: m.mvp_elo,
-          level: levelOf(m.mvp_elo),
-          rating: m.mvp_rating === null ? null : Number(m.mvp_rating),
-        });
-      }
-    }
-    return c.json({ ...envelope(rows.map((r) => ({ ...toSummary(r), mvp: mvps.get(r.id) ?? null })), total, p), counts }, 200);
+    return c.json({ ...envelope(await listItems(sb, rows, !!currentUser(c)), total, p), counts }, 200);
   })
   .openapi(detail, async (c) => {
     const { id } = c.req.valid('param');
