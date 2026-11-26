@@ -95,7 +95,7 @@ jobs:
           }
           $exe = "src-tauri/target/release/cmleague-launcher.exe"
           $p = Start-Process -FilePath $exe -PassThru
-          Start-Sleep -Seconds 35
+          Start-Sleep -Seconds 25
           if ($p.HasExited) {
             $log = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/error.log"
             if (Test-Path $log) { Get-Content $log }
@@ -120,7 +120,7 @@ jobs:
           Remove-Item $archivo -ErrorAction SilentlyContinue
           $env:CMLEAGUE_AUTOPRUEBA = "1"
           $p = Start-Process -FilePath "src-tauri/target/release/cmleague-launcher.exe" -PassThru
-          Start-Sleep -Seconds 25
+          Start-Sleep -Seconds 35
           Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
           # Lo que mostraba la página (el aviso de arriba, si hay IPC, si los interruptores estaban bloqueados).
           $diag = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/autoprueba.txt"
