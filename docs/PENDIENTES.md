@@ -12,15 +12,14 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
 - **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
 
-## Banear una ficha sin SteamID (2026-11-25): probado en local, sin commit ni despliegue
+## Banear una ficha sin SteamID (2026-11-25): desplegado el 2026-11-26
 
 - **Qué es:** no se podía banear a aura67 porque su ficha no tiene SteamID; el baneo tiene que sacarlo del matchmaking igual. Detalle: [`2026-11-25-banear-ficha-sin-steamid`](bitacora/2026-11-25-banear-ficha-sin-steamid/).
-- **Hecho:** replanteo `147` (con inversa y `pruebas/prueba_147.sql`, todo OK en la copia local con rollback), el buscador de **Banear** con las fichas sin SteamID, manual de moderador y soporte, y `/terminos`.
+- **Hecho:** replanteo `147` aplicado en producción el 2026-11-25 (23:27 UTC, respaldo `20261125T232659Z`), web `edf75ed2853f` (después reemplazada por `affd6e60867e`, que la incluye) y API `affd6e60867e`, que lo incluye. Commit `edf75ed2` en `main`.
 - **Falta:**
-  1. Aplicar la `147` en producción (respaldo antes). No toca los servidores de juego.
-  2. Desplegar la API y la web; `pnpm gen:api` en el frontend.
-  3. Commit en `main` y el replanteo también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
-  4. Banear a aura67. Si su cuenta todavía no tiene ficha (nunca buscó partida), no aparece en el buscador: queda fuera de este cambio.
+  1. Commitear el replanteo `147` (y su inversa) también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`.
+  2. `pnpm gen:api` en el frontend (solo descripciones).
+  3. Banear a aura67. Si su cuenta todavía no tiene ficha (nunca buscó partida), no aparece en el buscador: queda fuera de este cambio.
 
 ## Pasos que no se oyen al quedar solo (2026-11-25): silencio del clutch sacado, falta el anti-wallhack
 
