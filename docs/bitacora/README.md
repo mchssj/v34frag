@@ -292,5 +292,5 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-25 | [Banear una ficha sin SteamID](2026-11-25-banear-ficha-sin-steamid/) | Replanteo `147` el 2026-11-25; web y API en producción (`affd6e60867e`) desde el 2026-11-26 |
 | 2026-11-26 | [Migración del VPS a São Paulo](2026-11-26-migracion-vps-brasil/) | Desplegado el 2026-11-26 (16:35 UTC), con `/privacidad` y la restauración de respaldos al día; el VPS de OVH, apagado como vuelta atrás |
 | 2026-11-26 | [Baneos de la web aplicados en los servidores](2026-11-26-baneos-en-los-servidores/) | Planeado, pendiente de aprobación |
-| 2026-11-26 | [Correos temporales bloqueados al registrarse](2026-11-26-correos-bloqueados/) | Planeado, pendiente de aprobación |
+| 2026-11-26 | [Correos temporales bloqueados al registrarse](2026-11-26-correos-bloqueados/) | Desplegado (2026-11-26): replanteo `148`, lista pública, API y web |
 | 2026-11-26 | [Baneo por IP desde la web](2026-11-26-baneo-por-ip/) | Planeado, pendiente de aprobación |

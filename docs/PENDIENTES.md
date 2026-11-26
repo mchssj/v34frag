@@ -12,6 +12,16 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
 - **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
 
+## Correos temporales bloqueados (2026-11-26): desplegado
+
+- **Qué es:** nadie se registra ni cambia su correo a un dominio de correos temporales (lista pública de 10.455 y los que agreguen los admins). Detalle: [`2026-11-26-correos-bloqueados`](bitacora/2026-11-26-correos-bloqueados/GUIA_IMPLEMENTACION.md).
+- **Hecho:** replanteo `148`, lista cargada, API `7e8d5b843348` y web `b983b8960846`. Administración › Usuarios › **Correos bloqueados**.
+- **Falta:** que un admin revise las 6 cuentas que ya usan un dominio bloqueado (`anonmart.com`, `afronewz.com`, `gonrr.net`) y banee sus fichas si corresponde. Actualizar la lista pública de vez en cuando (`pruebas/cargar_lista.py`).
+
+## Baneo por IP (2026-11-26) y baneos en los servidores (2026-11-26): planeados
+
+- Planes en [`2026-11-26-baneo-por-ip`](bitacora/2026-11-26-baneo-por-ip/PLAN.md) y [`2026-11-26-baneos-en-los-servidores`](bitacora/2026-11-26-baneos-en-los-servidores/PLAN.md), pendientes de aprobación de Daniel. Hoy los baneos de la web no echan de los servidores y el `!ban` del juego vale solo en el servidor donde se usa.
+
 ## Migración del VPS a São Paulo (2026-11-26): desplegada, faltan detalles
 
 - **Qué es:** todo lo del VPS de OVH (Beauharnois, Canadá) pasó a uno de Halver en São Paulo, más potente y cerca de los jugadores. Detalle: [`2026-11-26-migracion-vps-brasil`](bitacora/2026-11-26-migracion-vps-brasil/GUIA_IMPLEMENTACION.md).
