@@ -33,5 +33,7 @@ MÁS
 
 EN LA WEB
 - En el navegador, Conectar, Volver a la partida y Entrar (PCW) ahora copian el comando para pegarlo en la consola del juego. Antes intentaban abrir Steam, que no abre ClientMod. Lo mismo con Ver en TV.
+- Ver en TV ya no pide contraseña: entras directo a mirar la partida en vivo.
+- Encuentras el launcher en el menú de la izquierda (Launcher) y en el menú de tu cuenta (Descargar el launcher).
 
 Si Windows te dice que protegió tu PC al instalarlo, toca "Más información" y "Ejecutar de todas formas". Es el aviso que Windows muestra con los programas nuevos.
