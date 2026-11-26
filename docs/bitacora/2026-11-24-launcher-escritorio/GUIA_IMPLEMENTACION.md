@@ -2,7 +2,7 @@
 
 ## Estado
 
-Compilado y probado en Windows por GitHub Actions: abre, sigue abierto y saca capturas. **Sin desplegar ni publicar** (2026-11-26).
+Compilado y probado en Windows por GitHub Actions: abre, sigue abierto y Configuración guarda lo que se cambia desde su página (corrida `45862228345`, `0364d6a`). **Sin desplegar ni publicar** (2026-11-26).
 
 Está en la rama `feat/launcher` (worktree `v34frag-launcher`), que sale de `main`. Trae lo de Kyan (`claude/relaxed-einstein-sl0cme`, hasta `29a6600a`) sin su base vieja: tomar sus archivos de la web tal cual borraba cosas desplegadas después (el preveto VIP en `RoomOverview.tsx`), así que van como parche, y `MatchAlerts.tsx`, `alert.ts` y los legales se unieron a mano. La revisión del 2026-11-25 y el 2026-11-26 está en "Decisiones y revisión" de [`DOCUMENTACION.md`](DOCUMENTACION.md).
 
@@ -102,6 +102,13 @@ No toca la base, la API (salvo el manual), el VPS ni los servidores de juego.
   - `error.log` en `%LOCALAPPDATA%\lat.cmleague.launcher\`.
 
   Además se sumó la prueba "Abre y no se cierra".
+- **2026-11-26: Configuración no guardaba ni abría el selector de carpeta, sin ningún error** (Kyan, en su PC). La causa: Tauri define `window.ipc` en todas sus ventanas y `ajustes.html` declaraba `const ipc` global, lo que da "Identifier 'ipc' has already been declared" y hace que el navegador descarte **todo** el script. La ventana se veía, pero no leía, no guardaba, no abría el selector y no podía mostrar errores. No se veía antes porque la prueba en el navegador no tiene `window.ipc` y la autoprueba de GitHub guardaba con su propio código. Se arregló con el script en su propio bloque y la variable como `tauri`, reproducido y probado con un `window.ipc` como el de Tauri. En el camino:
+  - **Elegir carpeta** usa el selector nativo (`tauri-plugin-dialog`, encima de Configuración) en lugar del de PowerShell con un dueño invisible, que podía no aparecer.
+  - `settings_set` guarda todo aunque falle **Abrir con Windows** (registro); esa opción queda como estaba y se avisa solo de eso.
+  - Configuración se abre fuera del evento de la bandeja (`open_settings_later`) y `settings_open` es async.
+  - La página dice "Conectado al launcher", avisa si un pedido no tiene respuesta en 8 s y muestra sus errores arriba. Guarda en `window.__traza` cada pedido al launcher.
+  - La autoprueba de GitHub ahora hace clic en los interruptores de la página (espera a que cargue) y anota lo que muestra (`autoprueba.txt`).
+  - GitHub Actions ya no saca capturas: solo cuando Kyan las pida.
 - **`ring` no compila** con el chequeo para Windows desde Linux, porque le falta el compilador de C. Se usa TLS nativo (`native-tls`) en el actualizador.
 - **La red de este entorno bloquea `cmleague.lat`** y el almacenamiento de los artefactos de GitHub, así que las capturas de Windows no se pudieron ver desde acá.
 
