@@ -1,0 +1,7 @@
+CMLeague 2.9.65 --  Changelog
+
+- Cuando se encuentra partida, el sonido ahora se repite cada 7 segundos hasta que aceptes o rechaces, y el pitido predeterminado suena más fuerte.
+- La notificación del navegador te llega aunque tengas la web en otro monitor o en otra ventana, y ya no se borra sola: tócala para volver y aceptar.
+- El título de la pestaña parpadea con "¡Partida encontrada!" para que la encuentres rápido.
+- Si tienes las notificaciones bloqueadas, Jugar te avisa y te dice cómo activarlas.
+- Tip: si juegas a otra cosa en pantalla completa mientras buscas, usa ventana sin bordes o apaga "No molestar" de Windows para que te lleguen los avisos.

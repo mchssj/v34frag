@@ -40,7 +40,9 @@ Toca el nombre de un jugador (en el grupo, en Amigos, en el chat del grupo o en 
 
 ## 2. Aceptar
 
-Cuando aparece **Partida encontrada** tienes **{{mm.aceptar}}** para tocar **Aceptar**. La ventana aparece en cualquier página de la web, no solo en Jugar, con su sonido; al aceptar te lleva a Jugar. Si tienes la web en otra pestaña, el título de esa pestaña dice "¡Partida encontrada!" y, si diste permiso, te llega una notificación del navegador: vuelve a esa pestaña para aceptar.
+Cuando aparece **Partida encontrada** tienes **{{mm.aceptar}}** para tocar **Aceptar**. La ventana aparece en cualquier página de la web, no solo en Jugar; al aceptar te lleva a Jugar. Hasta que aceptes o rechaces, el sonido se repite cada 7 segundos y el título de la pestaña parpadea con "¡Partida encontrada!". Si estás en otra pestaña, en otra ventana o en otro monitor y diste permiso, también te llega una notificación del navegador que no se borra sola: tócala para volver a la web.
+
+Si en Jugar ves que las notificaciones están bloqueadas, actívalas desde el candado de la barra de direcciones. Si juegas a otra cosa en pantalla completa mientras buscas, Windows puede ocultar las notificaciones (opción "No molestar" al jugar): usa el modo ventana sin bordes, apaga esa opción o deja el volumen de la web alto para oír el sonido.
 
 - Si todos aceptan, pasan al veto.
 - Si alguien no acepta, la partida se cancela. Los que aceptaron vuelven a la búsqueda sin perder su lugar en la cola. Un grupo vuelve solo si aceptaron todos sus integrantes.

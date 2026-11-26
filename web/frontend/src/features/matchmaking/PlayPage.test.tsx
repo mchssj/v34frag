@@ -27,6 +27,8 @@ vi.mock("./alert", () => ({
   askNotificationPermission: vi.fn(),
   unlockAudio: vi.fn(),
   useAudioReady: () => true,
+  useMatchFoundRepeat: vi.fn(),
+  notificationsBlocked: () => false,
 }))
 // "Partidas en vivo" es un Link: sin router en la prueba, alcanza con un <a>.
 vi.mock("@tanstack/react-router", () => ({

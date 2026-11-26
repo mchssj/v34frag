@@ -212,6 +212,7 @@ export function PlayPage() {
               onAccept={() => accept.mutate()}
               onDecline={() => decline.mutate()}
               auto={!!state.auto_accept?.allowed && !!state.auto_accept.enabled}
+              sound={selectedSound}
             />
           )}
           {!state.lobby && state.invites[0] && (
