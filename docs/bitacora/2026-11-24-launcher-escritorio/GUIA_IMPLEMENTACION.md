@@ -86,7 +86,7 @@ No toca la base, la API (salvo el manual), el VPS ni los servidores de juego.
 
 - Con `+connect 190.104.34.3:27065` al final de `Params=` y PLAY en `CMLauncher.exe`, el juego **se conectó solo** (`Connecting to 190.104.34.3:27065... Connected`). Funciona.
 - La ventana de CMLauncher con el juego cerrado se llama **"ClientMod Launcher"**: no se confunde con `CS:S v34 ClientMod`.
-- El SourceTV del #1 lo echó con **"Bad spectator password"**: pide contraseña. Ningún `.cfg` del repo ni `server.cfg`, `autoexec.cfg`, `warmup.cfg`, `live.cfg`, `live_mm.cfg` y `csstv_reporter.cfg` del #1 ponen `tv_password`. **Ver en TV** se arma sin contraseña, en la web y en el launcher, así que hoy falla en los dos. Pendiente de una decisión de Daniel.
+- El SourceTV del #1 lo echó con **"Bad spectator password"**: pide contraseña. Ningún `.cfg` del repo ni `server.cfg`, `autoexec.cfg`, `warmup.cfg`, `live.cfg`, `live_mm.cfg` y `csstv_reporter.cfg` del #1 ponen `tv_password`. **Ver en TV** se arma sin contraseña, en la web y en el launcher, así que hoy falla en los dos. **Resuelto el 2026-11-26:** Daniel eligió SourceTV público. Por consola, solo el #1 tenía `tv_password` (puesta a mano, ningún archivo la tenía); se borró en vivo y se sumó `tv_password ""` después de `tv_port` en el `server.cfg` de #1, #2 y #3 (copia de antes guardada, verificado byte a byte), así se borra en cada cambio de mapa aunque alguien la vuelva a poner.
 
 ### Sin probar
 
