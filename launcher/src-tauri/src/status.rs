@@ -32,6 +32,20 @@ pub struct Shared {
     /// Versión de la actualización descargable, si hay.
     pub update: Mutex<Option<String>>,
     discord: Mutex<Option<Sender<Option<Presence>>>>,
+    /// ClientMod abierto (lo mira el launcher solo, cada 15 s).
+    pub game_open: Mutex<bool>,
+    /// Cuándo se abrió el launcher (Unix en milisegundos), para el tiempo de Discord.
+    pub started: Mutex<i64>,
+}
+
+/// Discord sin depender de la web: lo que cuenta la web manda; si no cuenta nada, "En el juego" con ClientMod
+/// abierto, o "En el launcher".
+fn presence_of(s: &Status, game_open: bool, started: i64) -> Presence {
+    match describe(s) {
+        Some((details, state)) => Presence { details, state, start: s.since },
+        None if game_open => Presence { details: "En el juego".into(), state: "CS:S v34 ClientMod".into(), start: None },
+        None => Presence { details: "En el launcher".into(), state: String::new(), start: Some(started) },
+    }
 }
 
 /// Texto del estado para la bandeja y Discord: (detalle, estado).
@@ -83,11 +97,9 @@ pub fn refresh(app: &tauri::AppHandle) {
         }
     }
 
-    let presence = if settings::load(app).discord_presence {
-        text.map(|(details, state)| Presence { details, state, start: status.since })
-    } else {
-        None
-    };
+    let game_open = *shared.game_open.lock().unwrap();
+    let started = *shared.started.lock().unwrap();
+    let presence = settings::load(app).discord_presence.then(|| presence_of(&status, game_open, started));
     let tx = shared.discord.lock().unwrap().clone();
     if let Some(tx) = tx {
         let _ = tx.send(presence);
@@ -174,17 +186,56 @@ struct Presence {
     start: Option<i64>,
 }
 
+/// Mira cada 15 s si ClientMod está abierto (para "En el juego" en Discord, sin depender de la web).
+pub fn start_game_watch(app: &tauri::AppHandle) {
+    if DISCORD_APP_ID.filter(|i| !i.is_empty()).is_none() {
+        return;
+    }
+    let app = app.clone();
+    std::thread::spawn(move || loop {
+        let open = crate::game::game_running();
+        let changed = {
+            let shared = app.state::<Shared>();
+            let mut cur = shared.game_open.lock().unwrap();
+            let changed = *cur != open;
+            *cur = open;
+            changed
+        };
+        if changed {
+            refresh(&app);
+        }
+        std::thread::sleep(std::time::Duration::from_secs(15));
+    });
+}
+
 /// Un hilo aparte habla con Discord: si no está abierto, lo vuelve a intentar con el próximo cambio.
 pub fn start_discord(app: &tauri::AppHandle) {
     let Some(id) = DISCORD_APP_ID.filter(|i| !i.is_empty()) else { return };
     let (tx, rx) = channel::<Option<Presence>>();
-    *app.state::<Shared>().discord.lock().unwrap() = Some(tx);
+    {
+        let shared = app.state::<Shared>();
+        *shared.discord.lock().unwrap() = Some(tx);
+        *shared.started.lock().unwrap() = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis() as i64)
+            .unwrap_or(0);
+    }
     std::thread::spawn(move || {
         use discord_rich_presence::activity::{Activity, Assets, Timestamps};
         use discord_rich_presence::{DiscordIpc, DiscordIpcClient};
         let mut client: Option<DiscordIpcClient> = None;
         let mut last: Option<Presence> = None;
-        while let Ok(p) = rx.recv() {
+        let mut pending: Option<Option<Presence>> = None;
+        loop {
+            // Un cambio nuevo, o cada 30 s reintenta el último si Discord no estaba abierto.
+            let p = match rx.recv_timeout(std::time::Duration::from_secs(30)) {
+                Ok(p) => p,
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => match pending.take() {
+                    Some(p) => p,
+                    None => continue,
+                },
+                Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
+            };
             if p == last {
                 continue;
             }
@@ -194,7 +245,10 @@ pub fn start_discord(app: &tauri::AppHandle) {
                     client = Some(c);
                 }
             }
-            let Some(c) = client.as_mut() else { continue };
+            let Some(c) = client.as_mut() else {
+                pending = Some(p);
+                continue;
+            };
             let ok = match &p {
                 Some(p) => {
                     let mut a = Activity::new()
@@ -214,6 +268,7 @@ pub fn start_discord(app: &tauri::AppHandle) {
                 last = p;
             } else {
                 client = None;
+                pending = Some(p);
             }
         }
     });
@@ -230,5 +285,11 @@ mod tests {
         assert_eq!(describe(&s("queue")), Some(("Buscando partida".into(), "5v5".into())));
         assert_eq!(describe(&s("lobby")), Some(("Preparando la partida".into(), "5v5 · de_dust2".into())));
         assert_eq!(describe(&s("live")), Some(("Jugando 5v5".into(), "de_dust2 · 9-7".into())));
+        // Sin nada de la web: el juego o el launcher.
+        assert_eq!(presence_of(&s("idle"), true, 5).details, "En el juego");
+        assert_eq!(presence_of(&s("idle"), false, 5).details, "En el launcher");
+        assert_eq!(presence_of(&s("idle"), false, 5).start, Some(5));
+        // Lo de la web manda sobre el juego abierto.
+        assert_eq!(presence_of(&s("live"), true, 5).details, "Jugando 5v5");
     }
 }

@@ -76,7 +76,7 @@ stateDiagram-v2
 
 | Estado | Bandeja | Discord |
 |---|---|---|
-| `idle` | "Sin buscar partida" | Nada |
+| `idle` | "Sin buscar partida" | "En el juego · CS:S v34 ClientMod" con ClientMod abierto (el launcher lo mira solo cada 15 s), o "En el launcher" con el tiempo desde que se abrió. No depende de la web |
 | `queue` | "Buscando partida · 5v5" | Igual, con el tiempo desde que entró |
 | `found` | "¡Partida encontrada!" y **Aceptar partida** habilitado | Igual |
 | `lobby` | "Preparando la partida · 5v5 · de_dust2" | Igual |
@@ -84,7 +84,7 @@ stateDiagram-v2
 
 - **Aceptar partida en la bandeja:** llama a `window.__cmleagueLauncher.accept()`, que registra la web y acepta con su sesión.
 - **Avisos de Windows** (`tauri-plugin-notification`): partida encontrada y servidor listo, solo si la ventana no está a la vista. Las actualizaciones también avisan.
-- **Discord** (`discord-rich-presence`): corre en un hilo aparte y, si Discord no está abierto, lo vuelve a intentar en el próximo cambio. Necesita `CMLEAGUE_DISCORD_APP_ID` al compilar.
+- **Discord** (`discord-rich-presence`): corre en un hilo aparte y, si Discord no está abierto, lo vuelve a intentar cada 30 s. Necesita `CMLEAGUE_DISCORD_APP_ID` al compilar. Lo que cuenta la web manda sobre "En el juego" y "En el launcher".
 
 ## Configuración propia
 

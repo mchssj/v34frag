@@ -47,7 +47,7 @@ Clic derecho en el ícono de la bandeja › **Configuración**. Se guarda en tu 
 - **Abrir con Windows** y **Arrancar en la bandeja**.
 - **Cerrar a la bandeja**: si la apagas, la X cierra el launcher.
 - **Avisos de Windows** y **Traer la ventana al frente**.
-- **Mostrar en Discord**: tu Discord muestra lo que estás haciendo en CMLeague.
+- **Mostrar en Discord**: tu Discord muestra lo que estás haciendo en CMLeague («En el launcher», «En el juego», «Buscando partida · 5v5», «Jugando 5v5 · de_dust2»). Tiene que estar abierta la app de Discord y prendido **Compartir tu actividad** en su configuración.
 - **Tema de la tienda**: pinta el launcher con uno de tus temas (ver abajo).
 - **ClientMod**: la carpeta donde está el juego.
 - **Actualizaciones**: el launcher busca versiones nuevas solo y las instala cuando tú lo eliges.

@@ -233,6 +233,9 @@ pub fn run() {
                 let _ = dl.register_all();
             }
             status::start_discord(handle);
+            status::start_game_watch(handle);
+            // Primer estado para Discord ("En el launcher"), sin esperar a la web.
+            status::refresh(handle);
             updater::start(handle);
             Ok(())
         })
