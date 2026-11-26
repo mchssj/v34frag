@@ -95,7 +95,7 @@ jobs:
           }
           $exe = "src-tauri/target/release/cmleague-launcher.exe"
           $p = Start-Process -FilePath $exe -PassThru
-          Start-Sleep -Seconds 25
+          Start-Sleep -Seconds 35
           if ($p.HasExited) {
             $log = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/error.log"
             if (Test-Path $log) { Get-Content $log }

@@ -318,16 +318,17 @@ pub fn run() {
                     if let Some(w) = h.get_webview_window("settings") {
                         let _ = w.eval(
                             // Clics en los interruptores de la página: prueba su código, no uno propio.
-                            "document.querySelector('input[data-key=notifications]').click();setTimeout(()=>document.querySelector('input[data-key=discord_presence]').click(),1500)",
+                            // Espera a que la página termine de cargar (#version se llena al final de load()).
+                            "(function go(n){const v=document.getElementById('version');if(!v||v.textContent==='–'){if(n<150)return setTimeout(()=>go(n+1),200);window.__autoprueba={nocargo:true};return}const q=k=>document.querySelector('input[data-key='+k+']');q('notifications').click();setTimeout(()=>{window.__autoprueba={msg1:document.getElementById('msg').textContent};q('discord_presence').click();setTimeout(()=>{window.__autoprueba.msg2=document.getElementById('msg').textContent},800)},800)})(0)",
                         );
                     }
                     // Lo que muestra la página después de los clics, para el registro del workflow.
-                    std::thread::sleep(std::time::Duration::from_secs(5));
+                    std::thread::sleep(std::time::Duration::from_secs(12));
                     if let Some(w) = h.get_webview_window("settings") {
                         let out = std::env::var_os("LOCALAPPDATA")
                             .map(|d| std::path::PathBuf::from(d).join("lat.cmleague.launcher").join("autoprueba.txt"));
                         let _ = w.eval_with_callback(
-                            "JSON.stringify({url:location.href,ipc:typeof window.__TAURI_INTERNALS__,msg:document.getElementById('msg')?.textContent,dir:document.getElementById('dir-msg')?.textContent,disabled:document.querySelector('input[data-key=notifications]')?.disabled,checked:document.querySelector('input[data-key=notifications]')?.checked})",
+                            "JSON.stringify({prueba:window.__autoprueba,url:location.href,ipc:typeof window.__TAURI_INTERNALS__,msg:document.getElementById('msg')?.textContent,dir:document.getElementById('dir-msg')?.textContent,disabled:document.querySelector('input[data-key=notifications]')?.disabled,checked:document.querySelector('input[data-key=notifications]')?.checked})",
                             move |r| {
                                 if let Some(f) = &out {
                                     let _ = std::fs::create_dir_all(f.parent().unwrap());
