@@ -328,7 +328,7 @@ pub fn run() {
                         let out = std::env::var_os("LOCALAPPDATA")
                             .map(|d| std::path::PathBuf::from(d).join("lat.cmleague.launcher").join("autoprueba.txt"));
                         let _ = w.eval_with_callback(
-                            "JSON.stringify({prueba:window.__autoprueba,url:location.href,ipc:typeof window.__TAURI_INTERNALS__,msg:document.getElementById('msg')?.textContent,dir:document.getElementById('dir-msg')?.textContent,disabled:document.querySelector('input[data-key=notifications]')?.disabled,checked:document.querySelector('input[data-key=notifications]')?.checked})",
+                            "JSON.stringify({traza:window.__traza,estado:document.readyState,version:document.getElementById('version')?.textContent,prueba:window.__autoprueba,url:location.href,ipc:typeof window.__TAURI_INTERNALS__,msg:document.getElementById('msg')?.textContent,dir:document.getElementById('dir-msg')?.textContent,disabled:document.querySelector('input[data-key=notifications]')?.disabled,checked:document.querySelector('input[data-key=notifications]')?.checked})",
                             move |r| {
                                 if let Some(f) = &out {
                                     let _ = std::fs::create_dir_all(f.parent().unwrap());

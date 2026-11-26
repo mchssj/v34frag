@@ -114,15 +114,25 @@
       const ipc = window.__TAURI_INTERNALS__
       // Si el launcher no contesta, se dice: sin esto, la página queda callada y parece que no hace nada.
       const LENTO = { game_pick_dir: 300000, update_install: 600000 }
+      // Registro de lo que pasa (lo lee la prueba de GitHub y sirve para revisar un problema): cada pedido al launcher.
+      window.__traza = []
+      const anota = (t) => window.__traza.push(`${Math.round(performance.now())} ${t}`)
+      anota("script")
       const invoke = (cmd, args) =>
         Promise.race([
-          ipc.invoke(cmd, args),
+          (anota(`→ ${cmd}`), ipc.invoke(cmd, args)).then(
+            (r) => (anota(`✓ ${cmd}`), r),
+            (e) => {
+              anota(`✗ ${cmd}: ${typeof e === "string" ? e : e && e.message}`)
+              throw e
+            }
+          ),
           new Promise((_, no) =>
             setTimeout(() => no(new Error(`El launcher no respondió a ${cmd}. Ciérralo desde la bandeja (Salir) y ábrelo de nuevo.`)), LENTO[cmd] || 8000)
           ),
         ])
-      window.addEventListener("error", (e) => say($("msg"), `Error de la página: ${e.message}`, true))
-      window.addEventListener("unhandledrejection", (e) => say($("msg"), `Error: ${errText(e.reason)}`, true))
+      window.addEventListener("error", (e) => (anota(`error: ${e.message}`), document.getElementById("msg").textContent = `Error de la página: ${e.message}`))
+      window.addEventListener("unhandledrejection", (e) => (anota(`rechazo: ${e.reason && e.reason.message || e.reason}`), document.getElementById("msg").textContent = `Error: ${e.reason && e.reason.message || e.reason}`))
       const $ = (id) => document.getElementById(id)
       const say = (el, text, err) => { el.textContent = text || ""; el.classList.toggle("err", !!err) }
       const errText = (e) => (typeof e === "string" ? e : (e && e.message) || String(e))
