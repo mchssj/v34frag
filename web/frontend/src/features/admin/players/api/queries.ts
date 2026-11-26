@@ -124,7 +124,7 @@ const touched = (qc: ReturnType<typeof useQueryClient>, id?: string) => {
 export function useCreatePlayer() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (body: { nick: string; force?: boolean }) =>
+    mutationFn: (body: { nick: string; force?: boolean; user_id?: string }) =>
       unwrap(
         api.POST("/api/v1/admin/players", {
           body: { ...body, force: body.force ?? false },

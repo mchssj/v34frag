@@ -18,7 +18,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { pickPlayerOptions } from "../../players/api/queries"
+import { pickPlayerOptions, useCreatePlayer } from "../../players/api/queries"
+import { usersOptions } from "../../users/api/queries"
 import { useDebouncedValue } from "@/lib/useDebouncedValue"
 import { useNow } from "@/features/matchmaking/useNow"
 import {
@@ -52,6 +53,9 @@ type Choice = Duration | "keep" | "minutes"
 export type BanTarget =
   | { kind: "player"; id: string; label: string }
   | { kind: "steam"; steamId: string }
+  // Una cuenta sin ficha (nunca buscó partida): al banearla se le crea la ficha (2026-11-26, bitácora
+  // 2026-11-26-banear-cuenta-sin-ficha). Solo admins: el listado de cuentas es de Administración.
+  | { kind: "account"; userId: string; label: string }
 
 const DURATIONS: { key: Choice; label: string }[] = [
   { key: "keep", label: "Como está" },
@@ -65,7 +69,7 @@ const DURATIONS: { key: Choice; label: string }[] = [
 ]
 
 const targetLabel = (t: BanTarget) =>
-  t.kind === "player" ? t.label : steam2(t.steamId)
+  t.kind === "steam" ? steam2(t.steamId) : t.label
 
 /**
  * Banear (con `fixed` o eligiendo a quién) o cambiar un baneo activo (`ban`). Un baneo vale en todos
@@ -78,6 +82,7 @@ export function BanDialog({
   ban,
   canPermanent,
   support = false,
+  accounts = false,
   onClose,
   onSaved,
 }: {
@@ -86,12 +91,15 @@ export function BanDialog({
   canPermanent: boolean
   /** La cuenta es de soporte: banea por minutos. */
   support?: boolean
+  /** Buscar también cuentas sin ficha (solo admins). */
+  accounts?: boolean
   onClose: () => void
   /** Con el baneo como quedó (el nuevo o el cambiado). */
   onSaved?: (b: Ban) => void
 }) {
   const id = useId()
   const create = useCreateBan()
+  const createPlayer = useCreatePlayer()
   const update = useUpdateBan()
   const mutation = ban ? update : create
   const [target, setTarget] = useState<BanTarget | null>(fixed ?? null)
@@ -100,6 +108,10 @@ export function BanDialog({
   const players = useQuery(
     pickPlayerOptions(steam64(debounced) ? "" : debounced)
   )
+  const noFicha = useQuery({
+    ...usersOptions(debounced, "noplayer", 1),
+    enabled: accounts && !ban && !fixed && !!debounced && !steam64(debounced),
+  })
   const [reason, setReason] = useState(ban?.reason ?? "")
   const [dur, setDur] = useState<Choice>(
     ban ? "keep" : support ? "minutes" : "7"
@@ -113,12 +125,15 @@ export function BanDialog({
   )
 
   // Baneo activo que el nuevo reemplazaría.
-  const existingQ = !ban && target ? targetLabel(target) : ""
+  const existingQ =
+    !ban && target && target.kind !== "account" ? targetLabel(target) : ""
   const existing = useQuery(activeBansForOptions(existingQ))
   const replaces = existing.data?.items.find((b) =>
     target?.kind === "player"
       ? b.player?.id === target.id
-      : b.steam_id === (target?.kind === "steam" ? target.steamId : "")
+      : target?.kind === "steam"
+        ? b.steam_id === target.steamId
+        : false
   )
   const blockedByPerm = !!replaces?.permanent && !canPermanent
 
@@ -129,7 +144,7 @@ export function BanDialog({
   // El soporte: si ya está baneado (por quien sea) o no le quedan baneos de soporte, no se puede.
   const quota = useQuery(
     supportQuotaOptions(
-      support && !ban && target
+      support && !ban && target && target.kind !== "account"
         ? target.kind === "player"
           ? { kind: "player", id: target.id }
           : { kind: "steam", steamId: target.steamId }
@@ -173,7 +188,8 @@ export function BanDialog({
     minutesOk &&
     !blockedByPerm &&
     !supportBlocked &&
-    !mutation.isPending
+    !mutation.isPending &&
+    !createPlayer.isPending
 
   function submit() {
     if (!target) return
@@ -198,21 +214,25 @@ export function BanDialog({
       )
       return
     }
-    create.mutate(
-      {
-        reason: reason.trim(),
-        ...timing,
-        ...(target.kind === "player"
-          ? { player_id: target.id }
-          : { steam_id: target.steamId }),
-      },
-      {
-        onSuccess: (saved) =>
-          done(
-            `${targetLabel(target)} baneado en todos los servidores.`,
-            saved
-          ),
-      }
+    const banWith = (who: { player_id: string } | { steam_id: string }) =>
+      create.mutate(
+        { reason: reason.trim(), ...timing, ...who },
+        {
+          onSuccess: (saved) => done(`${targetLabel(target)} baneado.`, saved),
+        }
+      )
+    if (target.kind === "account") {
+      // Sin ficha: primero se le crea (con su alias) y después se banea la ficha.
+      createPlayer.mutate(
+        { nick: target.label, user_id: target.userId },
+        { onSuccess: (p) => banWith({ player_id: p.id }) }
+      )
+      return
+    }
+    banWith(
+      target.kind === "player"
+        ? { player_id: target.id }
+        : { steam_id: target.steamId }
     )
   }
 
@@ -282,6 +302,23 @@ export function BanDialog({
                     }
                   />
                 ))}
+              {debounced &&
+                !typedSteam &&
+                noFicha.data?.items.map((u) => (
+                  <Option
+                    key={`cuenta-${u.id}`}
+                    on={target?.kind === "account" && target.userId === u.id}
+                    label={u.alias}
+                    info="Cuenta sin ficha (nunca buscó partida): se le crea la ficha y queda baneada"
+                    onClick={() =>
+                      setTarget({
+                        kind: "account",
+                        userId: u.id,
+                        label: u.alias,
+                      })
+                    }
+                  />
+                ))}
             </div>
           </div>
         )}
@@ -295,7 +332,9 @@ export function BanDialog({
             <span className="text-xs text-muted-foreground">
               {(ban ? ban.player : fixed?.kind === "player")
                 ? "Vale para todos sus SteamID y los que sume después."
-                : "SteamID sin ficha."}
+                : fixed?.kind === "account"
+                  ? "Cuenta sin ficha: se le crea la ficha y queda baneada."
+                  : "SteamID sin ficha."}
             </span>
           </div>
         )}
@@ -444,17 +483,16 @@ export function BanDialog({
         <Alert>
           <InfoIcon aria-hidden />
           <AlertDescription>
-            Vale en todos los servidores, también los externos. Si está jugando,
-            lo echa la próxima sincronización (cada 3 minutos o al cambiar de
-            mapa), o al instante si escribes{" "}
-            <span className="font-mono">!syncbans</span> en el servidor. No se
-            le avisa por Discord.
+            Lo saca de la cola del matchmaking y no puede volver a buscar
+            partida. En los servidores todavía no echa a nadie: si está jugando,
+            usa <span className="font-mono">!ban</span> en ese servidor (vale
+            solo en ese). No se le avisa por Discord.
           </AlertDescription>
         </Alert>
 
-        {mutation.isError && (
+        {(mutation.isError || createPlayer.isError) && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(mutation.error)}
+            {errorMessage(mutation.error ?? createPlayer.error)}
           </p>
         )}
 

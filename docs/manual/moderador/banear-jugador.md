@@ -4,15 +4,17 @@ resumen: Poner un baneo, elegir cuánto dura, cambiarlo, levantarlo y revisar el
 orden: 2
 ---
 
-Los baneos se manejan en Administración › [Baneos](/admin/bans). Es una sola lista para todos los servidores: entran los que se ponen desde la web, los `!ban` del juego y los importados de los servidores viejos.
+Los baneos se manejan en Administración › [Baneos](/admin/bans). Entran los que se ponen desde la web y los importados de los servidores viejos.
 
-Un jugador baneado no puede entrar a ningún servidor de CMLeague ni buscar partida en el matchmaking.
+Un jugador baneado no puede buscar partida en el matchmaking.
 
-Si está en el matchmaking cuando lo baneas, la web lo saca sola, sin que hagas nada más. Vale igual para los baneos de la web y para los `!ban` del juego:
+> **Ojo:** por ahora, el baneo de la web **no lo echa de los servidores**. Si está jugando o entra a un servidor, usa `!ban` en ese servidor (ver [Comandos en el servidor](/help/moderador/comandos-en-el-servidor)): vale solo en ese servidor y no aparece en esta lista. Estamos trabajando para que el baneo de la web también valga en los servidores.
+
+Si está en el matchmaking cuando lo baneas, la web lo saca sola, sin que hagas nada más:
 
 - **Buscando partida:** sale de la cola, junto con su grupo.
 - **En una sala que todavía no empezó** (aceptando, vetando mapas o conectándose): la sala se cancela y los otros vuelven a la cola con su lugar.
-- **Jugando:** el servidor lo echa y su abandono cuenta en el acto, así se puede llamar antes a un reemplazo. La partida sigue.
+- **Jugando:** su abandono cuenta en el acto, así se puede llamar antes a un reemplazo. La partida sigue. Para sacarlo del servidor, usa `!ban` ahí.
 
 No se le suma una sanción de la cola: el baneo ya es la sanción.
 
@@ -21,9 +23,10 @@ No se le suma una sanción de la cola: el baneo ya es la sanción.
 1. Toca **Banear**.
 2. En **Jugador o SteamID**, busca por el nick de su ficha o pega su SteamID (`STEAM_0:…` o SteamID64).
    - Si eliges una **ficha**, el baneo vale para todos sus SteamID y para los que sume después.
-   - Una ficha **sin SteamID** también se puede banear: no puede buscar partida en el matchmaking y, si después vincula un SteamID, tampoco entrar a los servidores.
+   - Una ficha **sin SteamID** también se puede banear: no puede buscar partida en el matchmaking.
+   - Si eres **admin**, también encuentras las **cuentas sin ficha** (nunca buscaron partida, como una cuenta recién creada): al banearla se le crea la ficha y queda baneada.
    - Si pegas un SteamID que tiene ficha, se banea la ficha entera.
-3. Escribe el **motivo**. Se ve en la lista y al intentar entrar al servidor: escríbelo claro y sin insultos.
+3. Escribe el **motivo**. Se ve en la lista: escríbelo claro y sin insultos.
 4. Elige la duración: **Horas** (escribe cuántas, de 1 a 72), **1 día**, **3 días**, **1 semana**, **1 mes** o **Hasta una fecha**. Abajo ves el día y la hora en que vence.
 5. Toca **Banear**.
 
@@ -42,7 +45,7 @@ Arriba filtras por **Activos**, **Vencidos**, **Levantados** o **Todos**, por or
 Desde el detalle del baneo:
 
 - **Cambiar:** otro motivo u otra duración. Si solo cambias el motivo, deja la duración en **Como está** y el vencimiento no se mueve. Guarda con **Guardar cambios**.
-- **Levantar baneo:** escribe el motivo (es obligatorio) y confirma. El jugador puede volver a entrar desde la próxima sincronización de los servidores. El baneo no se borra: queda en la lista como levantado, con tu motivo.
+- **Levantar baneo:** escribe el motivo (es obligatorio) y confirma. El jugador puede volver a buscar partida. El baneo no se borra: queda en la lista como levantado, con tu motivo.
 
 ## Los baneos del soporte
 

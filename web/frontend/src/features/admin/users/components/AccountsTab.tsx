@@ -358,33 +358,32 @@ function AccountPanel({ u, onClose }: { u: AdminUser; onClose: () => void }) {
 
       <StreamerSection u={u} />
 
-      {u.player_id && (
-        <PanelSection title="Baneo">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="flex-1 text-[13px] text-muted-foreground">
-              {ban
-                ? `Baneado ${ban.expires_at ? `hasta el ${fmtDate(ban.expires_at)}` : "de forma permanente"}: ${ban.reason}`
-                : "Sin baneos activos."}
-            </span>
-            {ban ? (
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/admin/bans" search={{ q: u.alias, ban: ban.id }}>
-                  Ver en Baneos
-                </Link>
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-destructive/50 text-destructive hover:text-destructive"
-                onClick={() => setBanning(true)}
-              >
-                Banear
-              </Button>
-            )}
-          </div>
-        </PanelSection>
-      )}
+      {/* Sin ficha también (2026-11-26): al banear se le crea la ficha. */}
+      <PanelSection title="Baneo">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="flex-1 text-[13px] text-muted-foreground">
+            {ban
+              ? `Baneado ${ban.expires_at ? `hasta el ${fmtDate(ban.expires_at)}` : "de forma permanente"}: ${ban.reason}`
+              : "Sin baneos activos."}
+          </span>
+          {ban ? (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin/bans" search={{ q: u.alias, ban: ban.id }}>
+                Ver en Baneos
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-destructive/50 text-destructive hover:text-destructive"
+              onClick={() => setBanning(true)}
+            >
+              Banear
+            </Button>
+          )}
+        </div>
+      </PanelSection>
 
       <ConfirmDialog
         open={role !== null}
@@ -406,9 +405,13 @@ function AccountPanel({ u, onClose }: { u: AdminUser; onClose: () => void }) {
           })
         }
       />
-      {banning && u.player_id && (
+      {banning && (
         <BanDialog
-          fixed={{ kind: "player", id: u.player_id, label: u.alias }}
+          fixed={
+            u.player_id
+              ? { kind: "player", id: u.player_id, label: u.alias }
+              : { kind: "account", userId: u.id, label: u.alias }
+          }
           canPermanent
           onClose={() => setBanning(false)}
         />

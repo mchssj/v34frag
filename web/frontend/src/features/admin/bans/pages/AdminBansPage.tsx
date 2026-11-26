@@ -412,10 +412,10 @@ export function AdminBansPage({
                   />
                 )}
                 <p className="rounded-lg bg-muted px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
-                  Al conectarse, el servidor lo frena siempre. A quien ya está
-                  jugando lo echa la próxima sincronización (cada 3 minutos o al
-                  empezar el mapa), o al momento con{" "}
-                  <span className="font-mono">!syncbans</span>.
+                  El baneo lo saca de la cola del matchmaking y no lo deja
+                  volver a buscar partida. Por ahora no lo echa de los
+                  servidores: ahí usa <span className="font-mono">!ban</span> en
+                  cada uno.
                 </p>
               </>
             }
@@ -427,6 +427,7 @@ export function AdminBansPage({
         <BanDialog
           canPermanent={canPermanent}
           support={support}
+          accounts={canPermanent}
           onClose={() => setBanning(false)}
           onSaved={(b) => {
             setPicked(b)
