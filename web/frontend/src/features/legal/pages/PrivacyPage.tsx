@@ -52,7 +52,7 @@ const PROVIDERS: [string, ReactNode][] = [
     </>,
   ],
   [
-    "OVH (servidor VPS)",
+    "Halver (servidor VPS)",
     "La base de datos, las cuentas y los archivos (avatares, capturas, evidencia del anticheat), la API de la web, el matchmaking y el HUD de las transmisiones",
   ],
   ["Resend", "Envío de los correos de la cuenta"],
@@ -434,6 +434,12 @@ const SECTIONS: LegalSection[] = [
           en ese torneo. Si apareces en uno y quieres que corrijamos o quitemos
           tu nombre, escríbenos.
         </p>
+        <p>
+          En los mix y en el matchmaking, el servidor te pone el nick de tu
+          ficha (el nombre de tu cuenta), si tu SteamID está vinculado: lo ven
+          los demás jugadores, el SourceTV y las demos de la partida. Para eso,
+          al conectarte el servidor consulta tu nick y si eres VIP.
+        </p>
       </>
     ),
   },
@@ -457,7 +463,9 @@ const SECTIONS: LegalSection[] = [
           <li>
             Varios de estos servicios guardan los datos fuera de la Argentina:
             la base de datos, las cuentas y los archivos están en nuestro
-            servidor VPS (OVH), en Beauharnois, Canadá. Hasta el 2026-11-03
+            servidor VPS (Halver), en São Paulo, Brasil. Hasta el 2026-11-26
+            estaban en un servidor VPS de OVH en Beauharnois, Canadá, que
+            guarda una copia de esa fecha hasta darlo de baja. Hasta el 2026-11-03
             estaban en Supabase, en el oeste de Estados Unidos (Oregón), que
             guarda una copia de esa fecha hasta borrarla, como mucho el
             2026-12-03. Cloudflare, Google, Discord y Resend pueden guardarlos

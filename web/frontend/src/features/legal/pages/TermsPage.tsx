@@ -499,7 +499,8 @@ const SECTIONS: LegalSection[] = [
             configs, créditos, ver quién visitó tu perfil y visitar hasta 15
             perfiles por semana sin dejar rastro, autoaceptar las partidas del
             matchmaking, prevetar mapas, bloquear a un jugador para que no te
-            toque en tu equipo, como preferencia, y similares).{" "}
+            toque en tu equipo, como preferencia, cambiarte el nombre dentro del
+            servidor en los mix, y similares).{" "}
             <strong>Nunca da ventaja dentro de la partida</strong> ni sobre el
             ELO ni sobre las sanciones: con el autoaceptar, si no te conectas a
             tiempo, la sanción es la misma.
