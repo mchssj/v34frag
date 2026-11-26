@@ -294,3 +294,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-26 | [Baneos de la web aplicados en los servidores](2026-11-26-baneos-en-los-servidores/) | Planeado, pendiente de aprobación |
 | 2026-11-26 | [Correos temporales bloqueados al registrarse](2026-11-26-correos-bloqueados/) | Desplegado (2026-11-26): replanteo `148`, lista pública, API y web |
 | 2026-11-26 | [Baneo por IP desde la web](2026-11-26-baneo-por-ip/) | Planeado, pendiente de aprobación |
+| 2026-11-26 | [Banear una cuenta sin ficha](2026-11-26-banear-cuenta-sin-ficha/) | Desplegado (2026-11-26): web 1ee6c8dc6f84 y manual en la API |
