@@ -144,9 +144,17 @@ fn open_settings(app: &tauri::AppHandle) {
     }
 }
 
+/// Abre Configuración fuera del evento o comando que lo pidió. En Windows, crear una ventana de WebView2 adentro de un
+/// evento de la bandeja o de un comando sincrónico puede dejarla sin IPC: se ve, pero sus pedidos al launcher no
+/// reciben respuesta (no guardaba la configuración ni abría el selector, 2026-11-26).
+fn open_settings_later(app: &tauri::AppHandle) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move { open_settings(&app) });
+}
+
 #[tauri::command]
-fn settings_open(app: tauri::AppHandle) {
-    open_settings(&app);
+async fn settings_open(app: tauri::AppHandle) {
+    open_settings_later(&app);
 }
 
 /// Argumento con el que Windows lo abre al iniciar (ver la opción "Abrir con Windows").
@@ -179,7 +187,7 @@ pub fn run() {
         // Abrirlo de nuevo no crea otro: trae la ventana que ya está.
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             if args.iter().any(|a| a == SETTINGS_ARG) {
-                open_settings(app);
+                open_settings_later(app);
             } else {
                 status::show_main(app);
             }
@@ -272,7 +280,7 @@ pub fn run() {
                 .on_menu_event(|app, e| match e.id.as_ref() {
                     "show" => status::show_main(app),
                     "accept" => status::accept_from_tray(app),
-                    "settings" => open_settings(app),
+                    "settings" => open_settings_later(app),
                     "update" => {
                         let app = app.clone();
                         tauri::async_runtime::spawn(async move {
@@ -295,20 +303,22 @@ pub fn run() {
             tray.build(app)?;
 
             if std::env::args().any(|a| a == SETTINGS_ARG) {
-                open_settings(handle);
+                open_settings_later(handle);
             }
             // Prueba de GitHub Actions: con CMLEAGUE_AUTOPRUEBA=1, la ventana de Configuración guarda un cambio por la
             // misma vía que un clic (IPC y permisos), y el workflow revisa ajustes.json. Solo en el build de prueba
             // (`--features autoprueba`): el instalador que se reparte no la trae.
             #[cfg(feature = "autoprueba")]
             if std::env::var("CMLEAGUE_AUTOPRUEBA").as_deref() == Ok("1") {
-                open_settings(handle);
+                // Por el mismo camino que la bandeja.
+                open_settings_later(handle);
                 let h = handle.clone();
                 std::thread::spawn(move || {
                     std::thread::sleep(std::time::Duration::from_secs(6));
                     if let Some(w) = h.get_webview_window("settings") {
                         let _ = w.eval(
-                            "const i=window.__TAURI_INTERNALS__;i.invoke('settings_get').then(s=>i.invoke('settings_set',{settings:{...s,notifications:false,discord_presence:false}})).catch(e=>i.invoke('settings_set',{settings:{autoprueba_error:String(e)}}))",
+                            // Clics en los interruptores de la página: prueba su código, no uno propio.
+                            "document.querySelector('input[data-key=notifications]').click();setTimeout(()=>document.querySelector('input[data-key=discord_presence]').click(),1500)",
                         );
                     }
                 });

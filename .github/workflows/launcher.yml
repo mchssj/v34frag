@@ -120,7 +120,7 @@ jobs:
           Remove-Item $archivo -ErrorAction SilentlyContinue
           $env:CMLEAGUE_AUTOPRUEBA = "1"
           $p = Start-Process -FilePath "src-tauri/target/release/cmleague-launcher.exe" -PassThru
-          Start-Sleep -Seconds 15
+          Start-Sleep -Seconds 20
           Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
           if (-not (Test-Path $archivo)) {
             Get-ChildItem (Join-Path $env:APPDATA "lat.cmleague.launcher") -ErrorAction SilentlyContinue

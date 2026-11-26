@@ -112,7 +112,17 @@
 
     <script>
       const ipc = window.__TAURI_INTERNALS__
-      const invoke = (cmd, args) => ipc.invoke(cmd, args)
+      // Si el launcher no contesta, se dice: sin esto, la página queda callada y parece que no hace nada.
+      const LENTO = { game_pick_dir: 300000, update_install: 600000 }
+      const invoke = (cmd, args) =>
+        Promise.race([
+          ipc.invoke(cmd, args),
+          new Promise((_, no) =>
+            setTimeout(() => no(new Error(`El launcher no respondió a ${cmd}. Ciérralo desde la bandeja (Salir) y ábrelo de nuevo.`)), LENTO[cmd] || 8000)
+          ),
+        ])
+      window.addEventListener("error", (e) => say($("msg"), `Error de la página: ${e.message}`, true))
+      window.addEventListener("unhandledrejection", (e) => say($("msg"), `Error: ${errText(e.reason)}`, true))
       const $ = (id) => document.getElementById(id)
       const say = (el, text, err) => { el.textContent = text || ""; el.classList.toggle("err", !!err) }
       const errText = (e) => (typeof e === "string" ? e : (e && e.message) || String(e))
@@ -131,6 +141,8 @@
         if (!ipc) throw new Error("Esta ventana no puede hablar con el launcher.")
         current = await invoke("settings_get")
         paint()
+        say($("msg"), "Conectado al launcher.")
+        setTimeout(() => { if ($("msg").textContent === "Conectado al launcher.") say($("msg"), "") }, 2500)
         const game = await invoke("game_detect").catch(() => null)
         $("dir").value = current.clientmod_dir || (game && game.dir) || ""
         say($("dir-msg"), game ? `Encontrado en ${game.dir}.` : "No encontré ClientMod en las carpetas comunes.", !game)
