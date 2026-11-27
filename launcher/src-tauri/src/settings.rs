@@ -24,6 +24,8 @@ pub struct Settings {
     /// Pintar el launcher con el tema de la tienda que tienes equipado en tu perfil (solo se pueden equipar los que
     /// tienes). Apagado de fábrica; no cambia la web en el navegador.
     pub shop_theme: bool,
+    /// Ver demo y Descargar demo bajan el .dem a la carpeta cstrike de ClientMod (si no, al navegador).
+    pub demos_to_game: bool,
     /// Tema elegido para el launcher (id de la tienda); sin él, el equipado en el perfil. Lo elige la web en
     /// Perfil › Preferencias, solo entre los que tienes.
     pub shop_theme_id: Option<String>,
@@ -42,6 +44,7 @@ impl Default for Settings {
             discord_presence: true,
             auto_update: true,
             shop_theme: false,
+            demos_to_game: true,
             shop_theme_id: None,
             clientmod_dir: None,
         }

@@ -526,6 +526,7 @@ name = "cmleague-launcher"
 version = "0.1.0"
 dependencies = [
  "discord-rich-presence",
+ "reqwest",
  "serde",
  "serde_json",
  "tauri",

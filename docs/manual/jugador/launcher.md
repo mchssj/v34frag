@@ -38,7 +38,9 @@ La primera vez, si tu ClientMod no está en una carpeta común, el launcher te p
 
 ## Demos y links de afuera
 
-**Ver demo**, **Descargar demo** y los links a otros sitios (Discord, Steam, YouTube) se abren en tu navegador, que baja la demo como siempre. El launcher se queda en CMLeague. Lo que descargas desde la propia web queda en tu carpeta **Descargas**.
+**Ver demo** y **Descargar demo** bajan la demo directo a la carpeta `cstrike` de tu ClientMod (por ejemplo, `C:\CSSv34_ClientMod\cstrike`). Te llega un aviso cuando está lista y te dice qué escribir en la consola del juego para verla: `playdemo` y el nombre de la demo. Si todavía no elegiste la carpeta de ClientMod, la demo va a tu carpeta **Descargas**. Si prefieres que se abran en el navegador, apaga **Demos a la carpeta del juego** en **Configuración**.
+
+Los links a otros sitios (Discord, Steam, YouTube) se abren en tu navegador. El launcher se queda en CMLeague. Lo que descargas desde la propia web queda en tu carpeta **Descargas**.
 
 ## La bandeja
 
