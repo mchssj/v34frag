@@ -26,7 +26,8 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 ## Baneos en los servidores (2026-11-27): desplegado, falta comprobar
 
 - Reporter 2.12.0 subido a **#1, #2 y #3** (la 2.10.3 en `plugins/disabled/`), replanteo `151`, API y web `5e78a062107b`. Detalle: [`2026-11-26-baneos-en-los-servidores`](bitacora/2026-11-26-baneos-en-los-servidores/GUIA_IMPLEMENTACION.md).
-- **Falta:** en cada servidor, después de su cambio de mapa, `sm plugins info csstv_reporter.smx` (2.12.0) y `sm_csstv_bans`; después vaciar `banned_user.cfg` del #1 (con copia; sus dos SteamID ya están baneados en la web). Probar con una persona el permanente de un moderador (rechazado).
+- Comprobado después de que Daniel reinició los tres: 2.12.0 cargada, `csstv_bans 1`, copia con 8 SteamID y el rango `181.21.0.0/16` (una IP del rango da baneado y GabeV no), sin errores. `banned_user.cfg` del #1 vacío (copia en `cfg/banned_user.cfg.antes-2.12.0`).
+- **Falta:** probar con una persona el permanente de un moderador (rechazado) y un baneado que intenta entrar.
 - **Ramas:** `feat/frontend-fase-1` y `feat/mm-claim-en-sala` no tienen los replanteos 148 a 151 ni el reporter 2.10.x; no se copió.
 
 ## Migración del VPS a São Paulo (2026-11-26): desplegada, faltan detalles

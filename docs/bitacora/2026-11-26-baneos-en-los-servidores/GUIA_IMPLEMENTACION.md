@@ -32,10 +32,11 @@ Commit `5e78a062`.
 3. Sin mixes en curso (último evento de los tres: cierre o cancelación), `pruebas/desplegar.py .env --hacer`: la 2.10.3 (`d7c3a929…`) a `plugins/disabled/csstv_reporter_2.10.3.smx` y la 2.12.0 (`c00156df…`) en su lugar, comparadas byte a byte. Sin recargar.
 4. Sin salas ni nadie en la cola: `desplegar.sh api` y `desplegar.sh web`.
 
+5. Daniel reinició los tres. Comprobado por la consola del panel en **#1, #2 y #3**: `sm plugins info csstv_reporter.smx` 2.12.0, `csstv_bans 1`, `sm_csstv_bans` con 8 SteamID y 1 rango, `csstv_bans_test` de una IP de `181.21.*` baneada y la de GabeV no; sin errores de baneos en `errors_*.log`.
+6. `banned_user.cfg` del #1 vacío, con la copia en `cfg/banned_user.cfg.antes-2.12.0`.
+
 ## Falta
 
-- Comprobar en cada servidor, después de su cambio de mapa: `sm plugins info csstv_reporter.smx` (2.12.0) y `sm_csstv_bans` (8 SteamID y 1 rango).
-- Después, vaciar `banned_user.cfg` del #1 (con copia).
 - Probar con una persona: un moderador con `!ban <jugador> 0` (rechazado), y alguien baneado que intenta entrar.
 - **Ramas:** `feat/frontend-fase-1` y `feat/mm-claim-en-sala` no tienen los replanteos 148 a 151 ni el reporter 2.10.x; no se copió (los baneos no son del matchmaking).
 
