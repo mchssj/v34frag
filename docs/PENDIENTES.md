@@ -23,7 +23,11 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - IPs y rangos (hasta `/16`) atados a un baneo, con excepciones por ficha o cuenta: frenan cola, aceptar, grupos y registro. Detalle: [`2026-11-26-baneo-por-ip`](bitacora/2026-11-26-baneo-por-ip/GUIA_IMPLEMENTACION.md). Primer rango: `181.21.*.*` en el baneo de Nose, con GabeV exceptuado.
 - **Ojo:** muchos jugadores se conectan por IPv6; un rango IPv4 no los frena por ahí. Hace falta sumar sus IPv6 cuando aparezcan en la sección.
 
-## Baneos en los servidores (2026-11-27): desplegado, falta comprobar
+## Baneo de IP o rango sin ficha desde la web (2026-11-27): desplegado
+
+- Pestaña **IPs sin ficha** de Baneos, botón **Banear IP o rango** (solo admins, hasta 30 días, con excepciones). Replanteo `152`, API y web `1ca8a09d7459`. Detalle: [`2026-11-26-baneo-ip-sin-ficha`](bitacora/2026-11-26-baneo-ip-sin-ficha/GUIA_IMPLEMENTACION.md).
+
+## Baneos en los servidores (2026-11-27): desplegado y comprobado
 
 - Reporter 2.12.0 subido a **#1, #2 y #3** (la 2.10.3 en `plugins/disabled/`), replanteo `151`, API y web `5e78a062107b`. Detalle: [`2026-11-26-baneos-en-los-servidores`](bitacora/2026-11-26-baneos-en-los-servidores/GUIA_IMPLEMENTACION.md).
 - Comprobado después de que Daniel reinició los tres: 2.12.0 cargada, `csstv_bans 1`, copia con 8 SteamID y el rango `181.21.0.0/16` (una IP del rango da baneado y GabeV no), sin errores. `banned_user.cfg` del #1 vacío (copia en `cfg/banned_user.cfg.antes-2.12.0`).
