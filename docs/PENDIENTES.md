@@ -26,7 +26,7 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 ## Baneo permanente de una IP o rango (2026-11-27): sin desplegar
 
 - Implementado en `2bfe22f9` ([`2026-11-26-baneo-ip-permanente`](bitacora/2026-11-26-baneo-ip-permanente/PLAN.md)): **Permanente** en **Banear IP o rango** y, en un baneo de ficha que dura más de 30 días, "lo mismo que el baneo". Daniel pidió no desplegarlo todavía.
-- Para desplegar, en este orden: replanteo `153` (cambia la firma de `admin_ban_ip_add`: la API vieja falla al banear una IP de una ficha hasta que se sube la nueva), `desplegar.sh api` y `desplegar.sh web`, sin salas aceptando o vetando. Después, `DOCUMENTACION.md` y `GUIA_IMPLEMENTACION.md`.
+- Para desplegar, en este orden: replanteo `153` (la API de hoy sigue funcionando con él: `p_full` tiene valor por defecto), `desplegar.sh api` y `desplegar.sh web`, sin salas aceptando o vetando. Después, `DOCUMENTACION.md` y `GUIA_IMPLEMENTACION.md`.
 
 ## Baneo de IP o rango sin ficha desde la web (2026-11-27): desplegado
 
