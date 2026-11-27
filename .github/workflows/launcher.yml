@@ -116,6 +116,8 @@ jobs:
           # Lo que mostraba la página (el aviso de arriba, si hay IPC, si los interruptores estaban bloqueados).
           $diag = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/autoprueba.txt"
           if (Test-Path $diag) { Write-Host "Página: $(Get-Content $diag -Raw)" } else { Write-Host "Página: sin datos" }
+          $web = Join-Path $env:LOCALAPPDATA "lat.cmleague.launcher/autoprueba-web.txt"
+          if (Test-Path $web) { Write-Host "Web: $(Get-Content $web -Raw)" } else { Write-Host "Web: sin datos" }
           if (-not (Test-Path $archivo)) {
             Get-ChildItem (Join-Path $env:APPDATA "lat.cmleague.launcher") -ErrorAction SilentlyContinue
             throw "No se guardó la configuración: no existe $archivo."

@@ -332,6 +332,22 @@ pub fn run() {
                             "(function go(n){const v=document.getElementById('version');if(!v||v.textContent==='–'){if(n<150)return setTimeout(()=>go(n+1),200);window.__autoprueba={nocargo:true};return}const q=k=>document.querySelector('input[data-key='+k+']');q('notifications').click();setTimeout(()=>{window.__autoprueba={msg1:document.getElementById('msg').textContent};q('discord_presence').click();setTimeout(()=>{window.__autoprueba.msg2=document.getElementById('msg').textContent},800)},800)})(0)",
                         );
                     }
+                    // La web real (cmleague.lat) en la ventana principal: ¿puede hablar con el launcher? (el tema, el
+                    // estado y Conectar dependen de eso).
+                    if let Some(w) = h.get_webview_window("main") {
+                        let out = std::env::var_os("LOCALAPPDATA")
+                            .map(|d| std::path::PathBuf::from(d).join("lat.cmleague.launcher").join("autoprueba-web.txt"));
+                        let _ = w.eval(
+                            "window.__webprueba={url:location.href,ipc:typeof window.__TAURI_INTERNALS__};try{window.__TAURI_INTERNALS__.invoke('launcher_prefs').then(r=>window.__webprueba.prefs=r,e=>window.__webprueba.error=String(e&&e.message||e))}catch(e){window.__webprueba.error='excepcion: '+e}",
+                        );
+                        std::thread::sleep(std::time::Duration::from_secs(3));
+                        let _ = w.eval_with_callback("JSON.stringify(window.__webprueba)", move |r| {
+                            if let Some(f) = &out {
+                                let _ = std::fs::create_dir_all(f.parent().unwrap());
+                                let _ = std::fs::write(f, r);
+                            }
+                        });
+                    }
                     // Lo que muestra la página después de los clics, para el registro del workflow.
                     std::thread::sleep(std::time::Duration::from_secs(12));
                     if let Some(w) = h.get_webview_window("settings") {
