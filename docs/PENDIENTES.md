@@ -3,15 +3,14 @@
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-26**.
 
 
-## La sala oculta mientras se acepta la partida (2026-11-27): desplegado, falta la API
+## La sala oculta mientras se acepta la partida (2026-11-27): desplegado
 
 - **Qué es:** en "Partida encontrada" se veía con quién te tocó (el nick al pasar el mouse y la sala completa en la API). Ahora, hasta el veto, solo tu tarjeta llega completa. Detalle: [`2026-11-27-mm-sala-oculta-al-aceptar`](bitacora/2026-11-27-mm-sala-oculta-al-aceptar/GUIA_IMPLEMENTACION.md).
-- **Hecho:** replanteo `155` (19:58 UTC) y web `0edafa650c47`. Commits `0edafa65` (`main`), `b033fcc5` (`feat/frontend-fase-1`) y `919d6bcd` (`feat/mm-claim-en-sala`). El launcher toma la web y no cambia.
+- **Hecho:** replanteo `155` (19:58 UTC), web `0edafa650c47` y API `f7c32ce41dae` (el manual). Commits `0edafa65` (`main`), `b033fcc5` (`feat/frontend-fase-1`) y `919d6bcd` (`feat/mm-claim-en-sala`). El launcher toma la web y no cambia.
 - **Falta:**
-  1. `desplegar.sh api` sin salas abiertas, para el manual de `/help`.
-  2. Publicar el changelog 2.9.78.
-  3. Probarlo con una partida real (que los cuadros no muestren nombres y que en el veto se vea todo).
-  4. Fuera de alcance: la lista pública de la cola deja adivinar quiénes entraron a una sala (salen juntos).
+  1. Publicar el changelog 2.9.78.
+  2. Probarlo con una partida real (que los cuadros no muestren nombres y que en el veto se vea todo).
+  3. Fuera de alcance: la lista pública de la cola deja adivinar quiénes entraron a una sala (salen juntos).
 
 ## Correos temporales bloqueados (2026-11-26): desplegado
 

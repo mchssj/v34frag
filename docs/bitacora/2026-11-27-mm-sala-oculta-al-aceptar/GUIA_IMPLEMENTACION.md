@@ -2,7 +2,7 @@
 
 ## Estado
 
-Desplegado el 2026-11-27 (UTC): replanteo `155` (19:58) y web `0edafa650c47` (20:03). La API (solo sirve el manual de `/help`) va cuando no haya salas abiertas: ver "Despliegue".
+Desplegado el 2026-11-27 (UTC): replanteo `155` (19:58), web `0edafa650c47` (20:03) y API `f7c32ce41dae` (20:07, el manual de `/help`).
 
 ## Archivos
 
@@ -31,7 +31,7 @@ Desplegado el 2026-11-27 (UTC): replanteo `155` (19:58) y web `0edafa650c47` (20
 2. `155` como `supabase_admin`, con un control antes que cortaba si había una sala sin empezar. Solo reemplaza funciones: no bloquea tablas ni corta el mix en vivo.
 3. Commit `0edafa65` en `main` y `desplegar.sh web` (`0edafa650c47`). Es estática y no reinicia nada.
 4. Ramas: `b033fcc5` en `feat/frontend-fase-1` (replanteo, bitácora y ventana) y `919d6bcd` en `feat/mm-claim-en-sala` (replanteo y bitácora). Solo esos archivos: el worktree de `feat/frontend-fase-1` tiene otros cambios sin commit, que no se tocaron.
-5. La API reinicia el socket del matchmaking: se despliega con `desplegar.sh api` cuando no haya salas abiertas.
+5. 20:07: `desplegar.sh api` (`f7c32ce41dae`) con el mix en vivo, que siguió sin cortes. El plugin le manda a Supabase (`ingest_server_chunk`) y el HUD al relay, no a la API; el despliegue reinicia solo `cmleague-api` (no `cmleague-mm`). Lo único que se corta unos segundos es el socket de la web, que se reconecta solo.
 
 ## Cómo revertir
 
