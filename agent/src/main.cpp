@@ -1,7 +1,10 @@
-// CMLeague Anticheat: ventana, bandeja y trabajo en segundo plano (vincular, latido cada 30 s, detectar ClientMod).
+// CMLeague Anticheat: ventana, bandeja y trabajo en segundo plano (vincular, latido cada 30 s, ver si están CMLauncher.exe y hl2.exe).
 // Opciones: --install --uninstall --silent --portable --render <pantalla> <png>
 // Solo en la versión de pruebas (AC_TEST): --api --data-dir --no-browser --auto-link --beat --capture-title --capture-no-foreground --capture-every
 #include "core.h"
+#include "obf.h"
+#include <winhttp.h>
+#include <ctime>
 #include <algorithm>
 #include <objbase.h>
 #include <shellapi.h>
@@ -56,19 +59,6 @@ static void OpenWeb(const std::wstring& url) {
     ShellExecuteW(nullptr, L"open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
 
-static bool GameOpen() {
-    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (snap == INVALID_HANDLE_VALUE) return false;
-    PROCESSENTRY32W e{};
-    e.dwSize = sizeof(e);
-    bool found = false;
-    // Solo se busca el launcher por su nombre: no se guarda ni se envía la lista.
-    for (BOOL ok = Process32FirstW(snap, &e); ok && !found; ok = Process32NextW(snap, &e))
-        found = _wcsicmp(e.szExeFile, L"CMLauncher.exe") == 0;
-    CloseHandle(snap);
-    return found;
-}
-
 void AcNotice(const wchar_t* text) {
     std::wstring t = text;
     Update([&](UiState& s) { s.detail = t; });
@@ -79,25 +69,151 @@ void AcNotice(const wchar_t* text) {
     Shell_NotifyIconW(NIM_MODIFY, &n);
 }
 
+static std::wstring g_avatarUrl;
+
 static void Forget() {
     EvidenceUpdate(L"", 0, 0, {});
     EvidenceForget();
     DeleteSecret(L"access");
     DeleteSecret(L"refresh");
-    Update([](UiState& s) { s.linked = s.online = s.session = false; s.screen = Screen::Unlinked; s.userCode.clear(); });
+    g_avatarUrl.clear();
+    Update([](UiState& s) {
+        s.linked = s.online = s.session = false;
+        s.screen = Screen::Unlinked;
+        s.userCode.clear();
+        s.nick.clear();
+        s.memberSince.clear();
+        s.serverName.clear();
+        s.avatar.reset();
+    });
+}
+
+// "2026-03-10T…" → "Miembro desde el 10 de marzo de 2026".
+static std::wstring MemberSince(const std::string& iso) {
+    static const wchar_t* kMonths[] = {L"enero", L"febrero", L"marzo", L"abril", L"mayo", L"junio", L"julio", L"agosto", L"septiembre", L"octubre", L"noviembre", L"diciembre"};
+    int y = 0, m = 0, d = 0;
+    if (sscanf_s(iso.c_str(), "%d-%d-%d", &y, &m, &d) != 3 || m < 1 || m > 12) return {};
+    return L"Miembro desde el " + std::to_wstring(d) + L" de " + kMonths[m - 1] + L" de " + std::to_wstring(y);
+}
+
+// Perfil y servidor del latido. La foto se baja solo cuando cambia.
+static void ApplyProfile(const std::string& body) {
+    std::wstring nick = Widen(JsonStr(body, "nick")), since = MemberSince(JsonStr(body, "member_since"));
+    std::wstring server = Widen(JsonStr(body, "server_name")), url = Widen(JsonStr(body, "avatar_url"));
+    bool newAvatar = url != g_avatarUrl;
+    std::shared_ptr<const std::vector<BYTE>> img;
+    if (newAvatar) {
+        g_avatarUrl = url;
+        if (!url.empty()) {
+            auto a = HttpGet(url);
+            if (a.status == 200 && !a.body.empty()) img = std::make_shared<const std::vector<BYTE>>(a.body.begin(), a.body.end());
+            else Log(L"foto del perfil: la descarga respondió " + std::to_wstring(a.status));
+        }
+    }
+    Update([&](UiState& s) {
+        s.nick = nick;
+        s.memberSince = since;
+        s.serverName = server;
+        if (newAvatar) s.avatar = img;
+    });
 }
 
 static std::string VersionField() { return JsonEscape(AC_VERSION); }
+
+static std::wstring g_selfSha;  // Hash del propio .exe, en cada latido (replanteo 156)
+
+// X-AC-Ts y X-AC-Sig: la firma del latido con la clave del equipo, sobre "v1|hb|<unix>|<sha256 del token>".
+static std::wstring SignedHeaders(const std::wstring& token) {
+    long long ts = (long long)time(nullptr);
+    std::string text = "v1|hb|" + std::to_string(ts) + "|" + JsonEscape(TextSha256(JsonEscape(token)));
+    std::string sig = SignText(text);
+    if (sig.empty()) return {};
+    return L"X-AC-Ts: " + std::to_wstring(ts) + L"\r\nX-AC-Sig: " + Widen(sig) + L"\r\n";
+}
+
+static bool JsonBool(const std::string& body, const char* key, bool def) {
+    std::string k = std::string("\"") + key + "\"";
+    size_t p = body.find(k);
+    if (p == std::string::npos) return def;
+    p = body.find(':', p + k.size());
+    if (p == std::string::npos) return def;
+    size_t v = body.find_first_not_of(" \t\r\n", p + 1);
+    if (v == std::string::npos) return def;
+    if (body.compare(v, 4, "true") == 0) return true;
+    if (body.compare(v, 5, "false") == 0) return false;
+    return def;
+}
+
+// Configuración remota (ac_config.agent_config): qué revisa y cada cuánto. Lo que no viene, queda como estaba.
+static void ApplyConfig(const std::string& body) {
+    if (body.find("\"config\"") == std::string::npos) return;
+    AgentConfig c = EvidenceCurrentConfig();
+    c.handles = JsonBool(body, "handles", c.handles);
+    c.overlays = JsonBool(body, "overlays", c.overlays);
+    c.drivers = JsonBool(body, "drivers", c.drivers);
+    c.gameFiles = JsonBool(body, "game_files", c.gameFiles);
+    if (int v = JsonInt(body, "handles_every")) c.handlesEvery = v;
+    if (int v = JsonInt(body, "overlays_every")) c.overlaysEvery = v;
+    if (int v = JsonInt(body, "modules_every")) c.modulesEvery = v;
+    auto files = JsonStrings(body, "files");
+    if (!files.empty()) {
+        c.files.clear();
+        for (const auto& f : files) c.files.push_back(Widen(f));
+    }
+    EvidenceConfigure(c);
+}
+
+// Actualización automática, fuera de una sesión: baja la versión nueva de cmleague.lat, comprueba el SHA-256 y se reemplaza.
+static void TryUpdate(const std::string& body, bool inSession) {
+    static std::string tried;
+    std::string version = JsonStr(body, "update_version"), sha = JsonStr(body, "update_sha256");
+    std::wstring url = Widen(JsonStr(body, "update_url"));
+    if (version.empty() || sha.size() != 64 || url.empty() || inSession || version == tried) return;
+    tried = version;
+    URL_COMPONENTS u{};
+    u.dwStructSize = sizeof(u);
+    wchar_t host[256];
+    u.lpszHostName = host;
+    u.dwHostNameLength = 256;
+    std::wstring h = WinHttpCrackUrl(url.c_str(), 0, 0, &u) ? std::wstring(host) : L"";
+    std::wstring suffix = OBF(L"cmleague.lat");
+    bool ours = h == suffix || (h.size() > suffix.size() && h.compare(h.size() - suffix.size() - 1, std::wstring::npos, L"." + suffix) == 0);
+    if (u.nScheme != INTERNET_SCHEME_HTTPS || !ours) { Log(L"actualización rechazada: no es de cmleague.lat"); return; }
+    wchar_t self[MAX_PATH];
+    GetModuleFileNameW(nullptr, self, MAX_PATH);
+    if (_wcsicmp(self, (InstallDir() + L"\\CMLeagueAC.exe").c_str()) != 0) return;  // Solo la instalada se reemplaza
+    auto r = HttpGet(url, 16 * 1024 * 1024);
+    if (r.status != 200 || r.body.empty()) { Log(L"actualización: la descarga respondió " + std::to_wstring(r.status)); return; }
+    if (JsonEscape(TextSha256(r.body)) != sha) { Log(L"actualización rechazada: el SHA-256 no coincide"); return; }
+    std::wstring next = InstallDir() + L"\\CMLeagueAC.new.exe", old = InstallDir() + L"\\CMLeagueAC.old.exe";
+    HANDLE f = CreateFileW(next.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+    if (f == INVALID_HANDLE_VALUE) return;
+    DWORD w = 0;
+    BOOL ok = WriteFile(f, r.body.data(), (DWORD)r.body.size(), &w, nullptr) && w == r.body.size();
+    CloseHandle(f);
+    // Un .exe en uso se puede renombrar, no pisar.
+    if (!ok || !MoveFileExW(self, old.c_str(), MOVEFILE_REPLACE_EXISTING)) { DeleteFileW(next.c_str()); return; }
+    if (!MoveFileExW(next.c_str(), self, MOVEFILE_REPLACE_EXISTING)) { MoveFileExW(old.c_str(), self, MOVEFILE_REPLACE_EXISTING); return; }
+    Log(L"actualizado a " + Widen(version) + L": se reinicia");
+    ShellExecuteW(nullptr, L"open", self, nullptr, nullptr, SW_SHOWNORMAL);
+    PostMessageW(g_wnd, WM_CLOSE, 0, 0);
+}
 
 static bool RunLink() {
     wchar_t name[64] = L"PC";
     DWORD len = 64;
     GetComputerNameW(name, &len);
     Update([](UiState& s) { s.detail.clear(); });
-    auto r = HttpPost(g_api, L"/api/v1/anticheat/link", "{\"device_name\":\"" + JsonEscape(name) + "\",\"agent_version\":\"" + VersionField() + "\"}");
+    auto r = HttpPost(g_api, OBF(L"/api/v1/anticheat/link").c_str(),
+                      "{\"device_name\":\"" + JsonEscape(name) + "\",\"agent_version\":\"" + VersionField() + "\",\"hw\":" + MachineIds() + "}");
     if (r.status != 201) {
         Log(L"vincular: la API respondió " + std::to_wstring(r.status));
-        Update([&](UiState& s) { s.screen = Screen::Unlinked; s.detail = r.status == 0 ? L"No se pudo conectar con CMLeague. Prueba de nuevo." : L"El servicio no está disponible ahora."; });
+        Update([&](UiState& s) {
+            s.screen = Screen::Unlinked;
+            s.detail = r.status == 0     ? L"No se pudo conectar con CMLeague. Prueba de nuevo."
+                       : r.status == 403 ? L"No se puede usar CMLeague Anticheat en este equipo (AC-5)."
+                                         : L"El servicio no está disponible ahora.";
+        });
         return false;
     }
     std::string device = JsonStr(r.body, "device_code");
@@ -158,8 +274,9 @@ static void Worker() {
             if (Sleep_(INFINITE)) return;
             continue;
         }
-        bool open = GameOpen();
-        Update([&](UiState& s) { s.gameOpen = open; });
+        GameState game = GameScan();
+        // Al jugador no se le muestra qué ve el agente (Kyan, 2026-11-27): solo se informa a la API.
+        Update([&](UiState& s) { s.gameOpen = game.clientmod; s.hl2Open = game.hl2; });
 
         if (g_wantUnlink) {
             g_wantUnlink = false;
@@ -179,12 +296,27 @@ static void Worker() {
             continue;
         }
 
-        auto r = HttpPost(g_api, L"/api/v1/anticheat/heartbeat", "{\"agent_version\":\"" + VersionField() + "\"}", Widen(LoadSecret(L"access")));
+        std::wstring token = Widen(LoadSecret(L"access"));
+        EvidenceEnsureKey(token);  // La clave va antes del primer latido firmado (replanteo 156)
+        std::string ports;
+        for (int p : GamePorts(game.pid)) ports += (ports.empty() ? "" : ",") + std::to_string(p);
+        std::string beat = "{\"agent_version\":\"" + VersionField() + "\",\"game\":{\"clientmod\":" + (game.clientmod ? "true" : "false") +
+                           ",\"hl2\":" + (game.hl2 ? "true" : "false") + ",\"ports\":[" + ports + "]}" +
+                           (g_selfSha.empty() ? "" : ",\"agent_sha\":\"" + JsonEscape(g_selfSha) + "\"") + ",\"hw\":" + MachineIds() + "}";
+        auto r = HttpSend(g_api, OBF(L"/api/v1/anticheat/heartbeat").c_str(), beat, L"application/json", token, SignedHeaders(token));
         if (r.status == 401) {
-            if (Refresh()) continue;
-            if (LoadSecret(L"access").empty()) continue;
+            // Una firma rechazada no se arregla renovando el token: se reintenta en el próximo latido.
+            if (r.body.find("firma") == std::string::npos) {
+                if (Refresh()) continue;
+                if (LoadSecret(L"access").empty()) continue;
+            } else {
+                Log(L"latido: firma rechazada");
+            }
         }
         if (r.status == 200) {
+            ApplyProfile(r.body);
+            ApplyConfig(r.body);
+            TryUpdate(r.body, !JsonIsNull(r.body, "session"));
             bool session = !JsonIsNull(r.body, "session");
             std::vector<std::wstring> requests;
             for (const auto& q : JsonStrings(r.body, "requests")) requests.push_back(Widen(q));
@@ -224,6 +356,7 @@ static void Press(int id) {
     switch (id) {
         case BtnClose: ShowWindow(g_wnd, SW_HIDE); break;  // Sigue visible en la bandeja
         case BtnMinimize: ShowWindow(g_wnd, SW_MINIMIZE); break;
+        case BtnLink: OpenWeb(L"https://cmleague.lat/privacidad"); break;
         case BtnPrimary:
             if (sc == Screen::Consent) {
                 SaveConsent();
@@ -238,7 +371,8 @@ static void Press(int id) {
         case BtnSecondary:
             if (sc == Screen::Consent) { PostQuitMessage(0); break; }
             if (sc == Screen::Linking) g_cancelLink = true;
-            else g_wantUnlink = true;
+            else if (MessageBoxW(g_wnd, L"¿Cerrar sesión en este equipo? Para jugar los mixes vas a tener que vincularlo de nuevo.", AC_NAME, MB_YESNO | MB_ICONQUESTION) == IDYES)
+                g_wantUnlink = true;
             SetEvent(g_wake);
             break;
     }
@@ -316,10 +450,14 @@ static LRESULT CALLBACK WndProc(HWND h, UINT m, WPARAM w, LPARAM l) {
 
 static bool RenderDemo(const std::wstring& name, const wchar_t* path) {
     UiState s;
+    s.nick = L"Kyan";
+    s.memberSince = L"Miembro desde el 10 de marzo de 2026";
+    s.serverName = L"CMLeague #1";
     if (name == L"consent") s.screen = Screen::Consent;
     else if (name == L"unlinked") s.screen = Screen::Unlinked;
     else if (name == L"linking") { s.screen = Screen::Linking; s.userCode = L"K7QM2XPD"; }
     else if (name == L"ready") { s.screen = Screen::Ready; s.linked = s.online = true; }
+    else if (name == L"ready-game") { s.screen = Screen::Ready; s.linked = s.online = s.gameOpen = true; }
     else if (name == L"session") { s.screen = Screen::Session; s.linked = s.online = s.gameOpen = s.session = true; }
     else if (name == L"offline") { s.screen = Screen::Offline; s.linked = true; s.gameOpen = true; }
     else return false;
@@ -349,6 +487,30 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
         else if (a == L"--capture-title" && i + 1 < argc) { g_evidence.gameTitle = argv[++i]; g_evidence.minWidth = 100; }
         else if (a == L"--capture-no-foreground") g_evidence.ignoreForeground = true;
         else if (a == L"--capture-every" && i + 1 < argc) g_evidence.everySeconds = _wtoi(argv[++i]);
+        else if (a == L"--detect" && i + 2 < argc) {
+            // Solo pruebas: qué ve el agente sobre un proceso cualquiera, en un archivo de texto.
+            DWORD pid = (DWORD)_wtoi(argv[i + 1]);
+            std::wstring outText;
+            auto dump = [&](const wchar_t* kind, const std::vector<DetectItem>& v) {
+                for (const auto& d : v) outText += std::wstring(kind) + L"\t" + std::to_wstring(d.pid) + L"\t" + d.name + L"\t" + d.path + L"\t" + d.note + L"\t" + Widen(d.detail) + L"\r\n";
+            };
+            dump(L"handle", DetectHandles(pid));
+            dump(L"overlay", DetectOverlays(pid));
+            auto drv = DetectDrivers();
+            outText += L"drivers\t" + std::to_wstring(drv.size()) + L"\r\n";
+            std::wstring ports;
+            for (int p : GamePorts(pid)) ports += std::to_wstring(p) + L" ";
+            outText += L"ports\t" + ports + L"\r\nmachine\t" + Widen(MachineIds()) + L"\r\n";
+            std::string u8;
+            int n = WideCharToMultiByte(CP_UTF8, 0, outText.c_str(), (int)outText.size(), nullptr, 0, nullptr, nullptr);
+            u8.resize(n);
+            WideCharToMultiByte(CP_UTF8, 0, outText.c_str(), (int)outText.size(), u8.data(), n, nullptr, nullptr);
+            HANDLE f = CreateFileW(argv[i + 2], GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+            DWORD w = 0;
+            if (f != INVALID_HANDLE_VALUE) { WriteFile(f, u8.data(), (DWORD)u8.size(), &w, nullptr); CloseHandle(f); }
+            UiShutdown();
+            return 0;
+        }
 #endif
         else if (a == L"--render" && i + 2 < argc) {
             bool ok = RenderDemo(argv[i + 1], argv[i + 2]);
@@ -419,6 +581,8 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
 
     ShowMain();
     Log(L"inicio");
+    g_selfSha = FileSha256(self);
+    DeleteFileW((InstallDir() + L"\\CMLeagueAC.old.exe").c_str());  // Lo que quedó de una actualización
     EvidenceStart(g_api, g_evidence);
     std::thread worker(Worker);
 

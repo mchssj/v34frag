@@ -41,6 +41,8 @@ const EnvSchema = z.object({
     .optional(),
   // Secreto del anticheat: la base lo pide para que solo la API informe la IP del agente (replanteo 39). Sin él, el agente da 501.
   AC_API_SECRET: z.string().min(32).optional(),
+  // Sal del HMAC de los identificadores de la máquina (replanteo 157). Sin ella, no hay ban por máquina.
+  AC_HWID_SALT: z.string().min(32).optional(),
   // La API la usa solo para subir las capturas del anticheat al bucket privado. También la usa el cron de las temporadas (scripts/season-tick.mts). Se declara para que el despliegue
   // falle temprano si viene mal formada.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),

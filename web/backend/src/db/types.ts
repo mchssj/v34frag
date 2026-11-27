@@ -5718,6 +5718,51 @@ isOneToOne: false
 "ac_admin_sessions":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_status"?: string }; Returns: Json
                            },
+"ac_admin_agent_config":
+{ Args: never; Returns: Json
+                           },
+"ac_admin_ban_machine":
+{ Args: { "p_reason": string,"p_session": string }; Returns: Json
+                           },
+"ac_admin_flag_review":
+{ Args: { "p_flag": number,"p_note"?: string }; Returns: undefined
+                           },
+"ac_admin_flags":
+{ Args: { "p_limit"?: number,"p_min_severity"?: number,"p_offset"?: number,"p_open"?: boolean }; Returns: Json
+                           },
+"ac_admin_hash_search":
+{ Args: { "p_sha256": string }; Returns: Json
+                           },
+"ac_admin_lift_machine":
+{ Args: { "p_ban": string,"p_reason"?: string }; Returns: undefined
+                           },
+"ac_admin_machine_accounts":
+{ Args: { "p_session": string }; Returns: Json
+                           },
+"ac_admin_machine_exception":
+{ Args: { "p_note"?: string,"p_session": string,"p_user": string }; Returns: undefined
+                           },
+"ac_admin_set_agent_config":
+{ Args: { "p": Json }; Returns: Json
+                           },
+"ac_admin_signature_add":
+{ Args: { "p_kinds": string[],"p_label": string,"p_name": string,"p_sha256": string,"p_verdict": string }; Returns: string
+                           },
+"ac_admin_signature_remove":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"ac_admin_signatures":
+{ Args: never; Returns: Json
+                           },
+"ac_aim_report":
+{ Args: { "p_map"?: string,"p_match_uid"?: string,"p_rows": Json,"p_token": string }; Returns: Json
+                           },
+"ac_screenshot_purged":
+{ Args: { "p_ids": string[] }; Returns: number
+                           },
+"ac_screenshot_retention_due":
+{ Args: { "p_limit"?: number }; Returns: Json
+                           },
 "ac_agent_unlink":
 { Args: { "p_access": string,"p_secret": string }; Returns: boolean
                            },
@@ -5725,7 +5770,7 @@ isOneToOne: false
 { Args: { "p_reason"?: string,"p_steam": string,"p_token": string }; Returns: boolean
                            },
 "ac_bridge_player":
-{ Args: { "p_in_mix"?: boolean,"p_ip": string,"p_match_uid"?: string,"p_steam": string,"p_token": string }; Returns: Json
+{ Args: { "p_in_mix"?: boolean,"p_ip": string,"p_match_uid"?: string,"p_port"?: number,"p_steam": string,"p_token": string }; Returns: Json
                            },
 "ac_can_review":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -5752,7 +5797,7 @@ isOneToOne: false
 { Args: { "p": string }; Returns: string
                            },
 "ac_heartbeat":
-{ Args: { "p_access": string,"p_ip": string,"p_secret": string,"p_version": string }; Returns: Json
+{ Args: { "p_access": string,"p_agent_sha"?: string,"p_game"?: Json,"p_hw"?: Json,"p_ip": string,"p_secret": string,"p_ts"?: number,"p_version": string }; Returns: Json
                            },
 "ac_ingest_processes":
 { Args: { "p_access": string,"p_events": Json,"p_secret": string,"p_session": string }; Returns: Json
@@ -5767,7 +5812,7 @@ isOneToOne: false
 { Args: { "p_device_code": string,"p_secret": string }; Returns: Json
                            },
 "ac_link_start":
-{ Args: { "p_device_name": string,"p_secret": string,"p_version": string }; Returns: Json
+{ Args: { "p_device_name": string,"p_hw"?: Json,"p_ip"?: string,"p_secret": string,"p_version": string }; Returns: Json
                            },
 "ac_public_status":
 { Args: { "p_player": string }; Returns: Json

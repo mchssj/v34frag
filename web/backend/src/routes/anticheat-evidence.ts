@@ -19,7 +19,8 @@ const MAX_JPEG = 5 * 1024 * 1024;
 
 const ProcessEvent = z.object({
   client_id: z.string().min(1).max(64),
-  kind: z.enum(['inventory', 'start', 'end']),
+  // module: DLL en el juego (155). handle, overlay, driver y game_file (156).
+  kind: z.enum(['inventory', 'start', 'end', 'module', 'handle', 'overlay', 'driver', 'game_file']),
   pid: z.number().int(),
   name: z.string().max(260),
   path: z.string().max(1024).optional(),
@@ -29,6 +30,7 @@ const ProcessEvent = z.object({
   note: z.string().max(64).optional(),
   started_at: z.iso.datetime().optional(),
   observed_at: z.iso.datetime(),
+  detail: z.record(z.string(), z.unknown()).optional().refine((d) => !d || JSON.stringify(d).length <= 1500, 'detail demasiado grande'),
 });
 const ProcessBatch = z.object({ session_id: z.uuid(), events: z.array(ProcessEvent).min(1).max(500) }).openapi('AcProcessBatch');
 const ProcessResult = z.object({ accepted: z.number().int(), rejected: z.number().int() }).openapi('AcProcessResult');
@@ -195,7 +197,7 @@ export const anticheatEvidence = createRouter();
 anticheatEvidence.openapi(processes, async (c) => {
   const b = c.req.valid('json');
   const sb = anonClient(c.var.config);
-  const r = mustHave(await sb.rpc('ac_ingest_processes', { p_secret: secret(c), p_access: agentToken(c), p_session: b.session_id, p_events: b.events }));
+  const r = mustHave(await sb.rpc('ac_ingest_processes', { p_secret: secret(c), p_access: agentToken(c), p_session: b.session_id, p_events: b.events as never }));
   const raw = await c.req.text();
   await appendChain(c, b.session_id, 'processes', await sha256Hex(raw), raw, null);
   return c.json(r as { accepted: number; rejected: number }, 200);
@@ -244,7 +246,7 @@ anticheatEvidence.openapi(verify, async (c) => {
   type Row = { seq: number; kind: string; item_sha: string; prev_hash: string; entry: string; entry_hash: string; signature: string; raw: string | null; ref_id: string | null };
   const chain = must(await c.var.sb.rpc('ac_admin_chain', { p_session: id })) as {
     public_key: string | null; entries: Row[];
-    screenshots: { id: string; sha256: string; storage_path: string; stored: boolean }[];
+    screenshots: { id: string; sha256: string; storage_path: string; stored: boolean; purged?: boolean }[];
     processes: { client_id: string; name: string; path: string | null; sha256: string | null }[];
   } | null;
   if (!chain) throw notFound('esa sesión');
@@ -282,6 +284,8 @@ anticheatEvidence.openapi(verify, async (c) => {
       if (e.ref_id) seenShots.add(e.ref_id);
       if (!shot) { bad('screenshot_deleted'); continue; }
       if (shot.sha256 !== e.item_sha) bad('screenshot_modified');
+      // Borrada a los 7 días (replanteo 156): falta el archivo, pero no es una alteración.
+      if (shot.purged) { missing.push({ seq: e.seq, problem: 'screenshot_expired' }); continue; }
       const file = await c.var.sb.storage.from('ac-evidence').download(shot.storage_path);
       if (file.error || !file.data) bad('file_missing');
       else if ((await sha256Hex(await file.data.arrayBuffer())) !== e.item_sha) bad('file_modified');

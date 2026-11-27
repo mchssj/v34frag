@@ -20,6 +20,34 @@ export type AcSession = {
   last_contact_at: string
   ended_at: string | null
   end_reason: string | null
+  open_flags?: number
+  max_severity?: number | null
+}
+
+export type AcEventKind =
+  | "inventory"
+  | "start"
+  | "end"
+  | "module"
+  | "handle"
+  | "overlay"
+  | "driver"
+  | "game_file"
+
+// Marcas (replanteo 156): hechos para revisar, no conclusiones.
+export type AcFlag = {
+  id: number
+  session_id?: string
+  rule: string
+  severity: 1 | 2 | 3
+  detail: Record<string, unknown>
+  created_at: string
+  reviewed_at: string | null
+  review_note: string | null
+  nick?: string
+  steam_id?: string
+  server_name?: string
+  started_at?: string
 }
 
 export type AcEvidence = {
@@ -33,10 +61,11 @@ export type AcEvidence = {
     height: number
     taken_at: string
     stored_at: string | null
+    purged_at?: string | null
     url: string | null
   }[]
   processes: {
-    kind: "inventory" | "start" | "end"
+    kind: AcEventKind
     pid: number
     name: string
     path: string | null
@@ -45,6 +74,7 @@ export type AcEvidence = {
     publisher: string | null
     note: string | null
     observed_at: string
+    detail?: Record<string, unknown> | null
   }[]
   requests: {
     id: string
@@ -52,6 +82,7 @@ export type AcEvidence = {
     status: string
     created_at: string
   }[]
+  flags?: AcFlag[]
 }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -130,4 +161,138 @@ export const openMixes = (minutes: number) =>
   call<{ open_until: string | null }>("/api/v1/admin/anticheat/open", {
     method: "POST",
     body: JSON.stringify({ minutes }),
+  })
+
+// ---------- panel del staff (replanteos 156 y 157) ----------
+
+export const flagsOptions = (open: boolean, minSeverity: number) =>
+  queryOptions({
+    queryKey: ["admin", "anticheat", "flags", open, minSeverity],
+    queryFn: () =>
+      call<{ items: AcFlag[] }>(
+        `/api/v1/admin/anticheat/flags?open=${open}&min_severity=${minSeverity}&limit=100`
+      ),
+    refetchOnWindowFocus: false,
+  })
+
+export const reviewFlag = (id: number, note: string) =>
+  call<undefined>(`/api/v1/admin/anticheat/flags/${id}/review`, {
+    method: "POST",
+    body: JSON.stringify(note.trim() ? { note: note.trim() } : {}),
+  })
+
+export type AcHashSearch = {
+  players: number
+  items: {
+    player_id: string
+    nick: string
+    steam_id: string
+    session_id: string
+    kind: AcEventKind
+    name: string
+    path: string | null
+    first_seen: string
+    times: number
+  }[]
+  signature: AcSignature | null
+}
+
+export const hashSearch = (sha256: string) =>
+  call<AcHashSearch>(`/api/v1/admin/anticheat/hash/${sha256}`)
+
+export type AcSignature = {
+  id: string
+  sha256: string | null
+  name: string | null
+  kinds: AcEventKind[] | null
+  verdict: "bad" | "good"
+  label: string
+  created_at: string
+}
+
+export const signaturesOptions = () =>
+  queryOptions({
+    queryKey: ["admin", "anticheat", "signatures"],
+    queryFn: () => call<{ items: AcSignature[] }>("/api/v1/admin/anticheat/signatures"),
+  })
+
+export const addSignature = (s: {
+  sha256?: string
+  name?: string
+  kinds?: AcEventKind[]
+  verdict: "bad" | "good"
+  label: string
+}) =>
+  call<{ id: string }>("/api/v1/admin/anticheat/signatures", {
+    method: "POST",
+    body: JSON.stringify(s),
+  })
+
+export const removeSignature = (id: string) =>
+  call<undefined>(`/api/v1/admin/anticheat/signatures/${id}`, { method: "DELETE" })
+
+export type AcAgentConfig = {
+  agent_config: {
+    handles?: boolean
+    overlays?: boolean
+    drivers?: boolean
+    game_files?: boolean
+    handles_every?: number
+    overlays_every?: number
+    modules_every?: number
+    files?: string[]
+  }
+  agent_latest: { version: string; url: string; sha256: string } | null
+  agent_min_version: string | null
+  agent_hashes: string[]
+  capture_min_s: number
+  capture_max_s: number
+  screenshot_retention_days: number
+  retention_days: number
+}
+
+export const agentConfigOptions = () =>
+  queryOptions({
+    queryKey: ["admin", "anticheat", "config"],
+    queryFn: () => call<AcAgentConfig>("/api/v1/admin/anticheat/config"),
+  })
+
+export const setAgentConfig = (patch: Partial<AcAgentConfig>) =>
+  call<AcAgentConfig>("/api/v1/admin/anticheat/config", {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  })
+
+export type AcMachine = {
+  machine_id: string | null
+  banned: boolean
+  bans: { id: string; reason: string; created_at: string; lifted_at: string | null }[]
+  accounts: { user_id: string; nick: string | null; steam_id: string | null; last_seen_at: string; evasion: boolean }[]
+  attempts: { stage: string; ip: string | null; steam_id: string | null; created_at: string }[]
+  exceptions: { user_id: string; nick: string | null; note: string | null; created_at: string }[]
+}
+
+export const machineOptions = (sessionId: string) =>
+  queryOptions({
+    queryKey: ["admin", "anticheat", "machine", sessionId],
+    queryFn: () => call<AcMachine>(`/api/v1/admin/anticheat/sessions/${sessionId}/machine`),
+    refetchOnWindowFocus: false,
+  })
+
+export const banMachine = (sessionId: string, reason: string) =>
+  call<{ id: string }>(`/api/v1/admin/anticheat/sessions/${sessionId}/ban-machine`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  })
+
+export const liftMachineBan = (banId: string) =>
+  call<undefined>(`/api/v1/admin/anticheat/machine-bans/${banId}/lift`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  })
+
+export const addMachineException = (sessionId: string, userId: string, note: string) =>
+  call<undefined>(`/api/v1/admin/anticheat/sessions/${sessionId}/machine-exception`, {
+    method: "POST",
+    body: JSON.stringify({ user_id: userId, ...(note.trim() ? { note: note.trim() } : {}) }),
   })

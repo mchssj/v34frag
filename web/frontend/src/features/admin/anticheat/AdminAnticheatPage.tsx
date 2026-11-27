@@ -28,7 +28,18 @@ import { fmtDate } from "@/features/admin/lib/format"
 import { FilterChips } from "@/components/brand/FilterChips"
 import { HEAD_CELL as headCell } from "@/components/data-table/DataTable"
 import {
+  AgentTab,
+  FlagList,
+  FlagsTab,
+  HashLink,
+  MachinePanel,
+  OpenHashContext,
+  SignaturesTab,
+  severityTone,
+} from "@/features/admin/anticheat/AdminAnticheatTools"
+import {
   AdminHeader,
+  AdminTabs,
   Dot,
   EmptyState,
   PanelSection,
@@ -101,7 +112,9 @@ function Integrity({ session }: { session: AcSession }) {
       </div>
       {hold.isSuccess && (
         <p className="text-xs text-muted-foreground">
-          {hold.variables ? "No vence a los 30 días." : "Vence a los 30 días."}
+          {hold.variables
+            ? "No vence: tampoco se borran sus capturas."
+            : "Vence como las demás: las capturas a los 7 días y el resto a los 30."}
         </p>
       )}
       {result && (
@@ -141,18 +154,51 @@ function Card({ children }: { children: ReactNode }) {
   )
 }
 
+type Tab = "sessions" | "flags" | "signatures" | "agent"
+
 export function AdminAnticheatPage() {
+  const [tab, setTab] = useState<Tab>("sessions")
+  const [hash, setHash] = useState<string | undefined>()
+  // Un hash de la evidencia lleva a "Firmas y hashes" con la búsqueda hecha.
+  const openHash = (sha: string) => {
+    setHash(sha)
+    setTab("signatures")
+  }
+  return (
+    <OpenHashContext.Provider value={openHash}>
+      <div className="flex flex-col gap-4 p-4">
+        <AdminHeader
+          title="Anticheat"
+          subtitle="Hechos observados para revisar. El origen no es verificable: la aplicación corre en el equipo del jugador."
+          action={<OpenMixes />}
+        />
+        <AdminTabs
+          label="Secciones del anticheat"
+          value={tab}
+          onChange={setTab}
+          tabs={[
+            { key: "sessions", label: "Sesiones" },
+            { key: "flags", label: "Marcas" },
+            { key: "signatures", label: "Firmas y hashes" },
+            { key: "agent", label: "Agente" },
+          ]}
+        />
+        {tab === "sessions" && <Sessions />}
+        {tab === "flags" && <FlagsTab />}
+        {tab === "signatures" && <SignaturesTab hash={hash} />}
+        {tab === "agent" && <AgentTab />}
+      </div>
+    </OpenHashContext.Provider>
+  )
+}
+
+function Sessions() {
   const [status, setStatus] = useState<AcSession["status"] | undefined>("open")
   const [picked, setPicked] = useState<AcSession | null>(null)
   const sessions = useQuery(sessionsOptions(status))
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <AdminHeader
-        title="Anticheat"
-        subtitle="Hechos observados para revisar. El origen no es verificable: la aplicación corre en el equipo del jugador."
-        action={<OpenMixes />}
-      />
+    <>
       <FilterChips
         label="Estado"
         value={status}
@@ -183,6 +229,7 @@ export function AdminAnticheatPage() {
                     <TableHead className={headCell}>Jugador</TableHead>
                     <TableHead className={headCell}>Servidor</TableHead>
                     <TableHead className={headCell}>Estado</TableHead>
+                    <TableHead className={headCell}>Marcas</TableHead>
                     <TableHead className={headCell}>Inicio</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -201,6 +248,16 @@ export function AdminAnticheatPage() {
                           <Dot tone={STATUS[s.status].tone} />
                           {STATUS[s.status].label}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        {s.open_flags ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Dot tone={severityTone(s.max_severity)} />
+                            {s.open_flags}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>{fmtDate(s.started_at)}</TableCell>
                     </TableRow>
@@ -222,7 +279,7 @@ export function AdminAnticheatPage() {
           )
         }
       />
-    </div>
+    </>
   )
 }
 
@@ -250,7 +307,17 @@ function Evidence({ session }: { session: AcSession }) {
   if (evidence.isPending) return <Skeleton className="h-64 w-full" />
   const { screenshots, processes, requests } = evidence.data
   // Lo inesperado primero, sin juzgar: un dato que falta no es un indicio.
-  const started = processes.filter((p) => p.kind !== "inventory")
+  const flags = evidence.data.flags ?? []
+  const started = processes.filter((p) => p.kind === "start" || p.kind === "end")
+  const modules = processes.filter((p) => p.kind === "module")
+  const handles = processes.filter((p) => p.kind === "handle")
+  const overlays = processes.filter((p) => p.kind === "overlay")
+  const gameFiles = processes.filter((p) => p.kind === "game_file")
+  // Los drivers firmados por Microsoft son cientos: se muestran solo los demás.
+  const drivers = processes.filter((p) => p.kind === "driver")
+  const oddDrivers = drivers.filter(
+    (p) => p.signature !== "valid" || !(p.publisher ?? "").startsWith("Microsoft")
+  )
 
   return (
     <Card>
@@ -261,12 +328,29 @@ function Evidence({ session }: { session: AcSession }) {
         </p>
       </PanelSection>
 
+      <PanelSection
+        title={`Marcas (${flags.filter((f) => !f.reviewed_at).length} sin revisar)`}
+      >
+        <FlagList
+          flags={flags}
+          onReviewed={() =>
+            void queryClient.invalidateQueries({
+              queryKey: evidenceOptions(session.id).queryKey,
+            })
+          }
+        />
+      </PanelSection>
+
       <Integrity session={session} />
+
+      <PanelSection title="Máquina">
+        <MachinePanel sessionId={session.id} />
+      </PanelSection>
 
       {session.status === "open" && (
         <PanelSection title="Pedir una captura">
           <p className="text-xs text-muted-foreground">
-            El jugador ve el aviso. Solo se toma con el juego al frente.
+            El jugador no ve ningún aviso. Solo se toma con el juego al frente.
           </p>
           <div className="flex gap-2">
             <Input
@@ -352,8 +436,28 @@ function Evidence({ session }: { session: AcSession }) {
       >
         <ProcessList items={started} />
       </PanelSection>
+      <PanelSection title={`Acceso a la memoria del juego (${handles.length})`}>
+        <ProcessList items={handles} />
+      </PanelSection>
+      <PanelSection title={`Overlays encima del juego (${overlays.length})`}>
+        <ProcessList items={overlays} />
+      </PanelSection>
+      <PanelSection title={`Archivos del juego (${gameFiles.length})`}>
+        <ProcessList items={gameFiles} />
+      </PanelSection>
       <PanelSection
-        title={`Inventario inicial (${processes.length - started.length})`}
+        title={`Drivers que no son de Microsoft (${oddDrivers.length} de ${drivers.length})`}
+      >
+        <ProcessList items={oddDrivers} />
+      </PanelSection>
+      <PanelSection title={`Módulos del juego (${modules.length})`}>
+        <p className="text-xs text-muted-foreground">
+          Las DLL que cargó CMLauncher.exe durante la sesión.
+        </p>
+        <ProcessList items={modules} />
+      </PanelSection>
+      <PanelSection
+        title={`Inventario inicial (${processes.filter((p) => p.kind === "inventory").length})`}
       >
         <ProcessList items={processes.filter((p) => p.kind === "inventory")} />
       </PanelSection>
@@ -374,9 +478,21 @@ function ProcessList({
     publisher: string | null
     note: string | null
     observed_at: string
+    detail?: Record<string, unknown> | null
   }[]
 }) {
   if (items.length === 0) return <EmptyState>Sin eventos.</EmptyState>
+  // Lo que agrega cada tipo nuevo (replanteo 156), en palabras.
+  const extra = (d: Record<string, unknown> | null | undefined) => {
+    if (!d) return ""
+    const parts: string[] = []
+    if (typeof d.access === "string") parts.push(`permisos ${d.access}`)
+    if (d.parent === true) parts.push("es el programa que abrió el juego")
+    if (typeof d.class === "string") parts.push(`ventana ${d.class}`)
+    if (typeof d.cover === "number") parts.push(`tapa el ${Math.round(d.cover * 100)} % del juego`)
+    if (typeof d.service === "string") parts.push(`servicio ${d.service}`)
+    return parts.join(" · ")
+  }
   return (
     <ul className="flex max-h-80 flex-col gap-1 overflow-auto text-xs">
       {items.map((p, i) => (
@@ -396,6 +512,8 @@ function ProcessList({
             {p.publisher ? ` · ${p.publisher}` : ""}
             {p.note ? ` · Dato no disponible: ${p.note}` : ""}
           </div>
+          {extra(p.detail) && <div className="text-muted-foreground">{extra(p.detail)}</div>}
+          {p.sha256 && <HashLink sha256={p.sha256} />}
         </li>
       ))}
     </ul>

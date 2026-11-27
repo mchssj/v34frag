@@ -1,8 +1,9 @@
-// Procesos y capturas, solo mientras hay una sesión abierta. Lo pendiente queda en una cola local y se sube aunque la sesión ya haya
+// Procesos, módulos del juego (CMLauncher.exe) y capturas, solo mientras hay una sesión abierta. Lo pendiente queda en una cola local y se sube aunque la sesión ya haya
 // cerrado, pero no se recopila nada nuevo. Sin leer memoria, sin inyectar y sin hooks: solo APIs de consulta.
 // Captura: Desktop Duplication y, si falla, BitBlt de la pantalla. BitBlt de la ventana queda prohibido: devuelve imágenes congeladas
 // (docs/bitacora/2026-10-30-anticheat-captura).
 #include "core.h"
+#include "obf.h"
 #include <bcrypt.h>
 #include <d3d11.h>
 #include <dxgi1_2.h>
@@ -17,6 +18,7 @@
 #include <map>
 #include <mutex>
 #include <random>
+#include <set>
 #include <vector>
 
 #pragma comment(lib, "bcrypt")
@@ -25,7 +27,7 @@
 #pragma comment(lib, "wintrust")
 
 namespace {
-struct Proc { DWORD pid; std::wstring name, path, sha, sig, pub, note; std::string started; };
+struct Proc { DWORD pid; std::wstring name, path, sha, sig, pub, note; std::string started, detail; };
 struct FileInfo { std::wstring sha, sig, pub, note; };
 
 std::mutex g_mu;
@@ -340,6 +342,7 @@ void QueueProcesses(const std::wstring& session, const std::vector<std::pair<con
             Field(body, "signature", p.sig);
             Field(body, "publisher", p.pub);
             Field(body, "note", p.note);
+            if (!p.detail.empty()) body += ",\"detail\":" + p.detail;  // Objeto JSON ya armado (replanteo 156)
             if (!p.started.empty()) body += ",\"started_at\":\"" + p.started + "\"";
             Field(body, "observed_at", now);
             body += "}";
@@ -349,6 +352,32 @@ void QueueProcesses(const std::wstring& session, const std::vector<std::pair<con
         ChainItem(session, L"processes", ShaOf(body.data(), body.size()), file);
         WriteFileAll(Spool() + L"\\" + file + L".proc", body.data(), body.size());
     }
+}
+
+// Módulos (DLL) cargados en el juego, por ruta. Toolhelp es una API de consulta: no inyecta nada. Si Windows no deja
+// (juego elevado, o protegido por el EAC de ClientMod), vuelve vacío y `denied` en true.
+std::map<std::wstring, Proc> Modules(DWORD pid, bool& denied) {
+    std::map<std::wstring, Proc> out;
+    denied = false;
+    HANDLE snap = INVALID_HANDLE_VALUE;
+    for (int i = 0; i < 3 && snap == INVALID_HANDLE_VALUE; i++) {
+        snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
+        if (snap == INVALID_HANDLE_VALUE && GetLastError() != ERROR_BAD_LENGTH) break;  // ERROR_BAD_LENGTH: el juego cargaba algo, se reintenta
+    }
+    if (snap == INVALID_HANDLE_VALUE) { denied = GetLastError() == ERROR_ACCESS_DENIED || GetLastError() == ERROR_PARTIAL_COPY; return out; }
+    MODULEENTRY32W m{};
+    m.dwSize = sizeof(m);
+    for (BOOL ok = Module32FirstW(snap, &m); ok; ok = Module32NextW(snap, &m)) {
+        Proc p;
+        p.pid = pid;
+        p.name = m.szModule;
+        p.path = m.szExePath;
+        std::wstring key = p.path;
+        std::transform(key.begin(), key.end(), key.begin(), ::towlower);
+        out.emplace(key, std::move(p));
+    }
+    CloseHandle(snap);
+    return out;
 }
 
 void Enrich(Proc& p) {
@@ -411,8 +440,8 @@ bool GrabDuplication(RECT rc, Shot& out) {
                     int x0 = std::clamp<int>(rc.left, 0, (int)d.Width), y0 = std::clamp<int>(rc.top, 0, (int)d.Height);
                     int w = std::min<int>(rc.right, (int)d.Width) - x0, h = std::min<int>(rc.bottom, (int)d.Height) - y0;
                     const BYTE* px = (const BYTE*)m.pData + (long long)y0 * m.RowPitch + (long long)x0 * 4;
-                    if (w > 0 && h > 0 && !LooksBlack(px, w, h, (int)m.RowPitch) && UiEncodeJpeg(px, w, h, (int)m.RowPitch, 70, out.jpeg)) {
-                        out.w = w; out.h = h; out.method = L"desktop_duplication"; ok = true;
+                    if (w > 0 && h > 0 && !LooksBlack(px, w, h, (int)m.RowPitch) && UiEncodeJpeg(px, w, h, (int)m.RowPitch, 60, out.jpeg, &out.w, &out.h)) {
+                        out.method = L"desktop_duplication"; ok = true;
                     }
                     ctx->Unmap(st, 0);
                 }
@@ -436,8 +465,8 @@ bool GrabScreen(RECT rc, Shot& out) {
     bool ok = false;
     if (bmp) {
         HGDIOBJ old = SelectObject(mem, bmp);
-        if (BitBlt(mem, 0, 0, w, h, screen, rc.left, rc.top, SRCCOPY) && !LooksBlack((BYTE*)bits, w, h, w * 4) && UiEncodeJpeg((BYTE*)bits, w, h, w * 4, 70, out.jpeg)) {
-            out.w = w; out.h = h; out.method = L"bitblt_screen"; ok = true;
+        if (BitBlt(mem, 0, 0, w, h, screen, rc.left, rc.top, SRCCOPY) && !LooksBlack((BYTE*)bits, w, h, w * 4) && UiEncodeJpeg((BYTE*)bits, w, h, w * 4, 60, out.jpeg, &out.w, &out.h)) {
+            out.method = L"bitblt_screen"; ok = true;
         }
         SelectObject(mem, old);
         DeleteObject(bmp);
@@ -449,16 +478,38 @@ bool GrabScreen(RECT rc, Shot& out) {
 
 enum class CapResult { Ok, NotForeground, Failed };
 
-// La ventana del juego, y solo con ella al frente: así no se captura nada privado por un Alt+Tab o una notificación.
+// La ventana visible más grande del proceso CMLauncher.exe. Por proceso y no por título: otra ventana con el mismo nombre no cuenta.
+HWND GameWindow() {
+    if (!g_opt.gameTitle.empty()) return FindWindowW(nullptr, g_opt.gameTitle.c_str());  // Solo en la versión de pruebas
+    struct Find { DWORD pid; HWND best; LONG area; } f{GameScan().pid, nullptr, 0};
+    if (!f.pid) return nullptr;
+    EnumWindows([](HWND h, LPARAM l) -> BOOL {
+        auto* f = (Find*)l;
+        DWORD pid = 0;
+        GetWindowThreadProcessId(h, &pid);
+        RECT r{};
+        if (pid == f->pid && IsWindowVisible(h) && GetClientRect(h, &r) && r.right * r.bottom > f->area) { f->best = h; f->area = r.right * r.bottom; }
+        return TRUE;
+    }, (LPARAM)&f);
+    return f.best;
+}
+
+// Solo con el juego al frente: así no se captura el escritorio después de un Alt+Tab.
 CapResult Capture(Shot& out) {
-    HWND w = FindWindowW(nullptr, g_opt.gameTitle.c_str());
+    HWND w = GameWindow();
     RECT c{};
     if (!w || !GetClientRect(w, &c) || c.right < g_opt.minWidth) return CapResult::NotForeground;
     if (!g_opt.ignoreForeground && GetForegroundWindow() != w) return CapResult::NotForeground;
-    POINT p{0, 0};
-    ClientToScreen(w, &p);
-    RECT rc{p.x, p.y, p.x + c.right, p.y + c.bottom};
-    if (GrabDuplication(rc, out) || GrabScreen(rc, out)) return CapResult::Ok;
+    // Todo el monitor donde está el juego, no solo su ventana: así salen los overlays externos (Kyan, 2026-11-27).
+    MONITORINFO mi{sizeof(mi)};
+    if (!GetMonitorInfoW(MonitorFromWindow(w, MONITOR_DEFAULTTONEAREST), &mi)) return CapResult::Failed;
+    RECT rc = mi.rcMonitor;
+    // Desktop Duplication usa la salida 0 con coordenadas propias: sirve solo para el monitor principal. En otro, BitBlt de la pantalla.
+    if (mi.dwFlags & MONITORINFOF_PRIMARY) {
+        RECT local{0, 0, rc.right - rc.left, rc.bottom - rc.top};
+        if (GrabDuplication(local, out)) return CapResult::Ok;
+    }
+    if (GrabScreen(rc, out)) return CapResult::Ok;
     return CapResult::Failed;
 }
 
@@ -478,6 +529,47 @@ void QueueShot(const std::wstring& session, const std::wstring& request, const S
     WriteFileAll(Spool() + L"\\" + id + L".meta", q.data(), q.size() * sizeof(wchar_t));
 }
 
+// La clave se registra una vez por vinculación, antes de lo primero que firma (el latido, desde la 156). 409: ya estaba.
+bool EnsureKey(const std::wstring& token) {
+    if (g_keySent) return true;
+    auto k = HttpSend(g_api, OBF(L"/api/v1/anticheat/key").c_str(), "{\"public_key\":\"" + PublicKeyB64() + "\"}", L"application/json", token);
+    if (k.status == 204 || k.status == 409) { g_keySent = true; return true; }
+    if (k.status != 401 && k.status != 403) Log(L"clave del equipo: la API respondió " + std::to_wstring(k.status));
+    return false;
+}
+
+std::mutex g_cfgMu;
+// Hasta que llegue la configuración remota: los archivos de ClientMod en C:\CSSv34_ClientMod (Kyan, 2026-11-27).
+AgentConfig DefaultConfig() {
+    AgentConfig c;
+    c.files = {OBF(L"CMLauncher.exe"), OBF(L"ClientModEAC.exe"), OBF(L"bin\\clientmod.dll"), OBF(L"bin\\clientmod_client.dll"),
+               OBF(L"bin\\clientmod_game.dll"), OBF(L"bin\\clientmod_physics.dll"), OBF(L"bin\\clientmod_vtex.dll"),
+               OBF(L"bin_clientmod\\ClientModNetwork.dll")};
+    return c;
+}
+AgentConfig g_cfg = DefaultConfig();
+AgentConfig Config() {
+    std::lock_guard<std::mutex> l(g_cfgMu);
+    return g_cfg;
+}
+
+// Hallazgos de detect.cpp como eventos de la sesión, con hash y firma. key evita repetir lo mismo en una sesión.
+void QueueFindings(const std::wstring& session, const wchar_t* kind, std::vector<DetectItem> items, std::set<std::wstring>* seen) {
+    std::vector<std::pair<const wchar_t*, Proc>> evs;
+    for (auto& d : items) {
+        if (seen && !seen->insert(std::wstring(kind) + L"|" + d.key).second) continue;
+        Proc p;
+        p.pid = d.pid;
+        p.name = d.name.substr(0, 260);
+        p.path = d.path;
+        p.note = d.note;
+        p.detail = d.detail;
+        Enrich(p);
+        evs.push_back({kind, p});
+    }
+    if (!evs.empty()) QueueProcesses(session, evs);
+}
+
 // Sube la cola. Sin red o con un error del servidor se conserva; lo que el servidor rechaza se descarta.
 void Flush() {
     std::wstring dir = Spool();
@@ -495,12 +587,7 @@ void Flush() {
     }
     std::wstring token = Widen(LoadSecret(L"access"));
     if (token.empty()) return;
-    // La clave se registra una vez por vinculación, antes de enviar lo primero que firma.
-    if (!g_keySent) {
-        auto k = HttpSend(g_api, L"/api/v1/anticheat/key", "{\"public_key\":\"" + PublicKeyB64() + "\"}", L"application/json", token);
-        if (k.status == 204) g_keySent = true;
-        else { if (k.status != 401 && k.status != 403) Log(L"clave del equipo: la API respondió " + std::to_wstring(k.status)); return; }
-    }
+    if (!EnsureKey(token)) return;
     int sentProc = 0;
     for (const auto& n : names) {
         if (WaitForSingleObject(g_quit, 0) == WAIT_OBJECT_0) return;
@@ -543,7 +630,41 @@ void Loop() {
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
     std::wstring current;
     std::map<std::wstring, Proc> known;
-    ULONGLONG nextScan = 0, nextShot = 0, nextFlush = 0;
+    std::map<std::wstring, Proc> mods;  // Módulos ya enviados del juego actual
+    DWORD gamePid = 0, filesPid = 0;
+    bool modsDenied = false;
+    std::set<std::wstring> seen;  // Handles, overlays, drivers y archivos ya enviados en esta sesión
+    ULONGLONG nextScan = 0, nextShot = 0, nextFlush = 0, nextMods = 0, nextHandles = 0, nextOverlays = 0;
+    // Manda los módulos nuevos del juego. Si cambió el proceso (se reabrió el juego), empieza de cero.
+    auto scanModules = [&](const std::wstring& session) {
+        DWORD pid = GameScan().pid;
+        if (pid != gamePid) { gamePid = pid; mods.clear(); modsDenied = false; }
+        if (!pid) return;
+        bool denied = false;
+        auto cur = Modules(pid, denied);
+        std::vector<std::pair<const wchar_t*, Proc>> evs;
+        if (denied) {
+            if (!modsDenied) {
+                Proc p;
+                p.pid = pid;
+                p.name = OBF(L"CMLauncher.exe");
+                p.note = L"access_denied";  // Windows no deja listar los módulos: no es indicio de nada
+                evs.push_back({L"module", p});
+                Log(L"módulos del juego: acceso denegado");
+            }
+            modsDenied = true;
+        }
+        for (auto& [k, p] : cur) {
+            if (mods.count(k)) continue;
+            Enrich(p);
+            evs.push_back({L"module", p});
+            mods.emplace(k, p);
+        }
+        if (!evs.empty()) {
+            QueueProcesses(session, evs);
+            Log(L"módulos del juego: " + std::to_wstring(evs.size()) + L" nuevos");
+        }
+    };
     auto schedule = [&](int mn, int mx) { return GetTickCount64() + std::uniform_int_distribution<int>(mn, std::max(mn, mx))(g_rng) * 1000ULL; };
 
     while (WaitForSingleObject(g_quit, 500) != WAIT_OBJECT_0) {
@@ -560,6 +681,10 @@ void Loop() {
         if (session != current) {
             current = session;
             known.clear();
+            mods.clear();
+            seen.clear();
+            gamePid = filesPid = 0;
+            nextMods = nextHandles = nextOverlays = 0;
             g_files.clear();
             if (!session.empty()) {
                 // Inventario inicial
@@ -568,6 +693,7 @@ void Loop() {
                 for (auto& [k, p] : known) { Enrich(p); evs.push_back({L"inventory", p}); }
                 QueueProcesses(session, evs);
                 Log(L"inventario inicial: " + std::to_wstring(evs.size()) + L" procesos");
+                if (Config().drivers) QueueFindings(session, L"driver", DetectDrivers(), &seen);
                 nextScan = GetTickCount64() + 1000;
                 nextShot = schedule(mn, mx);
             } else {
@@ -590,8 +716,26 @@ void Loop() {
                 known = std::move(cur);
                 if (!evs.empty()) QueueProcesses(session, evs);
             }
+            AgentConfig cfg = Config();
+            if (now >= nextMods) {
+                nextMods = now + std::max(2, cfg.modulesEvery) * 1000ULL;
+                scanModules(session);
+                // Los archivos del juego, una vez por cada vez que se abre el juego.
+                if (cfg.gameFiles && gamePid && gamePid != filesPid) {
+                    filesPid = gamePid;
+                    QueueFindings(session, L"game_file", DetectGameFiles(gamePid, cfg.files), nullptr);
+                }
+            }
+            if (cfg.handles && now >= nextHandles) {
+                nextHandles = now + std::max(3, cfg.handlesEvery) * 1000ULL;
+                QueueFindings(session, L"handle", DetectHandles(GameScan().pid), &seen);
+            }
+            if (cfg.overlays && now >= nextOverlays) {
+                nextOverlays = now + std::max(2, cfg.overlaysEvery) * 1000ULL;
+                QueueFindings(session, L"overlay", DetectOverlays(GameScan().pid), &seen);
+            }
+            // Sin aviso al jugador (Kyan, 2026-11-27): si se entera, cierra la trampa antes de la captura.
             for (const auto& req : requests) {
-                AcNotice(L"El staff pidió una captura del juego.");
                 Shot s;
                 CapResult r = Capture(s);
                 Log(std::wstring(L"captura solicitada: ") + (r == CapResult::Ok ? L"tomada" : r == CapResult::NotForeground ? L"juego no al frente" : L"falló"));
@@ -615,6 +759,42 @@ void Loop() {
 }  // namespace
 
 static std::thread* g_thread = nullptr;
+
+GameState GameScan() {
+    GameState g;
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) return g;
+    PROCESSENTRY32W e{};
+    e.dwSize = sizeof(e);
+    static const std::wstring game = OBF(L"CMLauncher.exe"), hl2 = OBF(L"hl2.exe");
+    for (BOOL ok = Process32FirstW(snap, &e); ok; ok = Process32NextW(snap, &e)) {
+        if (_wcsicmp(e.szExeFile, game.c_str()) == 0) { g.clientmod = true; if (!g.pid) g.pid = e.th32ProcessID; }
+        else if (_wcsicmp(e.szExeFile, hl2.c_str()) == 0) g.hl2 = true;
+    }
+    CloseHandle(snap);
+    return g;
+}
+
+std::wstring FileSha256(const std::wstring& path) {
+    HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
+    if (f == INVALID_HANDLE_VALUE) return {};
+    std::wstring h = Sha256([&](BYTE* b, DWORD n) { DWORD r = 0; return ReadFile(f, b, n, &r, nullptr) ? r : 0; });
+    CloseHandle(f);
+    return h;
+}
+
+std::string SignText(const std::string& text) { return Sign(text); }
+
+std::wstring TextSha256(const std::string& data) { return ShaOf(data.data(), data.size()); }
+
+AgentConfig EvidenceCurrentConfig() { return Config(); }
+
+bool EvidenceEnsureKey(const std::wstring& token) { return EnsureKey(token); }
+
+void EvidenceConfigure(const AgentConfig& c) {
+    std::lock_guard<std::mutex> l(g_cfgMu);
+    g_cfg = c;
+}
 
 void EvidenceStart(const std::wstring& api, const EvidenceOptions& opt) {
     g_api = api;

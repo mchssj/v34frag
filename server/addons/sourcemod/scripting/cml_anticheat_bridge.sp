@@ -15,7 +15,7 @@
 #include <sourcemod>
 #include <system2>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.2.0"
 #define KICK_GRACE     20.0
 #define RECHECK        60.0
 #define STALE_SECONDS  300
@@ -138,8 +138,20 @@ bool Check(int client)
 #if defined BRIDGE_DEBUG
 	GetConVarString(FindConVar("cml_ac_debug_ip"), ip, sizeof(ip));
 #endif
+	// El puerto que ve el servidor (replanteo 156): si no es ninguno de los del juego en la PC del agente, es una marca leve.
+	char full[64];
+	int port = 0;
+	if (GetClientIP(client, full, sizeof(full), false))
+	{
+		int colon = FindCharInString(full, ':', true);
+		if (colon != -1)
+			port = StringToInt(full[colon + 1]);
+	}
 	g_cvToken.GetString(token, sizeof(token));
-	Format(body, sizeof(body), "{\"p_token\":\"%s\",\"p_steam\":\"%s\",\"p_ip\":\"%s\",\"p_in_mix\":%s}", token, id, ip, g_cvMix.BoolValue ? "true" : "false");
+	if (port > 0)
+		Format(body, sizeof(body), "{\"p_token\":\"%s\",\"p_steam\":\"%s\",\"p_ip\":\"%s\",\"p_in_mix\":%s,\"p_port\":%d}", token, id, ip, g_cvMix.BoolValue ? "true" : "false", port);
+	else
+		Format(body, sizeof(body), "{\"p_token\":\"%s\",\"p_steam\":\"%s\",\"p_ip\":\"%s\",\"p_in_mix\":%s}", token, id, ip, g_cvMix.BoolValue ? "true" : "false");
 	Post("ac_bridge_player", body, OnPlayerResponse, GetClientUserId(client));
 	return true;
 }
@@ -190,22 +202,43 @@ public void OnPlayerResponse(bool success, const char[] error, System2HTTPReques
 		g_bWarned[client] = false;
 		return;
 	}
-	Enforce(client, "sin sesión del anticheat");
+	// Al jugador no se le dice qué se detectó (Kyan, 2026-11-27): solo un código que lee el staff. El motivo va al log.
+	//   AC-1: sin agente o sin sesión. AC-2: el agente no ve el juego. AC-3: un hl2.exe abierto.
+	//   AC-4: el agente está modificado o es una versión vieja. AC-5: la máquina está baneada.
+	if (StrContains(content, "machine_banned") != -1)
+		Enforce(client, "machine_banned", "AC-5", true);
+	else if (StrContains(content, "agent_modified") != -1)
+		Enforce(client, "agent_modified", "AC-4", true);
+	else if (StrContains(content, "agent_outdated") != -1)
+		Enforce(client, "agent_outdated", "AC-4", true);
+	else if (StrContains(content, "hl2_detected") != -1)
+		Enforce(client, "hl2_detected", "AC-3", true);
+	else if (StrContains(content, "game_not_seen") != -1)
+		Enforce(client, "game_not_seen", "AC-2", false);
+	else
+		Enforce(client, "sin sesión del anticheat", "AC-1", false);
 }
 
-void Enforce(int client, const char[] why)
+// always: expulsa aunque un admin haya abierto los mixes (hl2.exe, Kyan, 2026-11-26).
+void Enforce(int client, const char[] why, const char[] code = "AC-1", bool always = false)
 {
-	if (MixesOpen())
+	if (MixesOpen() && !always)
 		return;
 	if (!g_bWarned[client])
 	{
 		g_bWarned[client] = true;
-		PrintToChat(client, "\x04[CMLeague]\x01 Para jugar este mix abre CMLeague Anticheat y vincula tu cuenta. Tienes %d segundos.", RoundToFloor(KICK_GRACE));
+		if (StrEqual(code, "AC-1"))
+			PrintToChat(client, "\x04[CMLeague]\x01 Para jugar este mix abre CMLeague Anticheat y vincula tu cuenta. Tienes %d segundos.", RoundToFloor(KICK_GRACE));
+		else
+			PrintToChat(client, "\x04[CMLeague]\x01 CMLeague Anticheat no te deja jugar (%s). Tienes %d segundos.", code, RoundToFloor(KICK_GRACE));
 		CreateTimer(KICK_GRACE, Timer_Recheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		return;
 	}
-	LogMessage("%L expulsado del mix: %s.", client, why);
-	KickClient(client, "Para jugar mixes necesitas CMLeague Anticheat abierto y vinculado (cmleague.lat)");
+	LogMessage("%L expulsado: %s (%s).", client, why, code);
+	if (StrEqual(code, "AC-1"))
+		KickClient(client, "Para jugar mixes necesitas CMLeague Anticheat abierto y vinculado (cmleague.lat)");
+	else
+		KickClient(client, "CMLeague Anticheat no te deja jugar (%s). Si crees que es un error, habla con el staff", code);
 }
 
 void OnServiceDown(int client)

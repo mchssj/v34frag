@@ -73,9 +73,16 @@ function VincularPage() {
             Aprobar este equipo
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            Durante tus sesiones en servidores de CMLeague, la aplicación envía
-            capturas del juego y la lista de programas abiertos. El staff las
-            revisa y se guardan 30 días.
+            {/* Sin decir qué hace el anticheat (Kyan, 2026-11-27). */}
+            Al aprobar, aceptas los{" "}
+            <a href="/terminos" className="underline">
+              términos
+            </a>{" "}
+            y la{" "}
+            <a href="/privacidad" className="underline">
+              política de privacidad
+            </a>
+            .
           </p>
         </>
       )}

@@ -25699,7 +25699,7 @@ export interface components {
             events: {
                 client_id: string;
                 /** @enum {string} */
-                kind: "inventory" | "start" | "end";
+                kind: "inventory" | "start" | "end" | "module";
                 pid: number;
                 name: string;
                 path?: string;

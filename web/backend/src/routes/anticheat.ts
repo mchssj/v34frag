@@ -27,6 +27,7 @@ import {
   Tokens,
 } from '../schemas/anticheat';
 import { bearer, errorResponses, json } from '../schemas/common';
+import { hashMachine, heartbeatText, signatureOk } from '../services/anticheat';
 import { resolvePlayer } from '../services/players';
 
 // Anticheat FRAG, etapa 1 (plan docs/bitacora/2026-10-30-anticheat-backend, replanteo 39). El agente entra con un código que
@@ -54,7 +55,7 @@ const link = createRoute({
   summary: 'Empezar la vinculación del agente',
   description: 'Devuelve el código y la página que el agente abre en el navegador. Vale 10 minutos.',
   request: { body: { required: true, ...json(LinkBody) } },
-  responses: { 201: { description: 'Código', ...json(LinkStart) }, ...errorResponses(400, 429) },
+  responses: { 201: { description: 'Código', ...json(LinkStart) }, ...errorResponses(400, 403, 429) },
 });
 const claim = createRoute({
   method: 'post', path: '/api/v1/anticheat/link/claim', tags: ['Anticheat'], middleware: [rateLimit(RATE_RULES.acClaim)] as const,
@@ -92,7 +93,7 @@ const approve = createRoute({
   summary: 'Aprobar un agente',
   description: 'Vincula el equipo a mi cuenta. Hace falta tener el SteamID en la ficha: si no, `BUSINESS_RULE`.',
   request: { body: { required: true, ...json(ApproveBody) } },
-  responses: { 200: { description: 'Aprobado', ...json(Approved) }, ...errorResponses(400, 401) },
+  responses: { 200: { description: 'Aprobado', ...json(Approved) }, ...errorResponses(400, 401, 403) },
 });
 const devices = createRoute({
   method: 'get', path: '/api/v1/me/anticheat/devices', tags: ['Mi perfil'], security: bearer, middleware: [requireUser] as const,
@@ -139,9 +140,12 @@ export const anticheat = createRouter();
 anticheat.openapi(link, async (c) => {
   const b = c.req.valid('json');
   const sb = anonClient(c.var.config);
-  const r = mustHave(await sb.rpc('ac_link_start', { p_secret: secret(c), p_device_name: b.device_name, p_version: b.agent_version ?? '' })) as {
-    device_code: string; user_code: string; expires_in: number;
-  };
+  // Identificadores de la máquina (replanteo 157): una máquina baneada no recibe código. 403 sin detalle.
+  const hw = await hashMachine(c.var.config.AC_HWID_SALT, b.hw);
+  const r = mustHave(
+    await sb.rpc('ac_link_start', { p_secret: secret(c), p_device_name: b.device_name, p_version: b.agent_version ?? '', ...(hw ? { p_hw: hw, p_ip: clientIp(c) } : {}) } as never),
+  ) as { device_code: string; user_code: string; expires_in: number; blocked?: boolean };
+  if (r.blocked) throw new AppError(403, 'FORBIDDEN', 'No se puede usar CMLeague Anticheat en este equipo (AC-5).');
   const verification_url = `${c.var.config.FRONTEND_URL.replace(/\/+$/, '')}/anticheat/vincular?code=${r.user_code}`;
   return c.json({ ...r, verification_url, interval: 5 }, 201);
 });
@@ -161,10 +165,37 @@ anticheat.openapi(refresh, async (c) => {
 
 anticheat.openapi(heartbeat, async (c) => {
   const sb = anonClient(c.var.config);
-  const version = c.req.valid('json')?.agent_version ?? '';
-  const r = must(await sb.rpc('ac_heartbeat', { p_secret: secret(c), p_access: agentToken(c), p_ip: clientIp(c), p_version: version }));
+  const body = c.req.valid('json');
+  const access = agentToken(c);
+  const version = body?.agent_version ?? '';
+
+  // Latido firmado (replanteo 156): X-AC-Ts y X-AC-Sig sobre heartbeatText. La base exige la firma cuando el equipo ya tiene
+  // clave, o pasados 10 minutos de la vinculación, y rechaza un ts viejo o repetido.
+  const tsHeader = c.req.header('X-AC-Ts');
+  const sig = c.req.header('X-AC-Sig');
+  let ts: number | null = null;
+  if (tsHeader && sig && /^\d{9,11}$/.test(tsHeader)) {
+    const key = must(await sb.rpc('ac_device_key', { p_secret: secret(c), p_access: access })) as string | null;
+    if (key && (await signatureOk(key, sig, await heartbeatText(Number(tsHeader), access)))) ts = Number(tsHeader);
+    else if (key) throw new AppError(401, 'UNAUTHORIZED', 'La firma del latido no es válida.');
+  }
+  const hw = await hashMachine(c.var.config.AC_HWID_SALT, body?.hw);
+
+  const r = must(
+    await sb.rpc('ac_heartbeat', {
+      p_secret: secret(c),
+      p_access: access,
+      p_ip: clientIp(c),
+      p_version: version,
+      ...(body?.game ? { p_game: body.game } : {}),
+      ...(ts !== null ? { p_ts: ts } : {}),
+      ...(body?.agent_sha ? { p_agent_sha: body.agent_sha } : {}),
+      ...(hw ? { p_hw: hw } : {}),
+    } as never),
+  ) as ({ error?: string } & Record<string, unknown>) | null;
   if (!r) throw noSession();
-  return c.json(r as { session: null }, 200);
+  if (r.error) throw new AppError(401, 'UNAUTHORIZED', 'La firma del latido no es válida.');
+  return c.json(r as never, 200);
 });
 
 anticheat.openapi(unlink, async (c) => {
@@ -174,8 +205,10 @@ anticheat.openapi(unlink, async (c) => {
 });
 
 anticheat.openapi(approve, async (c) => {
-  const r = mustHave(await c.var.sb.rpc('ac_link_approve', { p_user_code: c.req.valid('json').user_code }));
-  return c.json(r as { device_name: string }, 200);
+  const r = mustHave(await c.var.sb.rpc('ac_link_approve', { p_user_code: c.req.valid('json').user_code })) as { device_name: string; blocked?: boolean };
+  // Máquina baneada (replanteo 157): la cuenta ya quedó baneada por evasión. Sin detalle para el jugador.
+  if (r.blocked) throw new AppError(403, 'FORBIDDEN', 'No se puede vincular este equipo (AC-5).');
+  return c.json(r, 200);
 });
 
 anticheat.openapi(devices, async (c) => {

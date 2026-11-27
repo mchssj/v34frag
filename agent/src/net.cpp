@@ -77,6 +77,42 @@ std::vector<std::string> JsonStrings(const std::string& body, const char* key) {
     return out;
 }
 
+// GET de una URL completa (la foto del perfil, una actualización). Solo https y hasta maxBytes.
+HttpResult HttpGet(const std::wstring& url, size_t maxBytes) {
+    HttpResult res;
+    if (url.rfind(L"https://", 0) != 0) return res;
+    URL_COMPONENTS u{};
+    u.dwStructSize = sizeof(u);
+    wchar_t host[256], path[2048];
+    u.lpszHostName = host;
+    u.dwHostNameLength = 256;
+    u.lpszUrlPath = path;
+    u.dwUrlPathLength = 2048;
+    if (!WinHttpCrackUrl(url.c_str(), 0, 0, &u)) return res;
+    HINTERNET ses = WinHttpOpen((std::wstring(L"CMLeagueAC/") + AC_VERSION).c_str(), WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, nullptr, nullptr, 0);
+    if (!ses) return res;
+    WinHttpSetTimeouts(ses, 5000, 5000, 15000, 15000);
+    HINTERNET con = WinHttpConnect(ses, host, u.nPort, 0);
+    HINTERNET req = con ? WinHttpOpenRequest(con, L"GET", path, nullptr, nullptr, nullptr, WINHTTP_FLAG_SECURE) : nullptr;
+    if (req && WinHttpSendRequest(req, nullptr, 0, nullptr, 0, 0, 0) && WinHttpReceiveResponse(req, nullptr)) {
+        DWORD status = 0, len = sizeof(status);
+        WinHttpQueryHeaders(req, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, nullptr, &status, &len, nullptr);
+        res.status = (int)status;
+        for (;;) {
+            DWORD avail = 0;
+            if (!WinHttpQueryDataAvailable(req, &avail) || avail == 0 || res.body.size() > maxBytes) break;
+            std::vector<char> buf(avail);
+            DWORD read = 0;
+            if (!WinHttpReadData(req, buf.data(), avail, &read) || read == 0) break;
+            res.body.append(buf.data(), read);
+        }
+    }
+    if (req) WinHttpCloseHandle(req);
+    if (con) WinHttpCloseHandle(con);
+    WinHttpCloseHandle(ses);
+    return res;
+}
+
 HttpResult HttpPost(const std::wstring& base, const wchar_t* path, const std::string& json, const std::wstring& agentToken) {
     return HttpSend(base, path, json, L"application/json", agentToken);
 }

@@ -12,6 +12,23 @@ const must = (r: RpcResult) => {
   return r.data;
 };
 
+/**
+ * Capturas vencidas (replanteo 156: 7 días, Kyan 2026-11-27), aunque la sesión siga dentro de su plazo. Las de una sesión
+ * conservada no vencen. La fila queda, marcada, para la cadena de integridad. Devuelve cuántas borró.
+ */
+export async function runScreenshotRetention(db: RetentionDb): Promise<number> {
+  let purged = 0;
+  for (let round = 0; round < 20; round++) {
+    const due = must(await db.rpc('ac_screenshot_retention_due', { p_limit: 500 })) as { id: string; storage_path: string }[];
+    if (!due.length) break;
+    const { error } = await db.removeFiles(due.map((d) => d.storage_path));
+    if (error) throw new Error(`Storage: ${error.message}`);
+    purged += must(await db.rpc('ac_screenshot_purged', { p_ids: due.map((d) => d.id) })) as number;
+    if (due.length < 500) break;
+  }
+  return purged;
+}
+
 /** Devuelve cuántas sesiones borró. */
 export async function runRetention(db: RetentionDb): Promise<number> {
   const due = must(await db.rpc('ac_retention_due')) as { sessions: string[] };
