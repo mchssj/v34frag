@@ -44,6 +44,8 @@ Cuando aparece **Partida encontrada** tienes **{{mm.aceptar}}** para tocar **Ace
 
 Si en Jugar ves que las notificaciones están bloqueadas, actívalas desde el candado de la barra de direcciones. Si juegas a otra cosa en pantalla completa mientras buscas, Windows puede ocultar las notificaciones (opción "No molestar" al jugar): usa el modo ventana sin bordes, apaga esa opción o deja el volumen de la web alto para oír el sonido.
 
+Los cuadros de la ventana muestran cuántos aceptaron, pero no quiénes son: con quién te tocó y contra quién lo ves recién en el veto, cuando aceptaron todos.
+
 - Si todos aceptan, pasan al veto.
 - Si alguien no acepta, la partida se cancela. Los que aceptaron vuelven a la búsqueda sin perder su lugar en la cola. Un grupo vuelve solo si aceptaron todos sus integrantes.
 

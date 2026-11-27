@@ -89,7 +89,8 @@ export function AcceptDialog({
             {lobby.players.map((p) => (
               <li
                 key={p.player_id}
-                title={p.is_me ? "Vos" : p.nick}
+                // Los demás quedan anónimos hasta que todos aceptan: con el nick se podía ver el equipo y rechazar.
+                title={p.is_me ? "Tú" : undefined}
                 className={cn(
                   "grid size-6 place-items-center rounded-md border",
                   p.accepted

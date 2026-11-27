@@ -298,3 +298,4 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-26 | [Baneo permanente de una IP o rango](2026-11-26-baneo-ip-permanente/) | Desplegado (2026-11-27): replanteo `153`, API y web `4d587789fd0c` |
 | 2026-11-26 | [`!banlist` en los servidores](2026-11-26-banlist/) | Desplegado (2026-11-27): replanteo `154` y reporter 2.12.1 subido a #1, #2 y #3 (entra en el cambio de mapa) |
 | 2026-11-26 | [Banear una cuenta sin ficha](2026-11-26-banear-cuenta-sin-ficha/) | Desplegado (2026-11-26): web 1ee6c8dc6f84 y manual en la API |
+| 2026-11-27 | [La sala oculta mientras se acepta la partida](2026-11-27-mm-sala-oculta-al-aceptar/) | Replanteo `155` aplicado (2026-11-27, 19:58 UTC); web en despliegue |
