@@ -3,6 +3,7 @@
 //! Discord, actualizaciones y una Configuración propia que no toca la web.
 //! La web llama a sus comandos solo desde https://cmleague.lat (capabilities/web.json).
 
+mod demos;
 mod game;
 mod settings;
 mod status;
@@ -211,6 +212,11 @@ pub fn run() {
                 .on_navigation({
                     let app = app.handle().clone();
                     move |url| {
+                        // Ver demo y Descargar demo: a la carpeta cstrike de ClientMod (demos.rs).
+                        if demos::handles(&app, url) {
+                            demos::download(&app, url.clone());
+                            return false;
+                        }
                         if stays_in_app(url) {
                             return true;
                         }
@@ -222,6 +228,10 @@ pub fn run() {
                 .on_new_window({
                     let app = app.handle().clone();
                     move |url, _| {
+                        if demos::handles(&app, &url) {
+                            demos::download(&app, url);
+                            return tauri::webview::NewWindowResponse::Deny;
+                        }
                         if stays_in_app(&url) && url.host_str().is_some_and(|h| h.ends_with("cmleague.lat")) {
                             // Una página de la web en otra pestaña: se abre en la misma ventana.
                             if let Some(w) = app.get_webview_window("main") {

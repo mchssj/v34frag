@@ -612,13 +612,14 @@ const SECTIONS: LegalSection[] = [
           abre con Windows o si muestra tu estado en Discord) y la carpeta de
           ClientMod. Para conectarte a una sala, agrega por un momento la
           dirección y la contraseña de la sala a <code>clientmod.ini</code> y la
-          saca cuando se abre el juego. Si lo activas en su configuración,
-          muestra en tu Discord lo que estás haciendo («Buscando partida»,
-          «Jugando 5v5 · de_dust2»); Discord lo ve igual que el resto de tu
-          actividad. Para saber si hay una versión nueva, consulta nuestro
-          almacenamiento de Cloudflare (<code>descargas.cmleague.lat</code>). No
-          lee tus otros programas ni archivos, y no toca el juego mientras
-          juegas.
+          saca cuando se abre el juego. Las demos que bajas desde el launcher
+          las guarda en la carpeta <code>cstrike</code> de ClientMod. Si lo
+          activas en su configuración, muestra en tu Discord lo que estás
+          haciendo («Buscando partida», «Jugando 5v5 · de_dust2»); Discord lo ve
+          igual que el resto de tu actividad. Para saber si hay una versión
+          nueva, consulta nuestro almacenamiento de Cloudflare (
+          <code>descargas.cmleague.lat</code>). No lee tus otros programas ni
+          archivos, y no toca el juego mientras juegas.
         </p>
       </>
     ),

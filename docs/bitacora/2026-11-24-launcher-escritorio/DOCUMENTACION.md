@@ -151,7 +151,9 @@ Sin la clave, el plugin no se registra. Además, `tauri.conf.json` lleva `plugin
 
 ## Links de afuera y descargas
 
-La ventana solo navega por `https://cmleague.lat` (y `www`). Cualquier otro link, incluidos los de "Ver demo" y "Descargar demo" (el `.dem` está en otro dominio), Discord, Steam o YouTube, se abre en el navegador predeterminado (`tauri-plugin-opener`), que descarga la demo como siempre. Así la ventana no sale de la web. Los links que abren otra pestaña van al navegador, salvo que sean de `cmleague.lat`, que se abren en la misma ventana. Las descargas de la propia web (por ejemplo, un recap) van a la carpeta **Descargas**, con un aviso de Windows al terminar. Solo se abren afuera `https`, `http` y `mailto`: nunca `file:` ni protocolos de programas (`steam://`, `discord://`).
+**Demos (Kyan, 2026-11-27):** "Ver demo" y "Descargar demo" (`<Worker de demos>/demo/<id>`, de `*.cmleague.lat` o del Worker `v34frag-demos`) los baja el launcher a `<ClientMod>\cstrike\<id>.dem` (`demos.rs`, con `reqwest`): primero a `.dem.part` y lo renombra al terminar. Si ya está, no la vuelve a bajar. Avisa al empezar y al terminar con el `playdemo <id>`; si el Worker responde un error ("todavía no está disponible", "ya venció"), lo muestra en el aviso. Sin ClientMod elegido ni encontrado, va a Descargas. Se apaga en Configuración con **Demos a la carpeta del juego** (`demos_to_game`, prendido de fábrica); apagada, la demo va al navegador como los demás links.
+
+La ventana solo navega por `https://cmleague.lat` (y `www`). Cualquier otro link, incluidos los de demos si esa opción está apagada, Discord, Steam o YouTube, se abre en el navegador predeterminado (`tauri-plugin-opener`), que descarga la demo como siempre. Así la ventana no sale de la web. Los links que abren otra pestaña van al navegador, salvo que sean de `cmleague.lat`, que se abren en la misma ventana. Las descargas de la propia web (por ejemplo, un recap) van a la carpeta **Descargas**, con un aviso de Windows al terminar. Solo se abren afuera `https`, `http` y `mailto`: nunca `file:` ni protocolos de programas (`steam://`, `discord://`).
 
 ## Página de descarga
 
