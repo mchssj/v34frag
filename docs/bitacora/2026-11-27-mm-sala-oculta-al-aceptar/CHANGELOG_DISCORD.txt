@@ -1,0 +1,6 @@
+CMLeague 2.9.78 --  Changelog
+
+MATCHMAKING
+- Arreglamos un error que dejaba ver con quién te tocó antes de aceptar la partida: al pasar el mouse por los cuadros de quién aceptó aparecía el nombre de cada jugador.
+- Ahora, mientras se acepta, solo ves cuántos aceptaron. Con quién te tocó y contra quién lo ves en el veto, cuando aceptaron todos.
+- Vale igual en la web y en el launcher.
