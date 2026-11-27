@@ -364,6 +364,16 @@ export const LooseBanIp = z
   .openapi('LooseBanIp');
 export const LooseBanIpQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' });
 export const LooseBanIpList = Envelope(LooseBanIp).openapi('LooseBanIpList');
+// Banear una IP o rango sin ficha desde la web (replanteo 152): como mucho 30 días.
+export const LooseBanIpBody = z
+  .object({
+    ip: z.string().trim().min(3).max(60).openapi({ description: 'IP o rango (hasta /16 en IPv4 o /32 en IPv6)' }),
+    reason: z.string().trim().min(1).max(200),
+    minutes: z.number().int().min(1).max(43200).openapi({ description: 'Duración: de 1 minuto a 30 días (43 200)' }),
+    except_players: z.array(z.uuid()).max(100).optional().openapi({ description: 'Fichas exceptuadas' }),
+    except_users: z.array(z.uuid()).max(100).optional().openapi({ description: 'Cuentas sin ficha exceptuadas' }),
+  })
+  .openapi('LooseBanIpBody');
 export const BanIpList = Envelope(BanIp).openapi('BanIpList');
 export const BanIpsBody = z
   .object({

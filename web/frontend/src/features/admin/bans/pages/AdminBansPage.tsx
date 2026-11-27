@@ -316,7 +316,7 @@ export function AdminBansPage({
           { key: "images", label: "Imágenes", badge: openImages },
           // Las IPs solo las ven los admins
           ...(canPermanent
-            ? [{ key: "ips" as const, label: "IPs del servidor" }]
+            ? [{ key: "ips" as const, label: "IPs sin ficha" }]
             : []),
           ...(seesActivity
             ? [{ key: "support" as const, label: "Actividad del soporte" }]

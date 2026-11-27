@@ -11492,7 +11492,61 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /**
+         * Banear una IP o rango sin ficha
+         * @description Como `!banip` en un servidor, desde la web (replanteo 152): con motivo, como mucho 30 días y con excepciones.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LooseBanIpBody"];
+                };
+            };
+            responses: {
+                /** @description La IP baneada */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CreatedId"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -32963,6 +33017,17 @@ export interface components {
         CreatedId: {
             /** Format: uuid */
             id: string;
+        };
+        LooseBanIpBody: {
+            /** @description IP o rango (hasta /16 en IPv4 o /32 en IPv6) */
+            ip: string;
+            reason: string;
+            /** @description Duración: de 1 minuto a 30 días (43 200) */
+            minutes: number;
+            /** @description Fichas exceptuadas */
+            except_players?: string[];
+            /** @description Cuentas sin ficha exceptuadas */
+            except_users?: string[];
         };
         BanIpAddBody: {
             /** @description IP o rango (hasta /16 en IPv4 o /32 en IPv6) */

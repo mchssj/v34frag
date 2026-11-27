@@ -23,6 +23,8 @@ afterEach(() => server.resetHandlers())
 afterAll(() => server.close())
 
 const ID = "33333333-3333-4333-8333-333333333333"
+const PLAYER_OK = "dddddddd-0000-4000-8000-000000000001"
+const PLAYER_BAN = "dddddddd-0000-4000-8000-000000000002"
 const page = (items: unknown[]) => ({
   items,
   total: items.length,
@@ -76,7 +78,70 @@ describe("ServerIpBansPanel", () => {
     )
     renderWithQuery(<ServerIpBansPanel />)
     expect(
-      await screen.findByText("No hay IPs baneadas desde los servidores.")
+      await screen.findByText("No hay IPs baneadas sin ficha.")
     ).toBeInTheDocument()
+  })
+
+  it("banea un rango sin ficha: revisa a quién alcanza, exceptúa a los no baneados y manda motivo y duración", async () => {
+    const posted = vi.fn()
+    server.use(
+      http.get(`${API}/api/v1/admin/ban-ips`, () =>
+        HttpResponse.json(page([]))
+      ),
+      http.get(`${API}/api/v1/admin/ip-ranges/accounts`, () =>
+        HttpResponse.json(
+          page([
+            {
+              player_id: PLAYER_OK,
+              user_id: null,
+              alias: "GabeV",
+              sources: ["web"],
+              ips: 5,
+              last_seen_at: "2026-11-26T00:00:00Z",
+              banned: false,
+            },
+            {
+              player_id: PLAYER_BAN,
+              user_id: null,
+              alias: "Nose",
+              sources: ["servidor"],
+              ips: 2,
+              last_seen_at: "2026-11-26T00:00:00Z",
+              banned: true,
+            },
+          ])
+        )
+      ),
+      http.post(`${API}/api/v1/admin/ban-ips`, async ({ request }) => {
+        posted(await request.json())
+        return HttpResponse.json({ id: ID }, { status: 201 })
+      })
+    )
+    renderWithQuery(<ServerIpBansPanel />)
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Banear IP o rango" })
+    )
+    await userEvent.type(screen.getByLabelText("IP o rango"), "181.21.0.0/16")
+    await userEvent.click(screen.getByRole("button", { name: "Revisar" }))
+    expect(await screen.findByText("GabeV")).toBeInTheDocument()
+    expect(
+      screen.getByRole("checkbox", { name: "Exceptuar a GabeV" })
+    ).toBeChecked()
+    expect(
+      screen.getByRole("checkbox", { name: "Exceptuar a Nose" })
+    ).not.toBeChecked()
+    const ban = screen.getByRole("button", { name: "Banear 181.21.0.0/16" })
+    expect(ban).toBeDisabled()
+    await userEvent.type(screen.getByLabelText("Motivo"), "Cuentas del cheater")
+    await userEvent.click(ban)
+    await waitFor(() =>
+      expect(posted).toHaveBeenCalledWith({
+        ip: "181.21.0.0/16",
+        reason: "Cuentas del cheater",
+        minutes: 1440,
+        except_players: [PLAYER_OK],
+        except_users: [],
+      })
+    )
   })
 })

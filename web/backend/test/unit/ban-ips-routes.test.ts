@@ -163,3 +163,23 @@ describe('baneos por IP del servidor, sin ficha (replanteo 151)', () => {
     expect((await call('GET', '/api/v1/admin/ban-ips')).status).toBe(403);
   });
 });
+
+describe('banear una IP o rango sin ficha desde la web (replanteo 152)', () => {
+  it('manda IP, motivo, minutos y excepciones a admin_ban_ip_add_loose', async () => {
+    const calls = postgrest('admin', (url) =>
+      url.pathname.endsWith('/rpc/admin_ban_ip_add_loose') ? Response.json('44444444-4444-4444-8444-444444444444') : undefined,
+    );
+    const res = await call('POST', '/api/v1/admin/ban-ips', { ip: '181.21.0.0/16', reason: 'Cuentas del cheater', minutes: 1440, except_players: [PLAYER] });
+    expect(res.status).toBe(201);
+    expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/admin_ban_ip_add_loose'))!.body!)).toEqual({
+      p_ip: '181.21.0.0/16', p_reason: 'Cuentas del cheater', p_minutes: 1440, p_except_players: [PLAYER], p_except_users: [],
+    });
+  });
+
+  it('más de 30 días o sin motivo: 400 sin llegar a la base', async () => {
+    const calls = postgrest('admin', () => undefined);
+    expect((await call('POST', '/api/v1/admin/ban-ips', { ip: '1.2.3.4', reason: 'x', minutes: 43201 })).status).toBe(400);
+    expect((await call('POST', '/api/v1/admin/ban-ips', { ip: '1.2.3.4', reason: '', minutes: 60 })).status).toBe(400);
+    expect(calls.some((x) => x.url.includes('/rpc/'))).toBe(false);
+  });
+});

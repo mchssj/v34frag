@@ -5,12 +5,16 @@ import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Chip, PanelSection, warnText } from "../../components/ui"
 import { fmtDate } from "../../lib/format"
+import {
+  RangeExceptionsList,
+  keyOf,
+  useRangeExceptions,
+} from "./RangeExceptions"
 import {
   banIpsOptions,
   ipCandidatesOptions,
@@ -38,10 +42,6 @@ export function ipOptions(ip: string): { value: string; label: string }[] {
   ]
 }
 
-/** Clave de un afectado: su ficha, o su cuenta si no tiene. */
-const keyOf = (a: { player_id: string | null; user_id: string | null }) =>
-  a.player_id ? `p:${a.player_id}` : `u:${a.user_id}`
-
 export function BanIpsSection({
   banId,
   playerId,
@@ -58,39 +58,27 @@ export function BanIpsSection({
   const lift = useLiftBanIp()
   const [preview, setPreview] = useState("")
   const [typed, setTyped] = useState("")
-  const affected = useQuery(ipRangeAccountsOptions(preview))
-  const others = affected.data?.items.filter((a) => a.player_id !== playerId)
-  // Exceptuados en la vista previa: de entrada, los que no están baneados (con un rango, el resto del proveedor).
-  // Solo se guarda lo que el admin cambia; se vacía al elegir otra IP o rango.
-  const [changed, setChanged] = useState<Map<string, boolean>>(new Map())
-  const isExcepted = (a: {
-    player_id: string | null
-    user_id: string | null
-    banned: boolean
-  }) => changed.get(keyOf(a)) ?? !a.banned
+  const exc = useRangeExceptions(preview, playerId)
+  const { affected } = exc
   const pick = (value: string) => {
     setPreview(value)
-    setChanged(new Map())
+    exc.reset()
   }
   const banned = current.data?.items ?? []
 
   const confirm = () => {
-    const chosen = (others ?? []).filter(isExcepted)
+    const n = exc.count
     add.mutate(
       {
         ip: preview,
-        except_players: chosen.flatMap((a) =>
-          a.player_id ? [a.player_id] : []
-        ),
-        except_users: chosen.flatMap((a) =>
-          !a.player_id && a.user_id ? [a.user_id] : []
-        ),
+        except_players: exc.except_players,
+        except_users: exc.except_users,
       },
       {
         onSuccess: () => {
           toast.success(
-            chosen.length
-              ? `${preview} baneada, con ${chosen.length} ${chosen.length === 1 ? "excepción" : "excepciones"}.`
+            n
+              ? `${preview} baneada, con ${n} ${n === 1 ? "excepción" : "excepciones"}.`
               : `${preview} baneada.`
           )
           setPreview("")
@@ -226,53 +214,10 @@ export function BanIpsSection({
           <span className="text-[13px] font-semibold">
             Banear <span className="font-mono">{preview}</span>
           </span>
-          {affected.isPending ? (
-            <Skeleton className="h-8 rounded" />
-          ) : affected.isError ? (
-            <span className="text-[13px] text-destructive">
-              {errorMessage(affected.error)}
-            </span>
-          ) : others && others.length > 0 ? (
-            <>
-              <span className={`text-[13px] ${warnText}`}>
-                Otros {others.length}{" "}
-                {others.length === 1 ? "jugador usó" : "jugadores usaron"} esta
-                IP o rango. Los marcados quedan como excepción y siguen buscando
-                partida desde ahí; desmarca a quien creas que es otra cuenta del
-                baneado.
-              </span>
-              <ul className="flex flex-col gap-1">
-                {others.map((a) => {
-                  const k = keyOf(a)
-                  return (
-                    <li key={k}>
-                      <label className="flex items-center gap-2 text-[13px]">
-                        <Checkbox
-                          checked={isExcepted(a)}
-                          onCheckedChange={(on) =>
-                            setChanged((m) => new Map(m).set(k, on === true))
-                          }
-                          aria-label={`Exceptuar a ${a.alias ?? "la cuenta"}`}
-                        />
-                        <span className="font-semibold">
-                          {a.alias ?? "Cuenta sin alias"}
-                        </span>
-                        {a.banned && <Chip tone="danger">Baneado</Chip>}
-                        <span className="text-xs text-muted-foreground">
-                          {a.ips} {a.ips === 1 ? "IP" : "IPs"}, última vez el{" "}
-                          {fmtDate(a.last_seen_at)}
-                        </span>
-                      </label>
-                    </li>
-                  )
-                })}
-              </ul>
-            </>
-          ) : (
-            <span className="text-[13px] text-muted-foreground">
-              Ningún otro jugador de CMLeague usó esa IP o rango.
-            </span>
-          )}
+          <RangeExceptionsList
+            ctl={exc}
+            hint="desmarca a quien creas que es otra cuenta del baneado."
+          />
           {add.isError && (
             <span role="alert" className="text-xs text-destructive">
               {errorMessage(add.error)}

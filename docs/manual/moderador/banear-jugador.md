@@ -55,7 +55,18 @@ En el detalle de un baneo activo, un admin ve la sección **IPs y rangos**. Sirv
 - Antes de confirmar, la web te muestra **a quién más afecta**: los jugadores de CMLeague que usaron alguna IP de ese rango. Cada uno tiene una casilla **Exceptuar**: los que no están baneados vienen marcados y siguen buscando partida desde ahí. Desmarca a quien creas que es otra cuenta del baneado.
 - En cada IP o rango baneado ves sus **excepciones**: con la **X** sacas una y con **Exceptuar a alguien** sumas a otro de los que usaron ese rango (por ejemplo, si un jugador escribe por Discord que no puede buscar partida).
 - Desde una IP o rango baneado nadie puede buscar partida, aceptar una, crear una cuenta ni entrar a los servidores. Vence con el baneo, como mucho a los 30 días. Con la **X** lo levantas.
-- La IP que banea un admin con `!ban` en el juego aparece acá, por el mismo tiempo que el baneo (sin el tope de 30 días). Las que se banean con `!banip`, sin ficha, están en la pestaña **IPs del servidor**, con sus excepciones.
+- La IP que banea un admin con `!ban` en el juego aparece acá, por el mismo tiempo que el baneo (sin el tope de 30 días). Las que se banean con `!banip`, sin ficha, están en la pestaña **IPs sin ficha**, con sus excepciones.
+
+### Banear una IP o rango sin ficha
+
+Si no sabes quién es, entra con cuentas sin ficha o quieres cortar un rango sin banear a nadie en particular, un admin banea solo la IP o el rango:
+
+1. En Baneos, abre la pestaña **IPs sin ficha** y toca **Banear IP o rango**.
+2. Escribe la IP o el rango (como mucho `/16`, por ejemplo `181.21.0.0/16`), el **motivo** y la **duración**: 1 hora, 1 día, 7 días o 30 días. No hay permanente.
+3. Toca **Revisar**. Igual que arriba, la web te muestra a quién más alcanza, con la casilla **Exceptuar** marcada para los que no están baneados.
+4. Toca **Banear…**. Vale en la web y en los tres servidores (en 5 minutos como mucho).
+
+En la misma pestaña están los que se pusieron así y los `!banip` del juego: ahí les sumas o sacas excepciones y los levantas con la **X**.
 
 > **Ojo:** con una VPN o los datos del celular la persona cambia de IP. Es una barrera más, no la única.
 

@@ -333,6 +333,21 @@ export function useLiftBanIp() {
   })
 }
 
+/** Banear una IP o rango sin ficha (replanteo 152): con motivo y como mucho 30 días. */
+export function useAddLooseBanIp() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: {
+      ip: string
+      reason: string
+      minutes: number
+      except_players?: string[]
+      except_users?: string[]
+    }) => unwrap(api.POST("/api/v1/admin/ban-ips", { body })),
+    onSuccess: () => touchedIps(qc),
+  })
+}
+
 // Excepciones (replanteo 150).
 
 export function useAddBanIp(banId: string) {

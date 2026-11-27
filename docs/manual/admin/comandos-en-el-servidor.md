@@ -25,7 +25,7 @@ Un admin tiene todos los comandos del moderador (ver [Comandos del moderador en 
 Todos los baneos, del juego o de la web, son uno solo: valen en los tres servidores y en el matchmaking, y quedan en Administración › [Baneos](/admin/bans) (ver [Banear a un jugador](/help/moderador/banear-jugador)).
 
 - **Tu `!ban` también banea la IP** con la que está conectado el jugador, por el mismo tiempo. Si es una IP compartida, levántala o suma excepciones desde la web.
-- **Un `!banip` no tiene ficha:** aparece en la pestaña **IPs del servidor** de Baneos, donde le sumas excepciones o lo levantas. Al banear, echa a los que están conectados desde ahí. Los rangos alcanzan a todos los de ese proveedor: antes de banear uno, mira desde la web a quién más afecta.
+- **Un `!banip` no tiene ficha:** aparece en la pestaña **IPs sin ficha** de Baneos, donde le sumas excepciones o lo levantas. Al banear, echa a los que están conectados desde ahí. Los rangos alcanzan a todos los de ese proveedor: antes de banear uno, mira desde la web a quién más afecta.
 - Un baneo nuevo de la web llega a los servidores en 5 minutos como mucho.
 
 ## Revisar el estado de un servidor
