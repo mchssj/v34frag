@@ -1,0 +1,6 @@
+CMLeague 2.9.77 --  Changelog
+
+Baneos en todos lados
+- Un baneo ahora vale en los tres servidores y en el matchmaking, venga de donde venga: de la web o de un !ban en el juego.
+- Si te banean mientras estás jugando, el servidor te saca. Al intentar entrar te dice el motivo y hasta cuándo.
+- Un baneo también puede alcanzar a una conexión. Si compartes internet con alguien baneado y no puedes entrar, escríbenos por Discord.

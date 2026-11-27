@@ -291,7 +291,7 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-22 | [El nick de la web en producción](2026-11-22-nick-de-la-web-en-produccion/) | Replanteo `134` aplicado el 2026-11-25; falta la web y la API (legales y manual) |
 | 2026-11-25 | [Banear una ficha sin SteamID](2026-11-25-banear-ficha-sin-steamid/) | Replanteo `147` el 2026-11-25; web y API en producción (`affd6e60867e`) desde el 2026-11-26 |
 | 2026-11-26 | [Migración del VPS a São Paulo](2026-11-26-migracion-vps-brasil/) | Desplegado el 2026-11-26 (16:35 UTC), con `/privacidad` y la restauración de respaldos al día; el VPS de OVH, apagado como vuelta atrás |
-| 2026-11-26 | [Baneos de la web aplicados en los servidores](2026-11-26-baneos-en-los-servidores/) | Planeado, pendiente de aprobación |
+| 2026-11-26 | [Baneos de la web aplicados en los servidores](2026-11-26-baneos-en-los-servidores/) | Desplegado (2026-11-27): replanteo `151`, reporter 2.12.0 en #1, #2 y #3 (entra en el cambio de mapa), API y web `5e78a062107b` |
 | 2026-11-26 | [Correos temporales bloqueados al registrarse](2026-11-26-correos-bloqueados/) | Desplegado (2026-11-26): replanteo `148`, lista pública, API y web |
 | 2026-11-26 | [Baneo por IP desde la web](2026-11-26-baneo-por-ip/) | Desplegado (2026-11-26): replanteos `149` y `150`, Caddy, API y web `833b692f19af`; primer rango `181.21.*.*` |
 | 2026-11-26 | [Banear una cuenta sin ficha](2026-11-26-banear-cuenta-sin-ficha/) | Desplegado (2026-11-26): web 1ee6c8dc6f84 y manual en la API |

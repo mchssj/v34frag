@@ -23,9 +23,11 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - IPs y rangos (hasta `/16`) atados a un baneo, con excepciones por ficha o cuenta: frenan cola, aceptar, grupos y registro. Detalle: [`2026-11-26-baneo-por-ip`](bitacora/2026-11-26-baneo-por-ip/GUIA_IMPLEMENTACION.md). Primer rango: `181.21.*.*` en el baneo de Nose, con GabeV exceptuado.
 - **Ojo:** muchos jugadores se conectan por IPv6; un rango IPv4 no los frena por ahí. Hace falta sumar sus IPv6 cuando aparezcan en la sección.
 
-## Baneos en los servidores (2026-11-26): aprobado, sin empezar
+## Baneos en los servidores (2026-11-27): desplegado, falta comprobar
 
-- Plan: [`2026-11-26-baneos-en-los-servidores`](bitacora/2026-11-26-baneos-en-los-servidores/PLAN.md). Hoy los baneos de la web no echan de los servidores y el `!ban` del juego vale solo en el servidor donde se usa.
+- Reporter 2.12.0 subido a **#1, #2 y #3** (la 2.10.3 en `plugins/disabled/`), replanteo `151`, API y web `5e78a062107b`. Detalle: [`2026-11-26-baneos-en-los-servidores`](bitacora/2026-11-26-baneos-en-los-servidores/GUIA_IMPLEMENTACION.md).
+- **Falta:** en cada servidor, después de su cambio de mapa, `sm plugins info csstv_reporter.smx` (2.12.0) y `sm_csstv_bans`; después vaciar `banned_user.cfg` del #1 (con copia; sus dos SteamID ya están baneados en la web). Probar con una persona el permanente de un moderador (rechazado).
+- **Ramas:** `feat/frontend-fase-1` y `feat/mm-claim-en-sala` no tienen los replanteos 148 a 151 ni el reporter 2.10.x; no se copió.
 
 ## Migración del VPS a São Paulo (2026-11-26): desplegada, faltan detalles
 
