@@ -23,6 +23,11 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - IPs y rangos (hasta `/16`) atados a un baneo, con excepciones por ficha o cuenta: frenan cola, aceptar, grupos y registro. Detalle: [`2026-11-26-baneo-por-ip`](bitacora/2026-11-26-baneo-por-ip/GUIA_IMPLEMENTACION.md). Primer rango: `181.21.*.*` en el baneo de Nose, con GabeV exceptuado.
 - **Ojo:** muchos jugadores se conectan por IPv6; un rango IPv4 no los frena por ahí. Hace falta sumar sus IPv6 cuando aparezcan en la sección.
 
+## Baneo permanente de una IP o rango (2026-11-27): sin desplegar
+
+- Implementado en `2bfe22f9` ([`2026-11-26-baneo-ip-permanente`](bitacora/2026-11-26-baneo-ip-permanente/PLAN.md)): **Permanente** en **Banear IP o rango** y, en un baneo de ficha que dura más de 30 días, "lo mismo que el baneo". Daniel pidió no desplegarlo todavía.
+- Para desplegar, en este orden: replanteo `153` (cambia la firma de `admin_ban_ip_add`: la API vieja falla al banear una IP de una ficha hasta que se sube la nueva), `desplegar.sh api` y `desplegar.sh web`, sin salas aceptando o vetando. Después, `DOCUMENTACION.md` y `GUIA_IMPLEMENTACION.md`.
+
 ## Baneo de IP o rango sin ficha desde la web (2026-11-27): desplegado
 
 - Pestaña **IPs sin ficha** de Baneos, botón **Banear IP o rango** (solo admins, hasta 30 días, con excepciones). Replanteo `152`, API y web `1ca8a09d7459`. Detalle: [`2026-11-26-baneo-ip-sin-ficha`](bitacora/2026-11-26-baneo-ip-sin-ficha/GUIA_IMPLEMENTACION.md).
