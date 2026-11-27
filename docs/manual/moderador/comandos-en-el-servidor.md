@@ -27,6 +27,7 @@ orden: 5
 |---|---|
 | `!kick <jugador> [motivo]` | Lo saca del servidor. Puede volver a entrar |
 | `!ban <jugador> <minutos> [motivo]` | Lo banea por un tiempo: `60` es una hora, `1440` un día y `10080` una semana |
+| `!banlist [texto]` | Muestra en tu consola (tecla `º` o `~`) los baneos activos de CMLeague: SteamID o IP, hasta cuándo, nombre y motivo, los más nuevos primero. Con un texto, filtra por SteamID, IP, nombre o motivo (`!banlist cheater`) |
 
 El `!ban` del juego lo echa en el acto, vale en los tres servidores y en el matchmaking, y aparece en la lista de baneos de la web, con tu nombre y el servidor. Lo mismo al revés: a quien banean desde la web, el servidor lo echa (en 5 minutos como mucho) y no lo deja volver a entrar. No puedes banear para siempre (`0` minutos): el servidor te lo rechaza. Tampoco puedes desbanear ni banear por IP. Para banear a alguien que ya no está en el servidor, o por más tiempo, usa la web (ver [Banear a un jugador](/help/moderador/banear-jugador)).
 

@@ -11,6 +11,8 @@
  *    tiempo. Permanente (0 minutos) solo un admin.
  *  - !banip <IP o rango> <minutos> [motivo] y !unbanip <IP o rango>: solo admins. Rango hasta /16.
  *  - !unban <SteamID | IP o rango>: levanta en la web.
+ *  - !banlist [texto] (2.12.1, moderadores y admins): la lista de baneos activos de la web, en la consola, con nombre,
+ *    hasta cuándo y motivo. El texto filtra (SteamID, IP, nombre o motivo).
  *  - Si la web no responde, el pedido queda en data/csstv/bans_pend.txt y se reintenta en la próxima sincronización.
  *  - csstv_bans 0 lo apaga (vuelve el banned_user.cfg de SourceMod).
  *  - csstv_bans_fake <userid> <minutos> <motivo> simula que la base lo da por baneado (pruebas con bots), y
@@ -53,6 +55,7 @@ void Bans_Init()
 	AddCommandListener(Bans_OnCmdBanIp, "sm_banip");
 	AddCommandListener(Bans_OnCmdUnban, "sm_unban");
 	RegAdminCmd("sm_unbanip", Cmd_UnbanIp, ADMFLAG_ROOT, "sm_unbanip <IP o rango>: levanta un baneo por IP en la web y en los tres servidores.");
+	RegAdminCmd("sm_banlist", Cmd_BanList, ADMFLAG_BAN, "sm_banlist [texto]: la lista de baneos activos de CMLeague (web y servidores), en la consola.");
 	RegAdminCmd("sm_csstv_bans", Cmd_BansStatus, ADMFLAG_BAN, "Muestra cuántos baneos tiene la copia local y sincroniza ahora.");
 	RegServerCmd("csstv_bans_test", Cmd_BansTest, "csstv_bans_test <SteamID> <IP>: dice si la copia local lo da por baneado.");
 	RegServerCmd("csstv_bans_fake", Cmd_BansFake, "Solo pruebas: csstv_bans_fake <userid> <minutos> <motivo> (como si la base lo diera por baneado).");
@@ -448,6 +451,104 @@ public Action Cmd_BansStatus(int client, int args)
 		g_hBanSteam.Size, g_hBanIps.Length, g_cvBans.IntValue);
 	Bans_Sync();
 	return Plugin_Handled;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// !banlist (replanteo 154: csstv_ban_list, texto "s|STEAM|vence|nombre|motivo|origen;i|IP|vence|nombre|motivo|excepciones")
+// ---------------------------------------------------------------------------------------------------------------
+
+public Action Cmd_BanList(int client, int args)
+{
+	char filter[64];
+	GetCmdArgString(filter, sizeof(filter));
+	StripQuotes(filter);
+	TrimString(filter);
+	DataPack dp = new DataPack();
+	dp.WriteCell(client ? GetClientUserId(client) : -1);   // -1 = la consola del servidor
+	dp.WriteString(filter);
+	if (!Bans_Post("csstv_ban_list", "", Bans_OnList, dp))
+	{
+		delete dp;
+		ReplyToCommand(client, "%s No se puede pedir la lista a la web ahora. La copia del servidor tiene %d SteamID y %d IPs o rangos.",
+			PREFIX, g_hBanSteam.Size, g_hBanIps.Length);
+		return Plugin_Handled;
+	}
+	if (client)
+		ReplyToCommand(client, "%s Pidiendo la lista de baneos a la web...", PREFIX);
+	return Plugin_Handled;
+}
+
+void Bans_ListOut(int client, const char[] text)
+{
+	if (client)
+		PrintToConsole(client, "%s", text);
+	else
+		PrintToServer("%s", text);
+}
+
+public void Bans_OnList(bool success, const char[] error, System2HTTPRequest request, System2HTTPResponse response, HTTPRequestMethod method)
+{
+	DataPack dp = view_as<DataPack>(request.Any);
+	dp.Reset();
+	int uid = dp.ReadCell();
+	char filter[64];
+	dp.ReadString(filter, sizeof(filter));
+	delete dp;
+	int client = uid == -1 ? 0 : GetClientOfUserId(uid);
+	if (uid != -1 && (!client || !IsClientInGame(client)))
+		return;
+	int status = Bans_Read(success, response, g_sBansBuf, sizeof(g_sBansBuf));
+	if (status != 200)
+	{
+		LogError("csstv_ban_list: %s %s", status ? "HTTP" : "sin conexión", status ? g_sBansBuf : error);
+		if (client)
+			PrintToChat(client, "%s La web no respondió. Prueba de nuevo en un rato.", PREFIX);
+		else
+			PrintToServer("[CSSTV] La web no respondió.");
+		return;
+	}
+	Bans_ListOut(client, "------------------------------------------------------------------------------------------");
+	Bans_ListOut(client, filter[0] ? "Baneos activos de CMLeague (filtrados)" : "Baneos activos de CMLeague (los más nuevos primero)");
+	Bans_ListOut(client, "------------------------------------------------------------------------------------------");
+	char rec[400], f[6][160], until[32], line[512];
+	int pos, next, shown, total;
+	while ((next = SplitString(g_sBansBuf[pos], ";", rec, sizeof(rec))) != -1 || g_sBansBuf[pos])
+	{
+		if (next == -1)
+		{
+			strcopy(rec, sizeof(rec), g_sBansBuf[pos]);
+			pos += strlen(g_sBansBuf[pos]);
+		}
+		else
+			pos += next;
+		for (int k = 0; k < 6; k++)
+			f[k][0] = '\0';
+		if (ExplodeString(rec, "|", f, 6, sizeof(f[])) < 3)
+			continue;
+		total++;
+		if (filter[0] && StrContains(rec, filter, false) == -1)
+			continue;
+		int exp = StringToInt(f[2]);
+		if (exp == 0)
+			strcopy(until, sizeof(until), "permanente");
+		else
+			FormatTime(until, sizeof(until), "hasta %d/%m/%Y %H:%M", exp);
+		if (f[0][0] == 'i')
+		{
+			int exc = StringToInt(f[5]);
+			Format(line, sizeof(line), "IP %-20s %-18s %s%s%s%s", f[1], until, f[3][0] ? f[3] : "(sin ficha)", f[4][0] ? " - " : "", f[4],
+				exc ? (exc == 1 ? " (1 excepción)" : " (con excepciones)") : "");
+		}
+		else
+			Format(line, sizeof(line), "%-23s %-18s %s%s%s%s", StrEqual(f[1], "?") ? "(sin SteamID)" : f[1], until, f[3][0] ? f[3] : "?", f[4][0] ? " - " : "", f[4],
+				StrEqual(f[5], "server") ? " [servidor]" : "");
+		Bans_ListOut(client, line);
+		shown++;
+	}
+	Format(line, sizeof(line), "%d de %d baneos activos. Detalle e historial: Administración > Baneos en %s", shown, total, BANS_SITE);
+	Bans_ListOut(client, line);
+	if (client)
+		PrintToChat(client, "%s %d baneos en tu consola (tecla º o ~).", PREFIX, shown);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
