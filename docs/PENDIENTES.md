@@ -46,11 +46,15 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Decidido por Daniel (2026-11-25):** el enfoque de la web en una ventana; sin firma de Windows por ahora (el certificado OV, al abrirlo a todos); con actualización automática; el instalador y `latest.json` en su R2 (`descargas.cmleague.lat/launcher/`), subidos por GitHub Actions solo con **Publicar en R2**; descarga desde `/launcher`.
 - **Hecho:** rama `feat/launcher` (worktree `v34frag-launcher`) desde `main`, con lo de Kyan hasta `29a6600a` sin su base vieja ni su `Caddyfile`. Revisión: la carpeta de ClientMod solo con el selector de Windows y nunca de la red; afuera solo `https`, `http` y `mailto`; la prueba `CMLEAGUE_AUTOPRUEBA` fuera del instalador; `LAUNCHER.published = false` apaga la promoción; manual `jugador/launcher.md` oculto; legales "En preparación"; tuteo. Web: lint, tipos y 892 de 892 pruebas.
 - **Publicado el 2026-11-26:** la 0.1.0 en `https://descargas.cmleague.lat/launcher/` (corrida `45874714707`, firmada para las actualizaciones) y la web y la API `0ae84c2803a1` con `LAUNCHER.published = true`, el manual visible y los legales sin "En preparación". Daniel lo probó instalado. El SourceTV quedó público, así que **Ver en TV** también anda.
+- **0.1.1 (2026-11-27):** demos a la carpeta `cstrike` de ClientMod y el tema de la tienda en todo el launcher. Web `c23e71b6226d` desplegada; publicación en R2 con la corrida `45950710840`.
 - **Falta:**
-  1. Publicar el changelog 2.9.76 (`bitacora/2026-11-24-launcher-escritorio/CHANGELOG_DISCORD.txt`).
-  2. Copiar los commits de la web a `feat/frontend-fase-1` (158 commits atrás, con cambios sin commit en su worktree).
-  3. Avisarle a Kyan que el launcher sigue en `main`.
-  4. Guardar fuera de la PC la llave del actualizador (`~/.tauri/cmleague-launcher.key`) y su contraseña.
+  1. Comprobar que `latest.json` diga 0.1.1 y que un launcher instalado se actualice.
+  2. `desplegar.sh api` sin salas abiertas (el manual `jugador/launcher.md` con las demos).
+  3. Publicar `terms/privacidad.html` (cambió con las demos).
+  4. Publicar el changelog 2.9.76 (`bitacora/2026-11-24-launcher-escritorio/CHANGELOG_DISCORD.txt`).
+  5. Copiar los commits de la web a `feat/frontend-fase-1` (158 commits atrás, con cambios sin commit en su worktree).
+  6. Avisarle a Kyan que el launcher sigue en `main`.
+  7. Guardar fuera de la PC la llave del actualizador (`~/.tauri/cmleague-launcher.key`) y su contraseña.
 
 ## Aviso de partida encontrada y agregar SteamID a mano (2026-11-23 y 2026-11-25): web desplegada el 2026-11-26
 
