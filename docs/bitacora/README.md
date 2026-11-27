@@ -294,4 +294,5 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-26 | [Baneos de la web aplicados en los servidores](2026-11-26-baneos-en-los-servidores/) | Desplegado (2026-11-27): replanteo `151`, reporter 2.12.0 en #1, #2 y #3 (entra en el cambio de mapa), API y web `5e78a062107b` |
 | 2026-11-26 | [Correos temporales bloqueados al registrarse](2026-11-26-correos-bloqueados/) | Desplegado (2026-11-26): replanteo `148`, lista pública, API y web |
 | 2026-11-26 | [Baneo por IP desde la web](2026-11-26-baneo-por-ip/) | Desplegado (2026-11-26): replanteos `149` y `150`, Caddy, API y web `833b692f19af`; primer rango `181.21.*.*` |
+| 2026-11-26 | [Banear una IP o rango sin ficha desde la web](2026-11-26-baneo-ip-sin-ficha/) | Desplegado (2026-11-27): replanteo `152`, API y web `1ca8a09d7459` |
 | 2026-11-26 | [Banear una cuenta sin ficha](2026-11-26-banear-cuenta-sin-ficha/) | Desplegado (2026-11-26): web 1ee6c8dc6f84 y manual en la API |
