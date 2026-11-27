@@ -263,6 +263,35 @@ export const setAgentConfig = (patch: Partial<AcAgentConfig>) =>
     body: JSON.stringify(patch),
   })
 
+// ---------- servidores (replanteo 159) ----------
+
+// off: no protege. always: desde que el jugador entra. mixes (con la partida en vivo) ya no se elige desde el 2026-11-27: solo
+// llega en el listado si un servidor ya lo tenía.
+export type AcServerMode = "off" | "mixes" | "always"
+export type AcSettableMode = Exclude<AcServerMode, "mixes">
+
+export type AcServerPolicy = {
+  server_id: string
+  name: string
+  mode: AcServerMode
+  updated_at: string | null
+}
+
+export const serverPoliciesOptions = (q: { mode?: AcSettableMode; page: number }) =>
+  queryOptions({
+    queryKey: ["admin", "anticheat", "servers", q.mode ?? "all", q.page],
+    queryFn: () =>
+      call<{ items: AcServerPolicy[]; total: number; page: number; per: number }>(
+        `/api/v1/admin/anticheat/servers?per=20&page=${q.page}&sort=name&order=asc${q.mode ? `&mode=${q.mode}` : ""}`
+      ),
+  })
+
+export const setServerMode = (serverId: string, mode: AcSettableMode) =>
+  call<AcServerPolicy>(`/api/v1/admin/anticheat/servers/${serverId}`, {
+    method: "PUT",
+    body: JSON.stringify({ mode }),
+  })
+
 export type AcMachine = {
   machine_id: string | null
   banned: boolean

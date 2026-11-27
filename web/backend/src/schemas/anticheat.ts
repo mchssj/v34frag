@@ -50,6 +50,9 @@ export const HeartbeatBody = z
         clientmod: z.boolean().openapi({ description: 'El juego (ClientMod) está abierto.' }),
         hl2: z.boolean().openapi({ description: 'Hay un hl2.exe abierto: el servidor expulsa.' }),
         ports: z.array(z.number().int().min(1).max(65535)).max(16).optional(),
+        // Desde el agente 0.6.0 (replanteo 159). El EAC de ClientMod está prohibido: con true, el Bridge expulsa con AC-6.
+        eac: z.boolean().optional().openapi({ description: 'El juego se abrió con el EAC de ClientMod.' }),
+        eac_why: z.enum(['parent', 'ini', 'service', 'denied']).optional().openapi({ description: 'Qué señal vio el EAC.' }),
       })
       .optional(),
     agent_sha: z.string().regex(/^[0-9a-f]{64}$/).optional(),

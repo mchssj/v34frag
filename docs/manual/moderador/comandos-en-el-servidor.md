@@ -87,6 +87,14 @@ En los servidores del matchmaking la contraseña la maneja la web, y estos coman
 
 El deathmatch se prende solo al poner su mapa con `!map`. Cómo se juega cada modo: [Deathmatch, retake y 2v2](/help/jugador/otros-modos).
 
+## Anticheat
+
+| Comando | Qué hace |
+|---|---|
+| `sm_ac_status` | En la consola: si el anticheat responde en ese servidor, si el servidor lo exige siempre (`siempre=1`) y si los mixes están abiertos sin él |
+
+Si el anticheat deja de responder en medio de una partida, quien fue revisado hace poco sigue jugando. Abrir los mixes sin el anticheat es de un admin.
+
 ## Cuando llega un `!calladmin`
 
 El reporte llega al canal de reportes de Discord con una mención a los moderadores, y en el chat si estás en ese servidor. Dice quién reportó, a quién, el motivo, el servidor y, si hay mix, el código de la partida (sirve para buscar la demo).

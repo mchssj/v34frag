@@ -160,13 +160,13 @@ isOneToOne: false
                   ]
                 },"ac_server_policy": {
                   Row: {
-                    "enforce_mixes": boolean,"protected": boolean,"server_id": string,"updated_at": string
+                    "enforce_always": boolean,"enforce_mixes": boolean,"protected": boolean,"server_id": string,"updated_at": string
                   }
                   Insert: {
-                    "enforce_mixes"?: boolean,"protected"?: boolean,"server_id": string,"updated_at"?: string
+                    "enforce_always"?: boolean,"enforce_mixes"?: boolean,"protected"?: boolean,"server_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "enforce_mixes"?: boolean,"protected"?: boolean,"server_id"?: string,"updated_at"?: string
+                    "enforce_always"?: boolean,"enforce_mixes"?: boolean,"protected"?: boolean,"server_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -5742,8 +5742,14 @@ isOneToOne: false
 "ac_admin_machine_exception":
 { Args: { "p_note"?: string,"p_session": string,"p_user": string }; Returns: undefined
                            },
+"ac_admin_server_policies":
+{ Args: { "p_limit"?: number,"p_mode"?: string,"p_offset"?: number,"p_order"?: string,"p_q"?: string,"p_sort"?: string }; Returns: Json
+                           },
 "ac_admin_set_agent_config":
 { Args: { "p": Json }; Returns: Json
+                           },
+"ac_admin_set_server_policy":
+{ Args: { "p_mode": string,"p_server": string }; Returns: Json
                            },
 "ac_admin_signature_add":
 { Args: { "p_kinds": string[],"p_label": string,"p_name": string,"p_sha256": string,"p_verdict": string }; Returns: string

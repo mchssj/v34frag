@@ -98,20 +98,21 @@ const SECTIONS: LegalSection[] = [
         </p>
         <ul>
           <li>
-            Te pide tu consentimiento y te muestra qué recopila antes de
-            empezar.
+            Te pide que aceptes los términos y la política de privacidad antes
+            de empezar.
           </li>
           <li>
-            Solo recopila durante una partida que la exige: la lista de procesos
-            abiertos y capturas de la ventana del juego.
+            Junta evidencia solo durante una partida que la exige: los
+            programas abiertos, datos técnicos del juego y de tu PC, y capturas
+            de la pantalla donde está el juego.
           </li>
           <li>
-            No lee la memoria del juego, no se inyecta en él y no accede a tus
+            No se inyecta en el juego ni lo modifica, y no accede a tus
             archivos, tu micrófono ni tu cámara.
           </li>
           <li>
-            Guarda la evidencia 30 días y no sanciona sola: la revisa una
-            persona del staff.
+            Guarda las capturas 7 días y el resto 30, y no sanciona sola: la
+            revisa una persona del staff.
           </li>
         </ul>
         <p>

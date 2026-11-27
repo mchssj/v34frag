@@ -7,6 +7,10 @@
  *     verificación, en un mix se expulsa. Un admin puede abrir los mixes con sm_ac_open <minutos>, incluso con la red caída.
  *
  * Qué es un mix lo dice cml_ac_mix: lo ponen cfg/csstv/live.cfg (1) y end.cfg y warmup.cfg (0), sin tocar el reporter.
+ * Un servidor con ac_server_policy.enforce_always (replanteo 159) expulsa también fuera de un mix: eso lo decide la base.
+ * 1.4.0 (Daniel, 2026-11-27): un minuto de gracia desde que entra para quien no tiene el SteamID vinculado (no_profile, para
+ * que escriba !claim, y se lo revisa a los segundos de escribirlo) y para quien no tiene SteamID (AC-0). AC-0 expulsa también
+ * fuera de un mix si la base dijo que el servidor está en Siempre (always en la respuesta).
  * No recopila procesos ni capturas: eso es de la aplicación. Una base sin política para este servidor responde allow.
  */
 #pragma semicolon 1
@@ -15,10 +19,11 @@
 #include <sourcemod>
 #include <system2>
 
-#define PLUGIN_VERSION "1.2.0"
+#define PLUGIN_VERSION "1.4.0"
 #define KICK_GRACE     20.0
 #define RECHECK        60.0
 #define STALE_SECONDS  300
+#define JOIN_GRACE     60
 
 public Plugin myinfo =
 {
@@ -36,8 +41,12 @@ ConVar g_cvMix;
 
 int g_iVerifiedAt[MAXPLAYERS + 1];
 bool g_bWarned[MAXPLAYERS + 1];
+int g_iJoinedAt[MAXPLAYERS + 1];
+int g_iJoinedUser[MAXPLAYERS + 1];
+bool g_bClaimNoticed[MAXPLAYERS + 1];
 int g_iOpenUntil;
 bool g_bServiceDown;
+bool g_bAlways;   // La última respuesta de la base: el servidor está en Siempre. Sin respuesta todavía, false.
 
 public void OnPluginStart()
 {
@@ -54,15 +63,56 @@ public void OnPluginStart()
 
 	RegAdminCmd("sm_ac_open", Cmd_Open, ADMFLAG_RCON, "sm_ac_open <minutos>: abre los mixes en este servidor si el anticheat tiene problemas. 0 los cierra.");
 	RegAdminCmd("sm_ac_status", Cmd_Status, ADMFLAG_GENERIC, "Estado del Bridge.");
+	AddCommandListener(OnSay, "say");
+	AddCommandListener(OnSay, "say_team");
 	CreateTimer(RECHECK, Timer_CheckAll, _, TIMER_REPEAT);
+}
+
+// Un aviso pendiente se pierde con el cambio de mapa (TIMER_FLAG_NO_MAPCHANGE): se avisa de nuevo antes de expulsar.
+public void OnMapStart()
+{
+	for (int i = 1; i <= MaxClients; i++)
+		g_bWarned[i] = false;
 }
 
 public void OnClientPostAdminCheck(int client)
 {
 	g_iVerifiedAt[client] = 0;
 	g_bWarned[client] = false;
+	// El minuto de gracia cuenta desde que entró, no desde cada cambio de mapa: el userid sigue igual entre mapas.
+	int userid = GetClientUserId(client);
+	if (g_iJoinedUser[client] != userid)
+	{
+		g_iJoinedUser[client] = userid;
+		g_iJoinedAt[client] = GetTime();
+		g_bClaimNoticed[client] = false;
+	}
 	if (IsRealPlayer(client))
 		Check(client);
+}
+
+// Segundos que le quedan del minuto de gracia desde que entró (0: ya pasó).
+int GraceLeft(int client)
+{
+	int left = JOIN_GRACE - (GetTime() - g_iJoinedAt[client]);
+	return left > 0 ? left : 0;
+}
+
+// Después de un !claim (lo atiende csstv_reporter), se lo revisa a los pocos segundos, sin esperar el minuto.
+public Action OnSay(int client, const char[] command, int argc)
+{
+	if (client <= 0 || !IsRealPlayer(client))
+		return Plugin_Continue;
+	char text[64];
+	GetCmdArgString(text, sizeof(text));
+	StripQuotes(text);
+	TrimString(text);
+	if (StrContains(text, "!claim", false) == 0 || StrContains(text, "/claim", false) == 0)
+	{
+		CreateTimer(5.0, Timer_Recheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(15.0, Timer_Recheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+	}
+	return Plugin_Continue;
 }
 
 public void OnClientDisconnect(int client)
@@ -131,8 +181,15 @@ bool Check(int client)
 	if (!GetClientAuthId(client, AuthId_SteamID64, id, sizeof(id)) || !GetClientIP(client, ip, sizeof(ip)))
 #endif
 	{
-		if (g_cvMix.BoolValue)
-			Enforce(client, "sin SteamID válido");
+		// Steam a veces tarda en validar: un minuto desde que entró antes de avisar. En Siempre, también fuera de un mix.
+		if (g_cvMix.BoolValue || g_bAlways)
+		{
+			int left = GraceLeft(client);
+			if (left > 0)
+				CreateTimer(float(left) + 1.0, Timer_Recheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			else
+				Enforce(client, "sin SteamID válido", "AC-0");
+		}
 		return false;
 	}
 #if defined BRIDGE_DEBUG
@@ -194,6 +251,7 @@ public void OnPlayerResponse(bool success, const char[] error, System2HTTPReques
 
 	char content[512];
 	response.GetContent(content, sizeof(content));
+	g_bAlways = StrContains(content, "\"always\": true") != -1 || StrContains(content, "\"always\":true") != -1;
 	if (StrContains(content, "\"linked\": true") != -1 || StrContains(content, "\"linked\":true") != -1)
 		g_iVerifiedAt[client] = GetTime();
 
@@ -205,6 +263,7 @@ public void OnPlayerResponse(bool success, const char[] error, System2HTTPReques
 	// Al jugador no se le dice qué se detectó (Kyan, 2026-11-27): solo un código que lee el staff. El motivo va al log.
 	//   AC-1: sin agente o sin sesión. AC-2: el agente no ve el juego. AC-3: un hl2.exe abierto.
 	//   AC-4: el agente está modificado o es una versión vieja. AC-5: la máquina está baneada.
+	//   AC-6: el juego se abrió con el EAC de ClientMod, que está prohibido (replanteo 159). Este sí dice qué hacer.
 	if (StrContains(content, "machine_banned") != -1)
 		Enforce(client, "machine_banned", "AC-5", true);
 	else if (StrContains(content, "agent_modified") != -1)
@@ -215,6 +274,10 @@ public void OnPlayerResponse(bool success, const char[] error, System2HTTPReques
 		Enforce(client, "hl2_detected", "AC-3", true);
 	else if (StrContains(content, "game_not_seen") != -1)
 		Enforce(client, "game_not_seen", "AC-2", false);
+	else if (StrContains(content, "eac_on") != -1)
+		Enforce(client, "eac_on", "AC-6", false);
+	else if (StrContains(content, "no_profile") != -1)
+		EnforceClaim(client);
 	else
 		Enforce(client, "sin sesión del anticheat", "AC-1", false);
 }
@@ -228,7 +291,11 @@ void Enforce(int client, const char[] why, const char[] code = "AC-1", bool alwa
 	{
 		g_bWarned[client] = true;
 		if (StrEqual(code, "AC-1"))
-			PrintToChat(client, "\x04[CMLeague]\x01 Para jugar este mix abre CMLeague Anticheat y vincula tu cuenta. Tienes %d segundos.", RoundToFloor(KICK_GRACE));
+			PrintToChat(client, "\x04[CMLeague]\x01 Para jugar aquí abre CMLeague Anticheat y vincula tu cuenta. Tienes %d segundos.", RoundToFloor(KICK_GRACE));
+		else if (StrEqual(code, "AC-0"))
+			PrintToChat(client, "\x04[CMLeague]\x01 No pudimos leer tu SteamID. Vuelve a entrar al servidor. Tienes %d segundos.", RoundToFloor(KICK_GRACE));
+		else if (StrEqual(code, "AC-6"))
+			PrintToChat(client, "\x04[CMLeague]\x01 Apaga el anticheat de ClientMod (EAC): en CM Launcher, debajo de Play tiene que decir Anticheat: Disabled. Después vuelve a abrir el juego (AC-6). Tienes %d segundos.", RoundToFloor(KICK_GRACE));
 		else
 			PrintToChat(client, "\x04[CMLeague]\x01 CMLeague Anticheat no te deja jugar (%s). Tienes %d segundos.", code, RoundToFloor(KICK_GRACE));
 		CreateTimer(KICK_GRACE, Timer_Recheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
@@ -236,9 +303,34 @@ void Enforce(int client, const char[] why, const char[] code = "AC-1", bool alwa
 	}
 	LogMessage("%L expulsado: %s (%s).", client, why, code);
 	if (StrEqual(code, "AC-1"))
-		KickClient(client, "Para jugar mixes necesitas CMLeague Anticheat abierto y vinculado (cmleague.lat)");
+		KickClient(client, "Para jugar aquí necesitas CMLeague Anticheat abierto y vinculado (cmleague.lat)");
+	else if (StrEqual(code, "AC-0"))
+		KickClient(client, "No pudimos leer tu SteamID. Vuelve a entrar al servidor");
+	else if (StrEqual(code, "AC-6"))
+		KickClient(client, "Apaga el anticheat de ClientMod (EAC): en CM Launcher tiene que decir Anticheat: Disabled. Después vuelve a abrir el juego (AC-6)");
 	else
 		KickClient(client, "CMLeague Anticheat no te deja jugar (%s). Si crees que es un error, habla con el staff", code);
+}
+
+// SteamID sin vincular (no_profile): no se sabe de quién es, así que tampoco si tiene el anticheat. Un minuto desde que entró
+// para que escriba !claim (Daniel, 2026-11-27); el aviso dice qué hacer, como AC-0 y AC-6. Pasado el minuto, AC-1.
+void EnforceClaim(int client)
+{
+	if (MixesOpen())
+		return;
+	int left = GraceLeft(client);
+	if (left > 0)
+	{
+		if (!g_bClaimNoticed[client])
+		{
+			g_bClaimNoticed[client] = true;
+			PrintToChat(client, "[CMLeague] Vincula tu SteamID: escribe en el chat el !claim que te muestra la sala o Mi perfil en cmleague.lat. Tienes %d segundos.", left);
+		}
+		CreateTimer(float(left) + 1.0, Timer_Recheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		return;
+	}
+	LogMessage("%L expulsado: SteamID sin vincular (AC-1).", client);
+	KickClient(client, "Para jugar aquí vincula tu SteamID con !claim y abre CMLeague Anticheat (cmleague.lat)");
 }
 
 void OnServiceDown(int client)
@@ -276,6 +368,6 @@ public Action Cmd_Open(int client, int args)
 
 public Action Cmd_Status(int client, int args)
 {
-	ReplyToCommand(client, "[CMLeague] Bridge %s, mix=%d, abiertos=%d, servicio=%s", PLUGIN_VERSION, g_cvMix.IntValue, MixesOpen(), g_bServiceDown ? "sin respuesta" : "ok");
+	ReplyToCommand(client, "[CMLeague] Bridge %s, mix=%d, siempre=%d, abiertos=%d, servicio=%s", PLUGIN_VERSION, g_cvMix.IntValue, g_bAlways, MixesOpen(), g_bServiceDown ? "sin respuesta" : "ok");
 	return Plugin_Handled;
 }

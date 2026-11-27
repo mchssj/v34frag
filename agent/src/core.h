@@ -9,7 +9,7 @@
 #include <thread>
 #include <vector>
 
-#define AC_VERSION L"0.5.0"
+#define AC_VERSION L"0.6.0"
 #define AC_NAME L"CMLeague Anticheat"
 
 enum class Screen { Consent, Unlinked, Linking, Ready, Session, Offline };
@@ -22,6 +22,7 @@ struct UiState {
     bool online = false;
     bool gameOpen = false;      // Hay un CMLauncher.exe abierto
     bool hl2Open = false;       // Hay un hl2.exe abierto: el servidor expulsa. No se muestra
+    bool eacOn = false;         // El juego se abrió con el EAC de ClientMod: está prohibido y sí se le dice (AC-6, replanteo 159)
     bool session = false;
     // Perfil de la cuenta vinculada y servidor de la sesión, del latido (replanteo 155)
     std::wstring nick, memberSince, serverName;
@@ -30,7 +31,14 @@ struct UiState {
 
 // El juego es CMLauncher.exe. Un hl2.exe abierto (un emulador de ClientMod, o el CS:S de Steam) expulsa
 // (docs/bitacora/2026-11-27-anticheat-ver-el-juego).
-struct GameState { bool clientmod = false; bool hl2 = false; DWORD pid = 0; };
+// El EAC de ClientMod está prohibido (docs/bitacora/2026-11-27-anticheat-sin-eac): eac dice si está prendido y eacWhy por qué
+// (parent, ini, service o denied). Con eac, el agente no lee nada de dentro del juego.
+struct GameState {
+    bool clientmod = false; bool hl2 = false; DWORD pid = 0;
+    std::wstring dir;            // Carpeta de CMLauncher.exe, con su clientmod.ini. Vacía si Windows no dejó leer la ruta
+    bool eac = false; const char* eacWhy = nullptr;
+    bool eacService = false;     // El servicio EasyAntiCheat_EOS está corriendo (solo para --detect y para confirmar)
+};
 
 // ---------- ui.cpp ----------
 struct Hit { RECT r; int id; };

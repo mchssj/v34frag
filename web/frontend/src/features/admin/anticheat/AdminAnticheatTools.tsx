@@ -8,6 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { FilterChips } from "@/components/brand/FilterChips"
+import { HEAD_CELL as headCell } from "@/components/data-table/DataTable"
 import {
   addMachineException,
   addSignature,
@@ -19,15 +23,19 @@ import {
   machineOptions,
   removeSignature,
   reviewFlag,
+  serverPoliciesOptions,
   setAgentConfig,
+  setServerMode,
   signaturesOptions,
   type AcAgentConfig,
+  type AcServerMode,
+  type AcSettableMode,
   type AcEventKind,
   type AcFlag,
   type AcHashSearch,
 } from "@/features/anticheat/queries"
 import { fmtDate } from "@/features/admin/lib/format"
-import { Dot, EmptyState, PanelSection, QueryError } from "@/features/admin/components/ui"
+import { Dot, EmptyState, PanelSection, QueryError, TableBox } from "@/features/admin/components/ui"
 
 // Panel del staff del anticheat (plan docs/bitacora/2026-11-27-anticheat-deteccion). Solo admins.
 // Hechos observados, no conclusiones: la decisión es de una persona.
@@ -42,6 +50,7 @@ export const RULES: Record<string, string> = {
   driver_unsigned: "Driver sin firma",
   game_file_unknown: "Archivo del juego distinto de los conocidos",
   port_mismatch: "El puerto del servidor no es el del juego en la PC del agente",
+  ip_family: "El agente llegó por IPv6 y el juego por IPv4 (o al revés): no se pudo comparar la IP",
   agent_modified: "El agente no es una versión publicada",
   aim_snap: "Giros de mira anormales antes de matar",
   aim_smoke: "Muchas kills a través del humo",
@@ -318,6 +327,130 @@ export function SignaturesTab({ hash }: { hash?: string }) {
 }
 
 // ---------- configuración del agente ----------
+
+// ---------- servidores (replanteo 159) ----------
+
+const MODES: Record<AcServerMode, { label: string; help: string; tone: "win" | "warn" | "muted" }> = {
+  always: { label: "Siempre", help: "Exige el anticheat desde que el jugador entra, también en el calentamiento.", tone: "win" },
+  // Ya no se elige (Daniel, 2026-11-27): quien entra sin el anticheat juega el calentamiento y lo expulsan al arrancar el mix.
+  // Solo se muestra si un servidor ya lo tiene (la demo de Kyan, o un cambio por SQL).
+  mixes: { label: "Solo en la partida", help: "Ya no se usa: cámbialo a Siempre.", tone: "warn" },
+  off: { label: "No lo exige", help: "No abre sesiones ni expulsa a nadie por el anticheat.", tone: "muted" },
+}
+const SETTABLE: AcSettableMode[] = ["always", "off"]
+
+export function ServersTab() {
+  const qc = useQueryClient()
+  const [mode, setMode] = useState<AcSettableMode | undefined>(undefined)
+  const [page, setPage] = useState(1)
+  const list = useQuery(serverPoliciesOptions({ mode, page }))
+  const change = useMutation({
+    mutationFn: (v: { id: string; mode: AcSettableMode }) => setServerMode(v.id, v.mode),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["admin", "anticheat", "servers"] }),
+  })
+  const pages = list.data ? Math.max(1, Math.ceil(list.data.total / list.data.per)) : 1
+  return (
+    <div className="flex flex-col gap-4">
+      <PanelSection title="Cuándo exige el anticheat cada servidor">
+        <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
+          {SETTABLE.map((m) => (
+            <li key={m}>
+              <span className="font-medium text-foreground">{MODES[m].label}:</span> {MODES[m].help}
+            </li>
+          ))}
+          <li>
+            En cualquier modo menos "No lo exige", el servidor expulsa siempre por AC-3, AC-4 y AC-5. El cambio llega al servidor
+            en la próxima revisión del jugador (al entrar y cada minuto). "Abrir mixes" deja jugar sin el anticheat mientras dure.
+          </li>
+        </ul>
+      </PanelSection>
+      <FilterChips
+        label="Modo"
+        value={mode}
+        onChange={(v) => {
+          setMode(v)
+          setPage(1)
+        }}
+        options={[
+          { value: undefined, label: "Todos" },
+          { value: "always", label: MODES.always.label },
+          { value: "off", label: MODES.off.label },
+        ]}
+      />
+      {list.isError ? (
+        <QueryError error={list.error} onRetry={() => void list.refetch()} />
+      ) : list.isPending ? (
+        <Skeleton className="h-40 w-full" />
+      ) : list.data.items.length === 0 ? (
+        <EmptyState>No hay servidores activos con este filtro.</EmptyState>
+      ) : (
+        <TableBox>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className={headCell}>Servidor</TableHead>
+                <TableHead className={headCell}>Anticheat</TableHead>
+                <TableHead className={headCell}>Último cambio</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {list.data.items.map((s) => (
+                <TableRow key={s.server_id}>
+                  <TableCell className="font-medium">{s.name}</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center gap-2">
+                      <Dot tone={MODES[s.mode].tone} />
+                      <Select
+                        value={s.mode}
+                        disabled={change.isPending}
+                        onValueChange={(v) => change.mutate({ id: s.server_id, mode: v as AcSettableMode })}
+                      >
+                        <SelectTrigger aria-label={`Anticheat en ${s.name}`} className="h-9 w-[190px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {s.mode === "mixes" ? (
+                            <SelectItem value="mixes" disabled>
+                              {MODES.mixes.label}
+                            </SelectItem>
+                          ) : null}
+                          {SETTABLE.map((m) => (
+                            <SelectItem key={m} value={m}>
+                              {MODES[m].label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{s.updated_at ? fmtDate(s.updated_at) : "—"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableBox>
+      )}
+      {pages > 1 && (
+        <div className="flex items-center gap-2 text-sm">
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            Anterior
+          </Button>
+          <span className="text-muted-foreground">
+            Página {page} de {pages}
+          </span>
+          <Button variant="outline" size="sm" disabled={page >= pages} onClick={() => setPage(page + 1)}>
+            Siguiente
+          </Button>
+        </div>
+      )}
+      {change.isError && (
+        <Alert variant="destructive">
+          <AlertDescription>{errorMessage(change.error)}</AlertDescription>
+        </Alert>
+      )}
+    </div>
+  )
+}
 
 export function AgentTab() {
   const cfg = useQuery(agentConfigOptions())

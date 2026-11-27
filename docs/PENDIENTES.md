@@ -1,6 +1,20 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-14**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-27** (solo la sección del anticheat sin el EAC: el resto de esta rama es del 2026-11-14; el `PENDIENTES.md` de `main` está más al día).
+
+## Anticheat sin el EAC de ClientMod y expulsión obligatoria (2026-11-27): hecho en `kyan/ac`, sin commit ni despliegue
+
+- **Qué es:** el servidor expulsa a quien no tiene CMLeague Anticheat abierto y vinculado desde que entra (modo **Siempre** por servidor, desde Administración › Anticheat › Servidores), y en nuestros servidores se juega con ClientMod con su EAC apagado (`AC-6`). Va con los tres requerimientos de Kyan del mismo día. Detalle: [`2026-11-27-anticheat-sin-eac`](bitacora/2026-11-27-anticheat-sin-eac/).
+- **Hecho y probado en local:** base (`159`, más las `155` a `158` de Kyan), API, panel, agente 0.6.0, Bridge 1.4.0 (con 1 minuto para el `!claim` y `AC-0` en Siempre), `cml_aimstats` 1.0.1 revisado, plantillas de `cml_anticheat.cfg` y `cml_aimstats.cfg`, manual, términos y privacidad. Probado con Daniel en el servidor de pruebas: EAC apagado, EAC prendido (`AC-6`), agente sin latidos (`AC-1`) y el `!claim` con y sin escribirlo. Salió y se arregló un bug de Kyan: el agente se quedaba sin latidos a los 15 minutos (403 en vez de 401).
+- **La copia local de producción** tiene aplicadas la `155` a la `159` del anticheat, y #1, #2 y #3 en **Siempre** (solo ahí).
+- **Falta:**
+  1. El commit, cuando Daniel lo pida.
+  2. **Renumerar las migraciones al llevarlas a `main`:** `main` usó la `155` el 2026-11-27 (la sala oculta, en producción). Las cinco del anticheat pasan a ser de la `156` a la `160`, o las siguientes libres. Y el changelog, a 2.9.79.
+  3. **Decidir si se prende `require_anticheat` del matchmaking** al poner los servidores en Siempre (hoy en `false`): la cola no dejaría buscar partida sin el agente activo.
+  4. Una captura de CM Launcher para el manual del jugador (el texto ya dice dónde está el botón).
+  5. El certificado de firma de código del agente (lo compra el equipo).
+  6. El despliegue, en el orden de la [guía](bitacora/2026-11-27-anticheat-sin-eac/GUIA_IMPLEMENTACION.md): base, API y web, firmas de ClientMod, agente publicado, Bridge y `cml_aimstats` en **#1, #2 y #3** en la misma tanda y sin un mix en curso, avisar a los jugadores, poner los tres en **Siempre** y quitar "En preparación" de los términos.
+  7. Después del despliegue: mirar si `aim_snap` marca a jugadores limpios (`cml_aim_snap` depende del tickrate) y si algún servidor se cierra solo después de una expulsión (pasó una vez en el de pruebas, sin error).
 
 ## Ver una sala del matchmaking como admin (2026-11-14): commiteado en `kyan/pruebas`, sin desplegar
 

@@ -276,7 +276,7 @@ static void Worker() {
         }
         GameState game = GameScan();
         // Al jugador no se le muestra qué ve el agente (Kyan, 2026-11-27): solo se informa a la API.
-        Update([&](UiState& s) { s.gameOpen = game.clientmod; s.hl2Open = game.hl2; });
+        Update([&](UiState& s) { s.gameOpen = game.clientmod; s.hl2Open = game.hl2; s.eacOn = game.eac; });
 
         if (g_wantUnlink) {
             g_wantUnlink = false;
@@ -301,7 +301,8 @@ static void Worker() {
         std::string ports;
         for (int p : GamePorts(game.pid)) ports += (ports.empty() ? "" : ",") + std::to_string(p);
         std::string beat = "{\"agent_version\":\"" + VersionField() + "\",\"game\":{\"clientmod\":" + (game.clientmod ? "true" : "false") +
-                           ",\"hl2\":" + (game.hl2 ? "true" : "false") + ",\"ports\":[" + ports + "]}" +
+                           ",\"hl2\":" + (game.hl2 ? "true" : "false") + ",\"eac\":" + (game.eac ? "true" : "false") +
+                           (game.eacWhy ? std::string(",\"eac_why\":\"") + game.eacWhy + "\"" : std::string()) + ",\"ports\":[" + ports + "]}" +
                            (g_selfSha.empty() ? "" : ",\"agent_sha\":\"" + JsonEscape(g_selfSha) + "\"") + ",\"hw\":" + MachineIds() + "}";
         auto r = HttpSend(g_api, OBF(L"/api/v1/anticheat/heartbeat").c_str(), beat, L"application/json", token, SignedHeaders(token));
         if (r.status == 401) {
@@ -460,6 +461,7 @@ static bool RenderDemo(const std::wstring& name, const wchar_t* path) {
     else if (name == L"ready-game") { s.screen = Screen::Ready; s.linked = s.online = s.gameOpen = true; }
     else if (name == L"session") { s.screen = Screen::Session; s.linked = s.online = s.gameOpen = s.session = true; }
     else if (name == L"offline") { s.screen = Screen::Offline; s.linked = true; s.gameOpen = true; }
+    else if (name == L"eac") { s.screen = Screen::Ready; s.linked = s.online = s.gameOpen = s.eacOn = true; }
     else return false;
     return UiRenderPng(s, path);
 }
@@ -494,10 +496,21 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
             auto dump = [&](const wchar_t* kind, const std::vector<DetectItem>& v) {
                 for (const auto& d : v) outText += std::wstring(kind) + L"\t" + std::to_wstring(d.pid) + L"\t" + d.name + L"\t" + d.path + L"\t" + d.note + L"\t" + Widen(d.detail) + L"\r\n";
             };
-            dump(L"handle", DetectHandles(pid));
+            GameState gs = GameScan();
+            outText += L"game\tclientmod=" + std::to_wstring(gs.clientmod) + L"\tpid=" + std::to_wstring(gs.pid) + L"\tdir=" + gs.dir +
+                       L"\thl2=" + std::to_wstring(gs.hl2) + L"\teac=" + std::to_wstring(gs.eac) + L"\twhy=" + (gs.eacWhy ? Widen(gs.eacWhy) : L"") +
+                       L"\tservicio=" + std::to_wstring(gs.eacService) + L"\r\n";
+            if (!pid) pid = gs.pid;
+            ULONGLONG t0 = GetTickCount64();
+            if (!gs.eac) dump(L"handle", DetectHandles(pid));
+            ULONGLONG t1 = GetTickCount64();
             dump(L"overlay", DetectOverlays(pid));
+            ULONGLONG t2 = GetTickCount64();
             auto drv = DetectDrivers();
+            ULONGLONG t3 = GetTickCount64();
             outText += L"drivers\t" + std::to_wstring(drv.size()) + L"\r\n";
+            outText += L"ms\thandles=" + (gs.eac ? std::wstring(L"omitido (EAC)") : std::to_wstring(t1 - t0)) + L"\toverlays=" + std::to_wstring(t2 - t1) +
+                       L"\tdrivers=" + std::to_wstring(t3 - t2) + L"\r\n";
             std::wstring ports;
             for (int p : GamePorts(pid)) ports += std::to_wstring(p) + L" ";
             outText += L"ports\t" + ports + L"\r\nmachine\t" + Widen(MachineIds()) + L"\r\n";

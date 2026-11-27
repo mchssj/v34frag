@@ -4,6 +4,7 @@ import { must, mustHave, notFound } from '../lib/db';
 import { createRouter } from '../lib/router';
 import { IdParam } from '../schemas/admin';
 import { bearer, errorResponses, json } from '../schemas/common';
+import { Envelope, envelope, listQuery } from '../lib/list';
 
 // Anticheat, panel del staff (plan docs/bitacora/2026-11-27-anticheat-deteccion, replanteos 156 y 157): marcas, buscar un hash,
 // firmas, configuración del agente y ban por máquina. Solo admins (ac_can_review), y cada lectura queda en ac_admin_actions.
@@ -112,6 +113,20 @@ const AgentConfigBody = z
   .refine((b) => b.capture_min_s === undefined || b.capture_max_s === undefined || b.capture_min_s <= b.capture_max_s, 'El mínimo va antes que el máximo')
   .openapi('AcAgentConfigBody');
 
+// El modo de cada servidor (replanteo 159): off no protege y always lo exige desde que el jugador entra. mixes (con la partida
+// en vivo, cml_ac_mix 1) ya no se elige (Daniel, 2026-11-27: quien entra sin el anticheat juega el calentamiento y lo expulsan
+// al arrancar el mix). Se sigue listando y filtrando si un servidor ya lo tiene.
+const ServerMode = z.enum(['off', 'mixes', 'always']).openapi({ description: '`off`, `always` o `mixes` (ya no se elige)' });
+const SettableMode = z.enum(['off', 'always']).openapi({ description: '`off` o `always`' });
+const ServerPolicy = z
+  .object({ server_id: z.uuid(), name: z.string(), mode: ServerMode, updated_at: z.string().nullable() })
+  .openapi('AcServerPolicy');
+const ServerQuery = listQuery(['name', 'mode', 'updated_at'] as const, { sort: 'name', order: 'asc' }).extend({
+  q: z.string().trim().max(64).optional().openapi({ description: 'Parte del nombre del servidor' }),
+  mode: ServerMode.optional(),
+});
+const ServerModeBody = z.object({ mode: SettableMode }).openapi('AcServerModeBody');
+
 const BanMachineBody = z.object({ reason: z.string().trim().min(3).max(200) }).openapi('AcBanMachineBody');
 const LiftBody = z.object({ reason: z.string().trim().max(200).optional() }).openapi('AcLiftMachineBody');
 const ExceptionBody = z.object({ user_id: z.uuid(), note: z.string().trim().max(200).optional() }).openapi('AcMachineExceptionBody');
@@ -201,7 +216,37 @@ const exception = createRoute({
   responses: { 204: { description: 'Hecho' }, ...errorResponses(400, 401, 403) },
 });
 
+const servers = createRoute({
+  method: 'get', path: '/api/v1/admin/anticheat/servers', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Servidores activos y si exigen el anticheat',
+  request: { query: ServerQuery },
+  responses: { 200: { description: 'Servidores', ...json(Envelope(ServerPolicy)) }, ...errorResponses(400, 401, 403) },
+});
+const serverSet = createRoute({
+  method: 'put', path: '/api/v1/admin/anticheat/servers/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Cambiar cuándo exige el anticheat un servidor',
+  description: 'Lo toma el Bridge en la próxima revisión (al entrar y cada minuto). Queda registrado.',
+  request: { params: IdParam, body: { required: true, ...json(ServerModeBody) } },
+  responses: { 200: { description: 'Servidor', ...json(ServerPolicy) }, ...errorResponses(400, 401, 403, 404) },
+});
+
 export const anticheatStaff = createRouter();
+
+anticheatStaff.openapi(servers, async (c) => {
+  const q = c.req.valid('query');
+  const r = mustHave(
+    await c.var.sb.rpc('ac_admin_server_policies', {
+      ...(q.q ? { p_q: q.q } : {}), ...(q.mode ? { p_mode: q.mode } : {}),
+      p_sort: q.sort, p_order: q.order, p_limit: q.per, p_offset: (q.page - 1) * q.per,
+    } as never),
+  ) as { items: z.infer<typeof ServerPolicy>[]; total: number };
+  return c.json(envelope(r.items, r.total, q), 200);
+});
+
+anticheatStaff.openapi(serverSet, async (c) => {
+  const r = mustHave(await c.var.sb.rpc('ac_admin_set_server_policy', { p_server: c.req.valid('param').id, p_mode: c.req.valid('json').mode } as never));
+  return c.json(r as never, 200);
+});
 
 anticheatStaff.openapi(flags, async (c) => {
   const q = c.req.valid('query');

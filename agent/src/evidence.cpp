@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <fstream>
+#include <atomic>
 #include <map>
 #include <mutex>
 #include <random>
@@ -27,6 +28,9 @@
 #pragma comment(lib, "wintrust")
 
 namespace {
+// La lista de módulos del juego negada por Windows, para GameScan (señal 4 del EAC).
+std::atomic<DWORD> g_denPid{0};
+std::atomic<int> g_denCount{0};
 struct Proc { DWORD pid; std::wstring name, path, sha, sig, pub, note; std::string started, detail; };
 struct FileInfo { std::wstring sha, sig, pub, note; };
 
@@ -637,11 +641,14 @@ void Loop() {
     ULONGLONG nextScan = 0, nextShot = 0, nextFlush = 0, nextMods = 0, nextHandles = 0, nextOverlays = 0;
     // Manda los módulos nuevos del juego. Si cambió el proceso (se reabrió el juego), empieza de cero.
     auto scanModules = [&](const std::wstring& session) {
-        DWORD pid = GameScan().pid;
-        if (pid != gamePid) { gamePid = pid; mods.clear(); modsDenied = false; }
-        if (!pid) return;
+        GameState gs = GameScan();
+        DWORD pid = gs.pid;
+        if (pid != gamePid) { gamePid = pid; mods.clear(); modsDenied = false; g_denPid = pid; g_denCount = 0; }
+        if (!pid || gs.eac) return;  // Con el EAC prendido no se le pide nada al juego: el EAC lo puede tomar como un cheat
         bool denied = false;
         auto cur = Modules(pid, denied);
+        if (denied) g_denCount++;
+        else g_denCount = 0;
         std::vector<std::pair<const wchar_t*, Proc>> evs;
         if (denied) {
             if (!modsDenied) {
@@ -728,7 +735,8 @@ void Loop() {
             }
             if (cfg.handles && now >= nextHandles) {
                 nextHandles = now + std::max(3, cfg.handlesEvery) * 1000ULL;
-                QueueFindings(session, L"handle", DetectHandles(GameScan().pid), &seen);
+                GameState gs = GameScan();
+                if (!gs.eac) QueueFindings(session, L"handle", DetectHandles(gs.pid), &seen);
             }
             if (cfg.overlays && now >= nextOverlays) {
                 nextOverlays = now + std::max(2, cfg.overlaysEvery) * 1000ULL;
@@ -760,18 +768,75 @@ void Loop() {
 
 static std::thread* g_thread = nullptr;
 
+bool EacServiceRunning() {
+    bool on = false;
+    if (SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT)) {
+        if (SC_HANDLE s = OpenServiceW(scm, OBF(L"EasyAntiCheat_EOS").c_str(), SERVICE_QUERY_STATUS)) {
+            SERVICE_STATUS st{};
+            if (QueryServiceStatus(s, &st)) on = st.dwCurrentState == SERVICE_RUNNING || st.dwCurrentState == SERVICE_START_PENDING;
+            CloseServiceHandle(s);
+        }
+        CloseServiceHandle(scm);
+    }
+    return on;
+}
+
+// El juego y el EAC, sin tocar el proceso del juego: la lista de procesos, la ruta (con el permiso mínimo, el del Administrador
+// de tareas), el clientmod.ini y el estado del servicio de EAC.
 GameState GameScan() {
     GameState g;
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) return g;
     PROCESSENTRY32W e{};
     e.dwSize = sizeof(e);
-    static const std::wstring game = OBF(L"CMLauncher.exe"), hl2 = OBF(L"hl2.exe");
+    static const std::wstring game = OBF(L"CMLauncher.exe"), hl2 = OBF(L"hl2.exe"), boot = OBF(L"ClientModEAC.exe");
+    struct P { DWORD pid, parent; std::wstring name; };
+    std::vector<P> all;
     for (BOOL ok = Process32FirstW(snap, &e); ok; ok = Process32NextW(snap, &e)) {
-        if (_wcsicmp(e.szExeFile, game.c_str()) == 0) { g.clientmod = true; if (!g.pid) g.pid = e.th32ProcessID; }
-        else if (_wcsicmp(e.szExeFile, hl2.c_str()) == 0) g.hl2 = true;
+        all.push_back({e.th32ProcessID, e.th32ParentProcessID, e.szExeFile});
+        if (_wcsicmp(e.szExeFile, hl2.c_str()) == 0) g.hl2 = true;
     }
     CloseHandle(snap);
+
+    // El juego es un CMLauncher.exe con clientmod.ini al lado: un programa cualquiera renombrado no cuenta.
+    // Si Windows no deja leer la ruta, se acepta sin poder comprobarlo.
+    DWORD parent = 0;
+    bool pathUnknown = false;
+    for (const auto& p : all) {
+        if (_wcsicmp(p.name.c_str(), game.c_str()) != 0) continue;
+        std::wstring path = ProcessPath(p.pid);
+        if (path.empty()) {
+            if (!g.pid) { g.pid = p.pid; parent = p.parent; pathUnknown = true; }
+            continue;
+        }
+        std::wstring dir = path.substr(0, path.find_last_of(L'\\'));
+        if (GetFileAttributesW((dir + OBF(L"\\clientmod.ini")).c_str()) == INVALID_FILE_ATTRIBUTES) continue;
+        g.pid = p.pid;
+        g.dir = dir;
+        parent = p.parent;
+        pathUnknown = false;
+        break;
+    }
+    g.clientmod = g.pid != 0;
+    if (!g.clientmod) return g;
+
+    // 1. Lo lanzó el arranque del EAC.
+    for (const auto& p : all)
+        if (p.pid == parent && _wcsicmp(p.name.c_str(), boot.c_str()) == 0) { g.eac = true; g.eacWhy = "parent"; }
+    // 2. CM Launcher guarda la opción en clientmod.ini ([Launcher] Anticheat=true o false).
+    bool iniKnown = false;
+    if (!g.eac && !g.dir.empty()) {
+        wchar_t v[16] = {};
+        GetPrivateProfileStringW(L"Launcher", OBF(L"Anticheat").c_str(), L"", v, 16, (g.dir + OBF(L"\\clientmod.ini")).c_str());
+        if (_wcsicmp(v, L"true") == 0 || wcscmp(v, L"1") == 0) { g.eac = true; g.eacWhy = "ini"; }
+        iniKnown = v[0] != 0;
+    }
+    // 3. El servicio de EAC solo cuenta si no se pudo leer la opción: otro juego con EAC también lo prende.
+    g.eacService = EacServiceRunning();
+    if (!g.eac && g.eacService && (!iniKnown || pathUnknown)) { g.eac = true; g.eacWhy = "service"; }
+    // 4. Windows niega dos veces seguidas la lista de módulos y el servicio de EAC está corriendo. Sin el servicio, la causa
+    //    es otra (el juego abierto como administrador) y no es indicio de nada.
+    if (!g.eac && g.eacService && g_denPid == g.pid && g_denCount >= 2) { g.eac = true; g.eacWhy = "denied"; }
     return g;
 }
 

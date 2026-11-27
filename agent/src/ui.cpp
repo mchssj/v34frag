@@ -32,6 +32,9 @@ Color ToneColor(Tone t) {
 struct Look { Tone tone; const wchar_t* title; const wchar_t* text; };
 
 Look LookOf(const UiState& s) {
+    // El EAC de ClientMod está prohibido (replanteo 159). Esto sí se le dice al jugador: es lo único que puede arreglar solo.
+    if (s.eacOn && (s.screen == Screen::Ready || s.screen == Screen::Session))
+        return {Tone::Warn, L"Desactiva el EAC de ClientMod", L"En CM Launcher, deja gris el botón del anticheat (debajo de Play: Anticheat: Disabled) y vuelve a abrir el juego."};
     switch (s.screen) {
         case Screen::Unlinked: return {Tone::Idle, L"Vincula tu cuenta", L"Inicia sesión en cmleague.lat para jugar los mixes."};
         case Screen::Linking: return {Tone::Warn, L"Confirma en la web", L"Aprueba este código en cmleague.lat."};

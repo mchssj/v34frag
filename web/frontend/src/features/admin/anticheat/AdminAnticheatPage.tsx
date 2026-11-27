@@ -34,6 +34,7 @@ import {
   HashLink,
   MachinePanel,
   OpenHashContext,
+  ServersTab,
   SignaturesTab,
   severityTone,
 } from "@/features/admin/anticheat/AdminAnticheatTools"
@@ -154,7 +155,7 @@ function Card({ children }: { children: ReactNode }) {
   )
 }
 
-type Tab = "sessions" | "flags" | "signatures" | "agent"
+type Tab = "sessions" | "flags" | "signatures" | "servers" | "agent"
 
 export function AdminAnticheatPage() {
   const [tab, setTab] = useState<Tab>("sessions")
@@ -180,12 +181,14 @@ export function AdminAnticheatPage() {
             { key: "sessions", label: "Sesiones" },
             { key: "flags", label: "Marcas" },
             { key: "signatures", label: "Firmas y hashes" },
+            { key: "servers", label: "Servidores" },
             { key: "agent", label: "Agente" },
           ]}
         />
         {tab === "sessions" && <Sessions />}
         {tab === "flags" && <FlagsTab />}
         {tab === "signatures" && <SignaturesTab hash={hash} />}
+        {tab === "servers" && <ServersTab />}
         {tab === "agent" && <AgentTab />}
       </div>
     </OpenHashContext.Provider>

@@ -195,9 +195,10 @@ const SECTIONS: LegalSection[] = [
         <h3>¿Qué es?</h3>
         <p>
           Una aplicación para Windows que la liga va a poder exigir en mixes,
-          matchmaking o torneos <Wip>Todavía no disponible</Wip> Solo recopila
-          mientras juegas en un servidor que la pide, y nunca lee la memoria del
-          juego ni tus archivos.
+          matchmaking o torneos <Wip>Todavía no disponible</Wip> Junta evidencia
+          solo mientras juegas en un servidor que la pide, y nunca se inyecta en
+          el juego ni lee tus archivos. En esos servidores se juega con
+          ClientMod sin su anticheat (EAC).
         </p>
         <h3>¿Qué datos envía?</h3>
         <p>

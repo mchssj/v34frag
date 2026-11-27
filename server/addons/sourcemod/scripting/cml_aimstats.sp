@@ -10,6 +10,10 @@
  * en la sesión del anticheat. No sanciona y no le dice nada al jugador.
  *
  * Usa la URL, la clave y el token del Bridge (cml_ac_api_url, cml_ac_api_key y cml_ac_server_token). Sin el Bridge, no manda nada.
+ *
+ * 1.0.1 (revisión del 2026-11-27, docs/bitacora/2026-11-27-anticheat-sin-eac): manda de a BATCH jugadores, porque System2
+ * corta el cuerpo en 2048 bytes y un JSON cortado hace que la base rechace todo el lote; borra el historial de la mira al
+ * empezar el mix y cada ronda; no cuenta las kills a un compañero ni las de granada.
  */
 #pragma semicolon 1
 #pragma newdecls required
@@ -18,12 +22,13 @@
 #include <sdktools>
 #include <system2>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 #define HIST           16
 #define LOOKBACK       8
 #define MAX_SMOKES     16
 #define SMOKE_LIFE     18.0
 #define SMOKE_RADIUS   140.0
+#define BATCH          12     // jugadores por petición: unos 90 bytes cada uno, debajo de los 2048 de System2
 
 // Índices de cada fila de estadísticas.
 #define S_KILLS  0
@@ -86,6 +91,7 @@ public void OnMixChanged(ConVar cv, const char[] oldValue, const char[] newValue
 	{
 		g_hStats.Clear();
 		ClearSmokes();
+		ClearHistory();
 	}
 	else if (!live && g_bLive)
 	{
@@ -143,6 +149,16 @@ float MaxSnap(int client)
 	return best;
 }
 
+// Sin esto, la primera kill de un mix o de una ronda compara la mira con la de hace minutos, o con la del respawn.
+void ClearHistory()
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		g_iPos[i] = 0;
+		g_iFill[i] = 0;
+	}
+}
+
 void ClearSmokes()
 {
 	for (int i = 0; i < MAX_SMOKES; i++)
@@ -153,6 +169,7 @@ void ClearSmokes()
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	ClearSmokes();
+	ClearHistory();
 }
 
 public void Event_Smoke(Event event, const char[] name, bool dontBroadcast)
@@ -214,6 +231,13 @@ public void Event_Death(Event event, const char[] name, bool dontBroadcast)
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	if (attacker <= 0 || attacker > MaxClients || attacker == victim || victim <= 0 || !IsClientInGame(attacker) || IsFakeClient(attacker))
 		return;
+	// Una kill a un compañero o con granada no dice nada de la puntería.
+	if (IsClientInGame(victim) && GetClientTeam(victim) == GetClientTeam(attacker))
+		return;
+	char weapon[32];
+	event.GetString("weapon", weapon, sizeof(weapon));
+	if (StrEqual(weapon, "hegrenade"))
+		return;
 	char steam[32];
 	if (!GetClientAuthId(attacker, AuthId_SteamID64, steam, sizeof(steam)))
 		return;
@@ -251,39 +275,48 @@ void Send()
 	ConVar cvToken = FindConVar("cml_ac_server_token");
 	StringMapSnapshot snap = g_hStats.Snapshot();
 	int n = snap.Length;
-	if (n == 0 || cvUrl == null || cvKey == null || cvToken == null)
+	char url[256];
+	if (cvUrl != null)
+		cvUrl.GetString(url, sizeof(url));
+	if (n == 0 || !url[0] || cvKey == null || cvToken == null)
 	{
 		delete snap;
 		g_hStats.Clear();
 		return;
 	}
 
-	char url[256], key[512], token[128], map[64], body[8192], item[160], steam[32];
-	cvUrl.GetString(url, sizeof(url));
+	char key[512], token[128], map[64], body[2048], item[160], steam[32];
 	cvKey.GetString(key, sizeof(key));
 	cvToken.GetString(token, sizeof(token));
 	GetCurrentMap(map, sizeof(map));
-	if (!url[0])
-	{
-		delete snap;
-		g_hStats.Clear();
-		return;
-	}
-	Format(body, sizeof(body), "{\"p_token\":\"%s\",\"p_map\":\"%s\",\"p_rows\":[", token, map);
+	StrCat(url, sizeof(url), "ac_aim_report");
+
+	// De a BATCH jugadores por petición: la base suma cada lote (un insert por jugador), no reemplaza.
 	int row[S_LEN];
+	int inBatch = 0;
 	for (int i = 0; i < n && i < 64; i++)
 	{
+		if (inBatch == 0)
+			Format(body, sizeof(body), "{\"p_token\":\"%s\",\"p_map\":\"%s\",\"p_rows\":[", token, map);
 		snap.GetKey(i, steam, sizeof(steam));
 		g_hStats.GetArray(steam, row, S_LEN);
 		Format(item, sizeof(item), "%s{\"steam\":\"%s\",\"kills\":%d,\"hs\":%d,\"snaps\":%d,\"smoke\":%d,\"max_snap\":%d.%d}",
-			i > 0 ? "," : "", steam, row[S_KILLS], row[S_HS], row[S_SNAPS], row[S_SMOKE], row[S_MAX10] / 10, row[S_MAX10] % 10);
+			inBatch > 0 ? "," : "", steam, row[S_KILLS], row[S_HS], row[S_SNAPS], row[S_SMOKE], row[S_MAX10] / 10, row[S_MAX10] % 10);
 		StrCat(body, sizeof(body), item);
+		inBatch++;
+		if (inBatch == BATCH || i == n - 1 || i == 63)
+		{
+			StrCat(body, sizeof(body), "]}");
+			Post(url, key, body);
+			inBatch = 0;
+		}
 	}
-	StrCat(body, sizeof(body), "]}");
 	delete snap;
 	g_hStats.Clear();
+}
 
-	StrCat(url, sizeof(url), "ac_aim_report");
+void Post(const char[] url, const char[] key, const char[] body)
+{
 	System2HTTPRequest req = new System2HTTPRequest(OnReport, "%s", url);
 	req.SetHeader("apikey", "%s", key);
 	req.SetHeader("Authorization", "Bearer %s", key);

@@ -175,7 +175,11 @@ anticheat.openapi(heartbeat, async (c) => {
   const sig = c.req.header('X-AC-Sig');
   let ts: number | null = null;
   if (tsHeader && sig && /^\d{9,11}$/.test(tsHeader)) {
-    const key = must(await sb.rpc('ac_device_key', { p_secret: secret(c), p_access: access })) as string | null;
+    // Con el token vencido, ac_device_of da 42501 y fromPostgrest lo vuelve 403. Tiene que ser 401, que es lo que hace que el
+    // agente lo renueve: con 403 se quedaba sin latidos a los 15 minutos de abrirse (2026-11-27, prueba en el servidor local).
+    const kr = await sb.rpc('ac_device_key', { p_secret: secret(c), p_access: access });
+    if (kr.error?.code === '42501' && kr.error.message.includes('Token de agente')) throw noSession();
+    const key = must(kr) as string | null;
     if (key && (await signatureOk(key, sig, await heartbeatText(Number(tsHeader), access)))) ts = Number(tsHeader);
     else if (key) throw new AppError(401, 'UNAUTHORIZED', 'La firma del latido no es válida.');
   }

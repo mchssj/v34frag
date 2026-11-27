@@ -1,10 +1,10 @@
 ---
 titulo: Anticheat
-resumen: Revisar las sesiones, las marcas y la evidencia, buscar un programa entre todos los jugadores, cargar firmas, configurar el agente y banear una máquina.
+resumen: Revisar las sesiones, las marcas y la evidencia, buscar un programa entre todos los jugadores, cargar firmas, elegir qué servidores lo exigen, configurar el agente y banear una máquina.
 orden: 11
 ---
 
-El anticheat se maneja en Administración › [Anticheat](/admin/anticheat). Tiene cuatro pestañas: **Sesiones**, **Marcas**, **Firmas y hashes** y **Agente**.
+El anticheat se maneja en Administración › [Anticheat](/admin/anticheat). Tiene cinco pestañas: **Sesiones**, **Marcas**, **Firmas y hashes**, **Servidores** y **Agente**.
 
 > **Ojo:** nada de lo que ves acá se le cuenta a un jugador. Ni qué revisa el agente, ni qué marca, ni qué firmas hay cargadas. Con esa información, un cheater busca cómo esquivarlo. Al jugador solo le llega un código (la tabla está al final).
 
@@ -32,7 +32,7 @@ En **Marcas** ves las de todos los jugadores, de las más graves a las más leve
 |---|---|
 | 3, grave | Un programa con una firma de trampa, un agente modificado, un programa sin firma que abrió la memoria del juego |
 | 2 | Un módulo o un driver sin firma, un overlay sin firma, un archivo del juego distinto del original, un aim muy raro, una PC parecida a otra baneada |
-| 1, leve | El launcher con acceso al juego, un overlay firmado, un puerto que no coincide, muchos headshots |
+| 1, leve | El launcher con acceso al juego, un overlay firmado, un puerto que no coincide, una IP que no se pudo comparar (el anticheat llegó por IPv6 y el juego por IPv4), muchos headshots |
 
 Las marcas de aim las crea el servidor al terminar el mapa, solo desde 10 kills. **Nunca expulsan solas.**
 
@@ -55,7 +55,20 @@ En **Firmas y hashes** › **Cargar una firma**:
 
 En **Firmas cargadas** está la lista, con **Borrar** en cada una.
 
-Para que se marquen los archivos del juego modificados, tienen que estar cargados como **conocidos** los hashes de los archivos originales de ClientMod. Si no, esa regla no marca nada.
+Para que se marquen los archivos del juego modificados, tienen que estar cargados como **conocidos** los hashes de los archivos originales de ClientMod. Si no, esa regla no marca nada, y cada sesión se llena de marcas de módulos sin firma, porque los archivos del juego no tienen firma digital. Se cargan todos juntos con cada versión nueva de ClientMod: pídeselo a quien maneja el anticheat.
+
+## Elegir qué servidores exigen el anticheat
+
+En **Servidores** está cada servidor activo con su modo. Lo cambias con el menú de cada fila:
+
+- **Siempre**: exige el anticheat desde que el jugador entra, también en el calentamiento. Es el de los servidores de partidas: así nadie queda afuera con la partida empezada.
+- **No lo exige**: no abre sesiones ni expulsa a nadie por el anticheat, ni siquiera por los códigos graves.
+
+Si un servidor aparece con **Solo en la partida**, ese modo ya no se usa: cámbialo a **Siempre**. Con él, quien entraba sin el anticheat jugaba el calentamiento y el servidor lo sacaba recién al arrancar la partida.
+
+El cambio le llega al servidor en la próxima revisión de cada jugador, que es al entrar y cada minuto. Queda registrado quién lo cambió.
+
+Si el anticheat tiene problemas en medio de una noche de partidas, no hace falta cambiar el modo: **Abrir mixes**, arriba, deja jugar sin él por los minutos que elijas. `AC-3`, `AC-4` y `AC-5` siguen expulsando igual.
 
 ## Configurar el agente
 
@@ -85,10 +98,14 @@ Si una cuenta usa una PC **parecida** a una baneada, pero no la misma, no se ban
 
 | Código | Qué pasó | Expulsa |
 |---|---|---|
-| `AC-1` | No tiene el anticheat abierto y vinculado, o no responde, o juega desde otra IP | En los mixes |
-| `AC-2` | El anticheat no ve el juego en esa PC | En los mixes |
+| `AC-0` | El servidor no pudo leer su SteamID. Le da 1 minuto desde que entró, porque Steam a veces tarda | Según el modo del servidor |
+| `AC-1` | No tiene el anticheat abierto y vinculado, o no responde, o juega desde otra IP. También si su SteamID no está vinculado: ahí le pide el `!claim` y le da 1 minuto desde que entró | Según el modo del servidor |
+| `AC-2` | El anticheat no ve el juego en esa PC | Según el modo del servidor |
 | `AC-3` | Tiene abierto un `hl2.exe`: solo se juega con ClientMod | Siempre, aunque abras los mixes con `sm_ac_open` |
 | `AC-4` | Su anticheat está modificado o es una versión vieja | Siempre |
 | `AC-5` | Su PC está baneada | Siempre |
+| `AC-6` | Abrió ClientMod con su anticheat (EAC), que no se puede usar en nuestros servidores | Según el modo del servidor |
 
-Si un jugador te pregunta por un código, dile qué hacer (cerrar el otro juego, actualizar el anticheat, abrirlo y vincularlo), **nunca qué detectó ni cómo**. El motivo exacto está en su sesión.
+"Según el modo del servidor" es en cualquier momento con **Siempre**, y nunca con **No lo exige**. Antes de expulsar, el servidor le avisa en el chat y le da 20 segundos.
+
+Si un jugador te pregunta por un código, dile qué hacer (cerrar el otro juego, actualizar el anticheat, abrirlo y vincularlo, apagar el EAC de ClientMod), **nunca qué detectó ni cómo**. El motivo exacto está en su sesión. Al jugador le explica los códigos [Jugar con CMLeague Anticheat](/help/jugador/anticheat).
