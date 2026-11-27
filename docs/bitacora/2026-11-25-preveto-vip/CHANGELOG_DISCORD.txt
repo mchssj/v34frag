@@ -4,3 +4,27 @@ Preveto de mapas (VIP)
 - Si eres VIP, en Jugar elige un mapa que no quieras jugar. Queda guardado para tus próximas partidas.
 - Al empezar la sala, antes del veto de capitanes, quedan fuera los mapas más votados por los VIP de los dos equipos: hasta 2 por partida. Si empatan, se elige al azar.
 - La sala muestra qué mapas cayeron y con cuántos votos, no quién votó.
+
+Comparador
+- Con VIP comparas hasta 5 jugadores a la vez: una columna por jugador, el ELO de todos en el mismo gráfico y cuántos mixes jugaste con cada uno o contra cada uno.
+- Para todos sigue igual: dos jugadores lado a lado.
+
+Partidas favoritas
+- En Partidas, toca la estrella para guardar las que quieras tener a mano. Guardar es para los VIP y no tiene límite.
+- Con el filtro Favoritas ves solo las tuyas. No las ve nadie más.
+
+Tu tarjeta de stats
+- Arma una imagen con tus números de los mixes para subir a tus redes: cuadrada, vertical para historias u horizontal, por temporada, 30 días o histórico.
+- Está en Mi perfil, en Tarjeta. Todos ven la vista previa; con VIP la descargas en imagen o PDF y tienes el estilo dorado.
+
+Filtros del ranking
+- Con VIP, en Ranking filtras a los jugadores por nivel, ELO, stats, país, mapa más jugado, equipo y cuándo jugaron, en cada temporada y en el Histórico.
+
+Buscar partidas
+- Con VIP filtras Partidas por jugador, con quién o contra quién jugó, fechas, diferencia de rondas y si tiene demo, y las ordenas por las más parejas o el mejor MVP.
+- Los VIP guardan hasta 5 búsquedas de jugadores y 5 de partidas para abrirlas con un toque.
+
+Desglose de tu ELO
+- En tu perfil, en Evolución de ELO, toca Ver desglose: ahí están todos tus mixes con lo que ganaste o perdiste en cada uno.
+- Con VIP ves la cuenta paso a paso: la probabilidad que tenía tu equipo, tu rating, las rondas que jugaste, los abandonos, el tope y el mínimo.
+- También con VIP, un simulador para ver cuánto ganarías o perderías en un mix.

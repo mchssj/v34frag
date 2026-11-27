@@ -1,0 +1,5 @@
+CMLeague 2.9.60 --  Changelog
+
+- El servidor CMLeague #3 vuelve a ser de mix libre: entras con la contraseña, arman el mix y empiezan con !ready o !live, sin pasar por el matchmaking.
+- Tus mixes en el #3 siguen contando en la web como siempre.
+- El matchmaking, las PCW y los torneos se juegan en el #1 y el #2.
