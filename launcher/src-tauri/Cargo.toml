@@ -1,6 +1,6 @@
 [package]
 name = "cmleague-launcher"
-version = "0.1.0"
+version = "0.1.1"
 description = "Launcher de escritorio de CMLeague"
 edition = "2021"
 
