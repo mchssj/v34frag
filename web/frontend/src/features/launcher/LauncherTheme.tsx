@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useMe } from "@/auth/queries"
 import { catalogOptions, equippedOptions } from "@/features/shop/api"
 import "@/features/shop/cosmeticos.css"
+import "./launcher-tema.css"
 import { inLauncher, launcherWindowTheme } from "@/lib/launcher"
 import { useLauncherPrefs } from "./lib/useLauncherPrefs"
 
@@ -46,10 +47,11 @@ export function LauncherTheme() {
     }
     const root = document.documentElement
     const addedDark = !root.classList.contains("dark")
-    root.classList.add(cls, "dark")
+    // Como en el perfil (perfil-tema) y en toda la web (launcher-tema, launcher-tema.css): no solo las tarjetas.
+    root.classList.add(cls, "dark", "perfil-tema", "launcher-tema")
     launcherWindowTheme(hexVar("--card"), hexVar("--primary"))
     return () => {
-      root.classList.remove(cls)
+      root.classList.remove(cls, "perfil-tema", "launcher-tema")
       if (addedDark) root.classList.remove("dark")
       launcherWindowTheme(null, null)
     }
