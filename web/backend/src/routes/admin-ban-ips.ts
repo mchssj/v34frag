@@ -72,7 +72,7 @@ const looseBanIps = createRoute({
 const addLooseBanIp = createRoute({
   method: 'post', path: '/api/v1/admin/ban-ips', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Banear una IP o rango sin ficha',
-  description: 'Como `!banip` en un servidor, desde la web (replanteo 152): con motivo, como mucho 30 días y con excepciones.',
+  description: 'Como `!banip` en un servidor, desde la web (replanteo 152): con motivo, hasta 30 días o permanente (`minutes: 0`, replanteo 153) y con excepciones.',
   request: { body: { required: true, ...json(LooseBanIpBody) } },
   responses: { 201: { description: 'La IP baneada', ...json(CreatedId) }, ...errorResponses(400, 401, 403) },
 });
@@ -150,6 +150,7 @@ export const adminBanIps = createRouter()
     const id = must(
       await c.var.sb.rpc('admin_ban_ip_add' as never, {
         p_ban: c.req.valid('param').id, p_ip: b.ip, p_except_players: b.except_players ?? [], p_except_users: b.except_users ?? [],
+        p_full: b.full ?? false,
       } as never),
     ) as unknown as string;
     return c.json({ id }, 201);

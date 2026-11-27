@@ -46,10 +46,13 @@ export function BanIpsSection({
   banId,
   playerId,
   playerAlias,
+  banExpiresAt,
 }: {
   banId: string
   playerId: string
   playerAlias: string
+  /** Vencimiento del baneo (null = permanente): la IP puede durar lo mismo (replanteo 153). */
+  banExpiresAt: string | null
 }) {
   const id = useId()
   const current = useQuery(banIpsOptions(banId))
@@ -59,9 +62,16 @@ export function BanIpsSection({
   const [preview, setPreview] = useState("")
   const [typed, setTyped] = useState("")
   const exc = useRangeExceptions(preview, playerId)
+  const [openedAt] = useState(() => Date.now())
+  // Si el baneo dura más de 30 días (o es permanente), se elige: 30 días o lo mismo que el baneo.
+  const longBan =
+    banExpiresAt === null ||
+    new Date(banExpiresAt).getTime() > openedAt + 30 * 86_400_000
+  const [full, setFull] = useState(false)
   const { affected } = exc
   const pick = (value: string) => {
     setPreview(value)
+    setFull(false)
     exc.reset()
   }
   const banned = current.data?.items ?? []
@@ -73,6 +83,7 @@ export function BanIpsSection({
         ip: preview,
         except_players: exc.except_players,
         except_users: exc.except_users,
+        full: longBan && full,
       },
       {
         onSuccess: () => {
@@ -91,9 +102,10 @@ export function BanIpsSection({
   return (
     <PanelSection title="IPs y rangos">
       <span className="text-[13px] leading-relaxed text-muted-foreground">
-        Desde estas IPs nadie puede buscar partida, aceptar una ni crear una
-        cuenta, salvo las excepciones. Vencen con el baneo, como mucho en 30
-        días. Con una VPN o los datos del celular cambia de IP.
+        Desde estas IPs nadie puede buscar partida, aceptar una, crear una
+        cuenta ni entrar a los servidores, salvo las excepciones. Duran 30 días
+        o lo mismo que el baneo. Con una VPN o los datos del celular cambia de
+        IP.
       </span>
 
       {current.isPending ? (
@@ -218,6 +230,34 @@ export function BanIpsSection({
             ctl={exc}
             hint="desmarca a quien creas que es otra cuenta del baneado."
           />
+          {longBan && (
+            <div
+              role="radiogroup"
+              aria-label="Duración de la IP"
+              className="flex flex-wrap gap-1.5"
+            >
+              <Button
+                size="sm"
+                role="radio"
+                aria-checked={!full}
+                variant={full ? "outline" : "default"}
+                onClick={() => setFull(false)}
+              >
+                30 días
+              </Button>
+              <Button
+                size="sm"
+                role="radio"
+                aria-checked={full}
+                variant={full ? "default" : "outline"}
+                onClick={() => setFull(true)}
+              >
+                {banExpiresAt === null
+                  ? "Permanente, como el baneo"
+                  : `Hasta el ${fmtDate(banExpiresAt)}, como el baneo`}
+              </Button>
+            </div>
+          )}
           {add.isError && (
             <span role="alert" className="text-xs text-destructive">
               {errorMessage(add.error)}

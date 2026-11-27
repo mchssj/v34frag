@@ -126,7 +126,7 @@ describe('excepciones (replanteo 150)', () => {
     expect(res.status).toBe(201);
     expect(await json(res)).toEqual({ id: '11111111-1111-4111-8111-111111111111' });
     expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/admin_ban_ip_add'))!.body!)).toEqual({
-      p_ban: BAN, p_ip: '181.21.0.0/16', p_except_players: [PLAYER], p_except_users: [],
+      p_ban: BAN, p_ip: '181.21.0.0/16', p_except_players: [PLAYER], p_except_users: [], p_full: false,
     });
   });
 
@@ -180,6 +180,25 @@ describe('banear una IP o rango sin ficha desde la web (replanteo 152)', () => {
     const calls = postgrest('admin', () => undefined);
     expect((await call('POST', '/api/v1/admin/ban-ips', { ip: '1.2.3.4', reason: 'x', minutes: 43201 })).status).toBe(400);
     expect((await call('POST', '/api/v1/admin/ban-ips', { ip: '1.2.3.4', reason: '', minutes: 60 })).status).toBe(400);
+    expect((await call('POST', '/api/v1/admin/ban-ips', { ip: '1.2.3.4', reason: 'x', minutes: -1 })).status).toBe(400);
     expect(calls.some((x) => x.url.includes('/rpc/'))).toBe(false);
+  });
+});
+
+describe('permanente (replanteo 153)', () => {
+  it('de una ficha: full llega como p_full', async () => {
+    const calls = postgrest('admin', (url) =>
+      url.pathname.endsWith('/rpc/admin_ban_ip_add') ? Response.json('11111111-1111-4111-8111-111111111111') : undefined,
+    );
+    expect((await call('POST', `/api/v1/admin/bans/${BAN}/ip`, { ip: '1.2.3.4', full: true })).status).toBe(201);
+    expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/admin_ban_ip_add'))!.body!).p_full).toBe(true);
+  });
+
+  it('sin ficha: 0 minutos es permanente', async () => {
+    const calls = postgrest('admin', (url) =>
+      url.pathname.endsWith('/rpc/admin_ban_ip_add_loose') ? Response.json('44444444-4444-4444-8444-444444444444') : undefined,
+    );
+    expect((await call('POST', '/api/v1/admin/ban-ips', { ip: '1.2.3.4', reason: 'x', minutes: 0 })).status).toBe(201);
+    expect(JSON.parse(calls.find((x) => x.url.includes('/rpc/admin_ban_ip_add_loose'))!.body!).p_minutes).toBe(0);
   });
 });

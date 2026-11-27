@@ -128,7 +128,12 @@ describe("BanIpsSection", () => {
   it("elegir el /16 propone exceptuar a los que no están baneados; se puede desmarcar a uno", async () => {
     api()
     renderWithQuery(
-      <BanIpsSection banId={BAN} playerId={PLAYER} playerAlias="Cheater" />
+      <BanIpsSection
+        banId={BAN}
+        playerId={PLAYER}
+        playerAlias="Cheater"
+        banExpiresAt={new Date(Date.now() + 10 * 86_400_000).toISOString()}
+      />
     )
     expect(await screen.findByText("198.51.100.9")).toBeInTheDocument()
     expect(screen.getByText(/También la usaron: Tormenta/)).toBeInTheDocument()
@@ -156,7 +161,41 @@ describe("BanIpsSection", () => {
         ip: "181.45.0.0/16",
         except_players: ["eeeeeeee-0000-4000-8000-000000000001"],
         except_users: [],
+        full: false,
       })
+    )
+    // El baneo vence antes de 30 días: no hay que elegir duración.
+    expect(
+      within(region).queryByRole("radiogroup", { name: "Duración de la IP" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("con un baneo permanente, la IP puede ser permanente (replanteo 153)", async () => {
+    api()
+    renderWithQuery(
+      <BanIpsSection
+        banId={BAN}
+        playerId={PLAYER}
+        playerAlias="Cheater"
+        banExpiresAt={null}
+      />
+    )
+    await screen.findByText("198.51.100.9")
+    await userEvent.click(screen.getByRole("button", { name: "Esta IP" }))
+    const region = await screen.findByRole("region", { name: "A quién afecta" })
+    expect(
+      within(region).getByRole("radio", { name: "30 días" })
+    ).toHaveAttribute("aria-checked", "true")
+    await userEvent.click(
+      within(region).getByRole("radio", { name: "Permanente, como el baneo" })
+    )
+    await userEvent.click(
+      await within(region).findByRole("button", { name: /^Banear / })
+    )
+    await waitFor(() =>
+      expect(put).toHaveBeenLastCalledWith(
+        expect.objectContaining({ full: true })
+      )
     )
   })
 })

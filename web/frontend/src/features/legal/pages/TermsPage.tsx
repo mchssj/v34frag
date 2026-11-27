@@ -235,11 +235,10 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           Un baneo también puede alcanzar a tu conexión: una IP o un rango de
-          IPs (desde la web, por hasta 30 días; desde un servidor, por el tiempo
-          que dure el baneo). Desde ahí nadie puede entrar a los servidores,
-          buscar partida, aceptar una ni crear una cuenta, aunque use otra
-          cuenta. Si compartes conexión con alguien baneado y crees que te
-          alcanzó por error, escríbenos por Discord.
+          IPs, por un tiempo o de forma permanente. Desde ahí nadie puede entrar
+          a los servidores, buscar partida, aceptar una ni crear una cuenta,
+          aunque use otra cuenta. Si compartes conexión con alguien baneado y
+          crees que te alcanzó por error, escríbenos por Discord.
         </li>
         <li>
           Si te banean mientras buscas partida en el matchmaking, sales de la

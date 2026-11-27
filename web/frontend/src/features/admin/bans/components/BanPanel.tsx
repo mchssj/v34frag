@@ -248,6 +248,7 @@ export function BanPanel({
             banId={ban.id}
             playerId={ban.player.id}
             playerAlias={ban.player.alias}
+            banExpiresAt={ban.expires_at}
           />
         )}
 

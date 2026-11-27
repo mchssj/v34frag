@@ -11494,7 +11494,7 @@ export interface paths {
         put?: never;
         /**
          * Banear una IP o rango sin ficha
-         * @description Como `!banip` en un servidor, desde la web (replanteo 152): con motivo, como mucho 30 días y con excepciones.
+         * @description Como `!banip` en un servidor, desde la web (replanteo 152): con motivo, hasta 30 días o permanente (`minutes: 0`, replanteo 153) y con excepciones.
          */
         post: {
             parameters: {
@@ -32961,7 +32961,8 @@ export interface components {
             id: string;
             /** @description IP suelta (`1.2.3.4`) o rango (`1.2.3.0/24`) */
             ip: string;
-            expires_at: string;
+            /** @description null = permanente (replanteo 153) */
+            expires_at: string | null;
             created_at: string;
             created_by_alias: string | null;
             active: boolean;
@@ -33022,7 +33023,7 @@ export interface components {
             /** @description IP o rango (hasta /16 en IPv4 o /32 en IPv6) */
             ip: string;
             reason: string;
-            /** @description Duración: de 1 minuto a 30 días (43 200) */
+            /** @description Duración: de 1 minuto a 30 días (43 200); 0 = permanente (replanteo 153) */
             minutes: number;
             /** @description Fichas exceptuadas */
             except_players?: string[];
@@ -33036,6 +33037,8 @@ export interface components {
             except_players?: string[];
             /** @description Cuentas sin ficha exceptuadas */
             except_users?: string[];
+            /** @description Hasta que venza el baneo (permanente si el baneo lo es). Sin esto, como mucho 30 días (replanteo 153) */
+            full?: boolean;
         };
         BanIpExceptionBody: {
             /** Format: uuid */

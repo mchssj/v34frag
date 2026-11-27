@@ -24,13 +24,14 @@ import { BannedIp } from "./BanIpsSection"
 import { RangeExceptionsList, useRangeExceptions } from "./RangeExceptions"
 
 // Los baneos por IP sin ficha (replanteos 151 y 152): los !banip de los servidores y los que se ponen desde acá. Valen
-// en los tres servidores y en la web, con las mismas excepciones. Desde la web, como mucho 30 días (Daniel, 2026-11-26).
+// en los tres servidores y en la web, con las mismas excepciones. Desde la web, hasta 30 días o permanente (replanteo 153).
 
 const DURATIONS = [
   { minutes: 60, label: "1 hora" },
   { minutes: 1440, label: "1 día" },
   { minutes: 10080, label: "7 días" },
   { minutes: 43200, label: "30 días" },
+  { minutes: 0, label: "Permanente" },
 ] as const
 
 export function ServerIpBansPanel() {
@@ -181,9 +182,11 @@ function LooseBanForm({ onClose }: { onClose: () => void }) {
               ))}
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground">
-            Como mucho 30 días.
-          </span>
+          {minutes === 0 && (
+            <span className="text-xs text-muted-foreground">
+              Hasta que alguien lo levante.
+            </span>
+          )}
         </div>
         <span className="flex gap-2 sm:col-span-3">
           <Button type="submit" variant="outline" disabled={!typed.trim()}>

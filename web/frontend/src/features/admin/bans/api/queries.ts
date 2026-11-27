@@ -357,6 +357,8 @@ export function useAddBanIp(banId: string) {
       ip: string
       except_players?: string[]
       except_users?: string[]
+      /** Hasta que venza el baneo (permanente si el baneo lo es); sin esto, como mucho 30 días. */
+      full?: boolean
     }) =>
       unwrap(
         api.POST("/api/v1/admin/bans/{id}/ip", {

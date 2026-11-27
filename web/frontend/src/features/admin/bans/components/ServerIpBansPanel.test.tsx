@@ -144,4 +144,39 @@ describe("ServerIpBansPanel", () => {
       })
     )
   })
+
+  it("permanente: manda 0 minutos", async () => {
+    const posted = vi.fn()
+    server.use(
+      http.get(`${API}/api/v1/admin/ban-ips`, () =>
+        HttpResponse.json(page([]))
+      ),
+      http.get(`${API}/api/v1/admin/ip-ranges/accounts`, () =>
+        HttpResponse.json(page([]))
+      ),
+      http.post(`${API}/api/v1/admin/ban-ips`, async ({ request }) => {
+        posted(await request.json())
+        return HttpResponse.json({ id: ID }, { status: 201 })
+      })
+    )
+    renderWithQuery(<ServerIpBansPanel />)
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Banear IP o rango" })
+    )
+    await userEvent.type(screen.getByLabelText("IP o rango"), "203.0.113.0/24")
+    await userEvent.type(screen.getByLabelText("Motivo"), "Cheater")
+    await userEvent.click(screen.getByRole("combobox", { name: "Duración" }))
+    await userEvent.click(
+      await screen.findByRole("option", { name: "Permanente" })
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Revisar" }))
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Banear 203.0.113.0/24" })
+    )
+    await waitFor(() =>
+      expect(posted).toHaveBeenCalledWith(
+        expect.objectContaining({ minutes: 0 })
+      )
+    )
+  })
 })
