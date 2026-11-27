@@ -296,4 +296,5 @@ Lo que quedó sin terminar o sin desplegar está resumido en [`../PENDIENTES.md`
 | 2026-11-26 | [Baneo por IP desde la web](2026-11-26-baneo-por-ip/) | Desplegado (2026-11-26): replanteos `149` y `150`, Caddy, API y web `833b692f19af`; primer rango `181.21.*.*` |
 | 2026-11-26 | [Banear una IP o rango sin ficha desde la web](2026-11-26-baneo-ip-sin-ficha/) | Desplegado (2026-11-27): replanteo `152`, API y web `1ca8a09d7459` |
 | 2026-11-26 | [Baneo permanente de una IP o rango](2026-11-26-baneo-ip-permanente/) | Desplegado (2026-11-27): replanteo `153`, API y web `4d587789fd0c` |
+| 2026-11-26 | [`!banlist` en los servidores](2026-11-26-banlist/) | Desplegado (2026-11-27): replanteo `154` y reporter 2.12.1 subido a #1, #2 y #3 (entra en el cambio de mapa) |
 | 2026-11-26 | [Banear una cuenta sin ficha](2026-11-26-banear-cuenta-sin-ficha/) | Desplegado (2026-11-26): web 1ee6c8dc6f84 y manual en la API |

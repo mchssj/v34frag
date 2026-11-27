@@ -23,6 +23,11 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - IPs y rangos (hasta `/16`) atados a un baneo, con excepciones por ficha o cuenta: frenan cola, aceptar, grupos y registro. Detalle: [`2026-11-26-baneo-por-ip`](bitacora/2026-11-26-baneo-por-ip/GUIA_IMPLEMENTACION.md). Primer rango: `181.21.*.*` en el baneo de Nose, con GabeV exceptuado.
 - **Ojo:** muchos jugadores se conectan por IPv6; un rango IPv4 no los frena por ahí. Hace falta sumar sus IPv6 cuando aparezcan en la sección.
 
+## `!banlist` (2026-11-27): subido, falta que cargue
+
+- Reporter 2.12.1 subido a **#1, #2 y #3** (la 2.12.0 en `plugins/disabled/`) y replanteo `154`. Detalle: [`2026-11-26-banlist`](bitacora/2026-11-26-banlist/GUIA_IMPLEMENTACION.md).
+- **Falta:** después del reinicio o cambio de mapa de cada uno, `sm plugins info csstv_reporter.smx` (2.12.1) y probar `!banlist` en el juego.
+
 ## Baneo permanente de una IP o rango (2026-11-27): desplegado
 
 - **Permanente** en **Banear IP o rango** y, en un baneo de ficha que dura más de 30 días, "lo mismo que el baneo". Replanteo `153`, API y web `4d587789fd0c`. Detalle: [`2026-11-26-baneo-ip-permanente`](bitacora/2026-11-26-baneo-ip-permanente/GUIA_IMPLEMENTACION.md).
