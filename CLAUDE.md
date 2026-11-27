@@ -26,13 +26,13 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
 
 ## Despliegue
 
-- **Numeración de los servidores (Kyan, 2026-11-08; antes Daniel, 2026-11-02):** los tres son nuestros, están en el panel de MVZG (`https://panel-mvzg.com`), en la misma máquina (`190.104.34.3`), y toman salas del matchmaking. La API key `SFTP_CSS_API_KEY` ve los tres. El SFTP es `SFTP_CSS_*_MVZG`, con el usuario base de `SFTP_CSS_USER_MVZG` más `.` y el ID de cada servidor, y la misma contraseña.
+- **Numeración de los servidores (Kyan, 2026-11-08; antes Daniel, 2026-11-02):** los tres son nuestros y están en el panel de MVZG (`https://panel-mvzg.com`), en la misma máquina (`190.104.34.3`). Los tres toman salas del matchmaking (el #3 no las tomó del 2026-11-21 al 2026-11-22). La API key `SFTP_CSS_API_KEY` ve los tres. El SFTP es `SFTP_CSS_*_MVZG`, con el usuario base de `SFTP_CSS_USER_MVZG` más `.` y el ID de cada servidor, y la misma contraseña.
 
   | # | Servidor | ID del panel | Dirección | Plugin |
   |---|---|---|---|---|
   | **#1** | "MVZG". Manda a producción y toma salas desde el 2026-11-03: fila `96bb5060-a639-483a-94ef-f15135c57b1b` "Server CM League #1". Tag `srv1` | `157703b5` | `:27022`, SourceTV `27065` | `.smx` genérico |
   | **#2** | Nuevo (2026-11-08). Armado copiando el #1. Tag `srv2` | `cd1be322` | `:27030`, SourceTV `27066` | `.smx` genérico |
-  | **#3** | Nuevo (2026-11-08). Armado copiando el #1. Tag `srv3` | `16c850ff` | `:27031`, SourceTV `27067` | `.smx` genérico |
+  | **#3** | Nuevo (2026-11-08). Armado copiando el #1. Tag `srv3`. Del 2026-11-21 al 2026-11-22 fue de mix libre ([`2026-11-21-servidor-3-libre`](docs/bitacora/2026-11-21-servidor-3-libre/)); desde el 2026-11-22 vuelve a tomar salas (`csstv_mm "1"`). Su `server.cfg` sigue con `sv_password "torneo921"`, que el plugin pisa en cada mapa | `16c850ff` | `:27031`, SourceTV `27067` | `.smx` genérico |
 
   - **Retake (`aurav34`, ExtremeHost):** retake y 2vs2, con el reporter en `disabled/`. Acceso `SFTP_CSS_*` (sin sufijo) y `PTERO_PANEL_*`. **Se da de baja alrededor del 2026-11-10** (Kyan) y no tiene número. Hasta entonces, las reglas de ExtremeHost de "Cuidados" siguen valiendo para él.
   - **flow ya no existe (Kyan, 2026-11-08).** Su build era `server/licencias/server-cm-league-2/`, su acceso `SERVER2_*` y su fila `cedf12a8-…`. RBK dejó de usarse el 2026-10-29 (`server/licencias/rbk/`, `SERVER1_*`). Sus carpetas de la bitácora siguen como historia y como referencia para armar servidores externos.
@@ -52,7 +52,7 @@ Web de esports (SPA en `index.html` + Supabase) y plugin de SourceMod `csstv_rep
   - Los mismos plugins y extensiones. Sin el anti-wallhack de KACR (`kacr_eyes_antiwall "0"`), con `Anti_Wallhack_Lite` (**en prueba sin él desde el 2026-11-25**, en `disabled/` en los tres: [`2026-11-25-sin-anti-wallhack-prueba`](docs/bitacora/2026-11-25-sin-anti-wallhack-prueba/)) y con `csstv_perf` (sostiene `fps_max 600`).
   - Los mismos `cfg/csstv/warmup.cfg`, `live.cfg` y `end.cfg`, las cfg por tipo de partida (`live_official.cfg`, `live_pcw.cfg`, `live_mm.cfg` y `live_mix.cfg`, desde el reporter 2.9.0) y el mismo `mapcycle.txt`.
   - Los mismos valores en `csstv_reporter.cfg` (prórroga MR3 con 12000, medio tiempo de 3 s) y en `server.cfg` (`sv_pure 2`, `phys_timescale 1.7`, `clientmod_smoke_type 2`, `sv_minupdaterate`/`sv_mincmdrate 100` y `sv_maxupdaterate`/`sv_maxcmdrate 101`). El SourceTV es público: `tv_password ""` en el `server.cfg` de los tres, después de `tv_port` (Daniel, 2026-11-26: "Ver en TV" de la web y del launcher no manda contraseña).
-  - Solo cambia lo propio de cada servidor: token, tag y licencia del reporter, `csstv_demo`, `hostname`, `tv_title`, contraseñas, admins, `csstv_calladmin_server` y `_address`, FastDL, y `csstv_hud_port` y `csstv_hud_key` (los da Administración › Servidores; desde el 2026-10-29, [`2026-10-29-hud-relay-vps`](docs/bitacora/2026-10-29-hud-relay-vps/)).
+  - Solo cambia lo propio de cada servidor: `csstv_mm` y la contraseña, token, tag y licencia del reporter, `csstv_demo`, `hostname`, `tv_title`, contraseñas, admins, `csstv_calladmin_server` y `_address`, FastDL, y `csstv_hud_port` y `csstv_hud_key` (los da Administración › Servidores; desde el 2026-10-29, [`2026-10-29-hud-relay-vps`](docs/bitacora/2026-10-29-hud-relay-vps/)).
   - Todo cambio de configuración en un servidor se hace en todos en la misma tanda. Un servidor nuevo se arma copiando la configuración del #1, como el #2 y el #3 ([`2026-11-08-servidores-nuevos`](docs/bitacora/2026-11-08-servidores-nuevos/)), y se compara con el #1 antes de darlo por listo.
 
 - **Acceso a los servidores: siempre primero por la API key del panel; SFTP solo cuando no se pueda por API** (Daniel, 2026-11-02). Vale para el Worker de demos (`PTERO_KEY_<panel_server_id>`) y para cualquier herramienta nueva.

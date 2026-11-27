@@ -2,15 +2,6 @@
 
 Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-26**.
 
-## Beneficios VIP en la web y preveto de mapas (2026-11-24 y 2026-11-25): desplegado el 2026-11-25
-
-- **Qué es:** comparar hasta 5, partidas favoritas, tarjeta de stats, filtros avanzados del ranking y de Partidas con búsquedas guardadas, desglose de ELO (los puntos 1 a 3 de la revisión de `origin/kyan/vip`) y el preveto de mapas para VIP. Detalle: [`2026-11-24-comparador-y-favoritas-vip`](bitacora/2026-11-24-comparador-y-favoritas-vip/), [`2026-11-24-exportar-stats-y-buscador-vip`](bitacora/2026-11-24-exportar-stats-y-buscador-vip/), [`2026-11-24-desglose-elo-vip`](bitacora/2026-11-24-desglose-elo-vip/) y [`2026-11-25-preveto-vip`](bitacora/2026-11-25-preveto-vip/).
-- **Hecho:** commit `affd6e60` en `main` (la `146` también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`). El 2026-11-25 a las 19:23 (00:23 UTC del 26), sin salas ni mixes abiertos: respaldo (`~/respaldos/antes_140_146_202611260023.sql.gz` en el VPS), replanteos `140`, `141`, `142` y `146` en producción, y la API y la web en `affd6e60867e`. El preveto quedó en 2.
-- **Falta:**
-  1. Publicar `terms/terminos.html` y `terms/privacidad.html`, y los changelog 2.9.67, 2.9.68, 2.9.69 y 2.9.74.
-  2. Probar **Compartir** la tarjeta desde un teléfono y ver una sala real con prevetos.
-- **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
-- **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
 
 ## Correos temporales bloqueados (2026-11-26): desplegado
 
@@ -108,10 +99,15 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Falta:** publicar el changelog 2.9.73. No toca los servidores de juego.
 - **Sin decidir:** compensar o no a los otros 10 que abandonaron y ganaron desde el 2026-11-09 (perdieron de 18 a 20 y pico, en vez de 10 a 15). Algunos ya tienen ajuste a mano.
 
-## Tierlists de jugadores y equipos (2026-11-22): desplegado el 2026-11-23
+## Beneficios VIP en la web y preveto de mapas (2026-11-24 y 2026-11-25): desplegado el 2026-11-25
 
-- **Hecho:** la `137` en producción y la API y la web en `c3803aa60c69`, con los legales al día. Detalle: [`2026-11-22-tierlists-jugadores-equipos`](bitacora/2026-11-22-tierlists-jugadores-equipos/).
-- **Falta:** publicar el changelog (CMLeague 2.9.64).
+- **Qué es:** comparar hasta 5, partidas favoritas, tarjeta de stats, filtros avanzados del ranking y de Partidas con búsquedas guardadas, desglose de ELO (los puntos 1 a 3 de la revisión de `origin/kyan/vip`) y el preveto de mapas para VIP. Detalle: [`2026-11-24-comparador-y-favoritas-vip`](bitacora/2026-11-24-comparador-y-favoritas-vip/), [`2026-11-24-exportar-stats-y-buscador-vip`](bitacora/2026-11-24-exportar-stats-y-buscador-vip/), [`2026-11-24-desglose-elo-vip`](bitacora/2026-11-24-desglose-elo-vip/) y [`2026-11-25-preveto-vip`](bitacora/2026-11-25-preveto-vip/).
+- **Hecho:** commit `affd6e60` en `main` (la `146` también en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`). El 2026-11-25 a las 19:23 (00:23 UTC del 26), sin salas ni mixes abiertos: respaldo (`~/respaldos/antes_140_146_202611260023.sql.gz` en el VPS), replanteos `140`, `141`, `142` y `146` en producción, y la API y la web en `affd6e60867e`. El preveto quedó en 2.
+- **Falta:**
+  1. Publicar `terms/terminos.html` y `terms/privacidad.html`, y los changelog 2.9.67, 2.9.68, 2.9.69 y 2.9.74.
+  2. Probar **Compartir** la tarjeta desde un teléfono y ver una sala real con prevetos.
+- **De la misma revisión, sin hacer:** stats post-torneo, cierre de temporada, widget para la bio, misiones, configs, créditos y la página Hacete VIP.
+- **Días de gracia al vencer el VIP:** decidido por Daniel (2026-11-25), no se implementan. Se sacaron de los términos.
 
 ## Ranking de clips guardado (2026-11-22): desplegado, falta medir
 
@@ -125,6 +121,20 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
 - **Hecho:** base `135`, API y web `aaa8fe06c12b`. Detalle: [`2026-11-22-super-bloqueo`](bitacora/2026-11-22-super-bloqueo/).
 - **Falta:** publicar el changelog (CMLeague 2.9.62) y ver una sala real con un super bloqueo.
 
+## Tierlists de jugadores y equipos (2026-11-22): desplegado el 2026-11-23
+
+- **Hecho:** la `137` en producción y la API y la web en `c3803aa60c69`, con los legales al día. Detalle: [`2026-11-22-tierlists-jugadores-equipos`](bitacora/2026-11-22-tierlists-jugadores-equipos/).
+- **Falta:** publicar el changelog (CMLeague 2.9.64).
+
+## El #3 libre, sin matchmaking, PCW ni torneo (2026-11-21): hecho en el servidor
+
+- **Hecho:** `csstv_mm 0` (en vivo por RCON y en su `csstv_reporter.cfg`) y `SERVER_PASSWORD` fija en el panel, sin reiniciar. Los mixes siguen llegando a la web. Detalle: [`2026-11-21-servidor-3-libre`](bitacora/2026-11-21-servidor-3-libre/).
+- **Revertido el 2026-11-22:** `csstv_mm 1` por RCON y en su `csstv_reporter.cfg` (respaldo `csstv_reporter copy*.cfg`), sin reiniciar y con el servidor vacío; el plugin ya maneja la contraseña. **Falta:** que Daniel vuelva a marcar los usos del #3 en la web.
+- **Falta:**
+  - Daniel: desmarcar matchmaking, PCW y torneo en Administración › Servidores › CMLeague #3 › Usos.
+  - Ver un mix real del #3 llegar a la web y publicar el changelog (CMLeague 2.9.60).
+  - La consola del panel del #3 respondía 502 ("Server must be online") estando `running`: si hace falta mandarle comandos, por RCON.
+  - El #3 se cayó con un mix en vivo el 2026-11-21 a las 23:31 (hora del servidor), sin causa en los logs. Si se repite, instalar Accelerator para tener el volcado del error.
 ## Estadísticas de la temporada: recap y resumen global (2026-11-19): probado en local, sin commit ni despliegue
 
 - **Estado:** pedido por Kyan. Los admins ven en vivo, durante la temporada, el recap de cualquier jugador y las estadísticas de la web y el matchmaking; al cerrar, se guarda la foto y la ve todo el mundo. Implementa el recap del plan del 2026-11-14 (que estaba para Daniel). Replanteo `129`, API y web, probados en la copia local de producción. Rama `kyan/recap-main`, que sale de `origin/main`. Detalle: [`2026-11-19-estadisticas-de-temporada`](bitacora/2026-11-19-estadisticas-de-temporada/).
@@ -168,9 +178,9 @@ Todo lo que se planteó o se empezó y todavía no está terminado o desplegado.
   - La `126`.
   - La API y la web `f00ee5ce413d`.
 - **Falta:**
-  1. Probarlo en el navegador con la API local.
-  2. Commit en `main` (sin los legales ajenos de `2026-11-13-nombre-de-la-ficha-en-mix`, o aparte).
-  3. Desplegar: la `126` en producción (con respaldo previo y el archivo en LF), la API y la web, en ese orden ([guía](bitacora/2026-11-16-codigos-canjeables/GUIA_IMPLEMENTACION.md)). Al desplegar, sacar la marca "En preparación" de "Sorteos y códigos" en los legales (web y `.html`) y publicar los `.html` y el changelog 2.9.54.
+  1. Un canje real en producción: un código de 1 uso para una cuenta de prueba, canjearlo y revertirlo.
+  2. Publicar `terms/terminos.html` y `terms/privacidad.html`, y el changelog 2.9.54.
+  3. Aparte: el mix `0d42d09a` (matchmaking, de_dust2_ob) sigue `live` desde el 2026-11-05 con su sala cancelada.
 
 ## Guía de la web la primera vez (2026-11-14): web desplegada el 2026-11-15 (`d3cf16b6fa9a`)
 
@@ -288,6 +298,11 @@ Si retomas el proyecto en una sesión nueva, empieza por acá. El detalle de cad
 - **Falta:**
   1. `git pull` en el portátil con la tarea "CMLeague clips" sin una corrida a mitad.
   2. Con la confirmación de Daniel, `pruebas/reprocesar.sql` en producción (5 clips), y revisar que queden `done`. Los dos de tam esperan su aprobación para salir en Discord.
+
+## Nombre de la ficha en los mix (2026-11-13): descartado
+
+- El reporter 2.11.0 (`names.inc`, replanteo `114`, `csstv_force_names`) nunca se subió y lo reemplazó el `webnick.inc` de Kyan (2.10.x, replanteo `134`), que es el que corre. Daniel lo descartó el 2026-11-26: se borró de la carpeta de `main` y queda solo en la rama local `archivo/reporter-2.11.0`. La `114` sigue aplicada en la base local (su inversa está en esa rama).
+- Diferencia con lo que corre: el 2.11.0 dejaba el nombre libre en torneos y PCW; el 2.10.3 fuerza el nick de la ficha en todas las partidas.
 
 ## Chat de la sala y jugadores sin ficha en los históricos (2026-11-13): desplegado el 2026-11-13
 

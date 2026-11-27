@@ -23,9 +23,6 @@ CONFIGURACIÓN PROPIA
 - La carpeta de ClientMod.
 - Todo se guarda en tu PC y no cambia nada de la web ni de tu cuenta.
 
-TU ESTILO
-- Si tienes temas de la tienda, puedes pintar el launcher con el que quieras. Lo eliges en Perfil > Preferencias > Tema del launcher. Tu perfil y la web quedan igual.
-
 MÁS
 - Ver demo, Descargar demo y los links a otros sitios se abren en tu navegador, así la demo se descarga como siempre y el launcher se queda en CMLeague.
 - Se actualiza solo: te avisa cuando hay una versión nueva y la instalas cuando quieras, nunca en medio de una partida.
@@ -33,11 +30,7 @@ MÁS
 
 TU NOMBRE EN EL SERVIDOR (VUELVE)
 - Si tu SteamID está vinculado a tu perfil, al entrar al servidor juegas con el nombre de tu perfil de cmleague.lat, el mismo que se ve en el ranking y en las partidas.
-- Si te lo cambias dentro del servidor, vuelve solo al de tu perfil. Para usar otro, cámbialo en tu perfil y se actualiza la próxima vez que entres.
-- Los VIP pueden usar el nombre que quieran, también con la partida empezada.
-- Si no tienes el SteamID vinculado o tu perfil es privado, sigues con tu nombre, pero con la partida empezada no lo puedes cambiar. Para vincularlo, usa !claim.
-- Los símbolos que el juego no muestra bien (emojis, caracteres invisibles) se quitan del nombre.
-- Ya está prendido en los tres servidores.
+- Los VIP pueden usar el nombre que quieran.
 
 EN LA WEB
 - En el navegador, Conectar, Volver a la partida y Entrar (PCW) ahora copian el comando para pegarlo en la consola del juego. Antes intentaban abrir Steam, que no abre ClientMod. Lo mismo con Ver en TV.
