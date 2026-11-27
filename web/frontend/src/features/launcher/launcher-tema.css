@@ -1,7 +1,7 @@
 /* Tema de la tienda en el launcher (LauncherTheme): la web entera, como el perfil con su tema. Solo existe dentro del
-   launcher, con la clase launcher-tema en <html>; perfil-tema suma las texturas de las tarjetas de los temas con
+   launcher, con la clase launcher-tema en <body>; perfil-tema suma las texturas de las tarjetas de los temas con
    textura (cosmeticos.css). */
-html.launcher-tema {
+body.launcher-tema {
   --sidebar: color-mix(in srgb, var(--primary) 7%, var(--background));
   --sidebar-foreground: var(--foreground);
   --sidebar-border: var(--border);
@@ -12,7 +12,7 @@ html.launcher-tema {
   --sidebar-ring: var(--ring);
 }
 /* El área de la página: el mismo resplandor del color del tema que el perfil, y el fondo de los temas con textura. */
-html.launcher-tema [data-slot="sidebar-inset"] {
+body.launcher-tema [data-slot="sidebar-inset"] {
   background:
     radial-gradient(
       120% 40% at 50% 0%,
