@@ -10,9 +10,7 @@ import { useLauncherPrefs } from "./lib/useLauncherPrefs"
 
 /** "#rrggbb" de una variable CSS, o null si no es un color hexadecimal (los de fábrica están en oklch). */
 function hexVar(name: string) {
-  const v = getComputedStyle(document.documentElement)
-    .getPropertyValue(name)
-    .trim()
+  const v = getComputedStyle(document.body).getPropertyValue(name).trim()
   return /^#[0-9a-f]{6}$/i.test(v) ? v : null
 }
 
@@ -47,11 +45,15 @@ export function LauncherTheme() {
     }
     const root = document.documentElement
     const addedDark = !root.classList.contains("dark")
-    // Como en el perfil (perfil-tema) y en toda la web (launcher-tema, launcher-tema.css): no solo las tarjetas.
-    root.classList.add(cls, "dark", "perfil-tema", "launcher-tema")
+    root.classList.add("dark")
+    // El tema va en <body> y no en <html>: en la web compilada cosmetics.css se carga antes que index.css, y en <html>
+    // el .dark de index.css le pisaba los colores (2026-11-27, no se veía nada). En <body> los define el propio
+    // elemento y le ganan a lo heredado. Como en el perfil (perfil-tema) y en toda la web (launcher-tema.css).
+    const body = document.body
+    body.classList.add(cls, "perfil-tema", "launcher-tema")
     launcherWindowTheme(hexVar("--card"), hexVar("--primary"))
     return () => {
-      root.classList.remove(cls, "perfil-tema", "launcher-tema")
+      body.classList.remove(cls, "perfil-tema", "launcher-tema")
       if (addedDark) root.classList.remove("dark")
       launcherWindowTheme(null, null)
     }
