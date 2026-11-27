@@ -229,11 +229,17 @@ const SECTIONS: LegalSection[] = [
           cuándo y el motivo.
         </li>
         <li>
+          Un baneo vale en todos los servidores de CMLeague y en el matchmaking,
+          se ponga en la web o en un servidor. Si estás jugando, el servidor te
+          echa.
+        </li>
+        <li>
           Un baneo también puede alcanzar a tu conexión: una IP o un rango de
-          IPs, por hasta 30 días. Desde ahí nadie puede buscar partida, aceptar
-          una ni crear una cuenta, aunque use otra cuenta. Si compartes conexión
-          con alguien baneado y crees que te alcanzó por error, escríbenos por
-          Discord.
+          IPs (desde la web, por hasta 30 días; desde un servidor, por el tiempo
+          que dure el baneo). Desde ahí nadie puede entrar a los servidores,
+          buscar partida, aceptar una ni crear una cuenta, aunque use otra
+          cuenta. Si compartes conexión con alguien baneado y crees que te
+          alcanzó por error, escríbenos por Discord.
         </li>
         <li>
           Si te banean mientras buscas partida en el matchmaking, sales de la

@@ -24,7 +24,7 @@ Cuando alguien te reporta, un admin revisa el caso. Puede descartarlo, darte una
 
 ## Baneo del servidor
 
-Es el castigo más fuerte: no puedes entrar a ningún servidor de CMLeague ni buscar partida. Alcanza a todas tus cuentas de Steam vinculadas, también a las que sumes después.
+Es el castigo más fuerte: no puedes entrar a ningún servidor de CMLeague ni buscar partida. Alcanza a todas tus cuentas de Steam vinculadas, también a las que sumes después. Da lo mismo si te banean en la web o en un servidor: vale en todos. Si estás jugando, el servidor te echa, y al intentar entrar te dice el motivo y hasta cuándo.
 
 Puede durar unos días, hasta una fecha o ser permanente. Un baneo permanente solo lo puede cambiar o levantar un admin. Uno del soporte es corto, y el soporte no te puede poner más de unos pocos en una semana: los números los fija la administración (hoy, hasta 120 minutos y no más de 3 en 7 días). Si hace falta más, decide un moderador.
 
@@ -34,7 +34,7 @@ Si te banean mientras estás en el matchmaking:
 - Si estabas en una sala que todavía no empezó, la sala se cancela y los demás vuelven a la cola.
 - Si ya estabas jugando, cuenta como abandono: te resta ELO y tu equipo puede recibir un reemplazo.
 
-Un baneo también puede incluir **tu conexión** (tu IP o un rango de IPs), por hasta 30 días: desde ahí nadie puede buscar partida, aceptar una ni crear una cuenta, aunque sea con otra cuenta. Si compartes internet con alguien baneado (en tu casa, un ciber) y no puedes buscar partida, escríbenos por Discord.
+Un baneo también puede incluir **tu conexión** (tu IP o un rango de IPs): desde ahí nadie puede entrar a los servidores, buscar partida, aceptar una ni crear una cuenta, aunque sea con otra cuenta. Si compartes internet con alguien baneado (en tu casa, un ciber) y no puedes buscar partida, escríbenos por Discord.
 
 ## Si te quitan la foto o el logo
 

@@ -144,3 +144,22 @@ describe('excepciones (replanteo 150)', () => {
     expect((await call('DELETE', `/api/v1/admin/ban-ip-exceptions/${BAN}`)).status).toBe(204);
   });
 });
+
+describe('baneos por IP del servidor, sin ficha (replanteo 151)', () => {
+  it('se listan para los admins', async () => {
+    const row = {
+      id: '33333333-3333-4333-8333-333333333333', ip: '203.0.113.0/24', reason: 'Cheats', expires_at: null,
+      created_at: '2026-11-26T20:00:00Z', created_by_name: 'Admin', server_name: 'Server CM League #1', active: true, exceptions: [],
+    };
+    const calls = postgrest('admin', (url) => (url.pathname.endsWith('/rpc/admin_ban_ips_loose') ? counted([row]) : undefined));
+    const res = await call('GET', '/api/v1/admin/ban-ips');
+    expect(res.status).toBe(200);
+    expect(await json(res)).toMatchObject({ items: [row], total: 1 });
+    expect(calls.some((x) => x.url.includes('/rpc/admin_ban_ips_loose'))).toBe(true);
+  });
+
+  it('un usuario común no los ve', async () => {
+    postgrest('user', () => undefined);
+    expect((await call('GET', '/api/v1/admin/ban-ips')).status).toBe(403);
+  });
+});

@@ -13,6 +13,7 @@ export const STATUS_TABS = [
   "comments",
   "tierlists",
   "images",
+  "ips",
   "support",
 ] as const
 

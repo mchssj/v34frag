@@ -17,6 +17,8 @@ import {
   IpCandidateQuery,
   IpRangeAccountList,
   IpRangeAccountQuery,
+  LooseBanIpList,
+  LooseBanIpQuery,
 } from '../schemas/admin';
 import { bearer, errorResponses, json } from '../schemas/common';
 
@@ -56,6 +58,14 @@ const liftBanIp = createRoute({
   method: 'delete', path: '/api/v1/admin/ban-ips/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Levantar una IP o rango de un baneo', request: { params: IdParam },
   responses: { ...done, ...errorResponses(400, 401, 403, 404) },
+});
+
+const looseBanIps = createRoute({
+  method: 'get', path: '/api/v1/admin/ban-ips', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
+  summary: 'Los baneos por IP sin ficha',
+  description: 'Los que se hicieron con `!banip` en un servidor (replanteo 151), activos. Se levantan con `DELETE /api/v1/admin/ban-ips/{id}`.',
+  request: { query: LooseBanIpQuery },
+  responses: { 200: { description: 'IPs y rangos', ...json(LooseBanIpList) }, ...errorResponses(400, 401, 403) },
 });
 
 const addBanIp = createRoute({
@@ -109,6 +119,13 @@ export const adminBanIps = createRouter()
   .openapi(liftBanIp, async (c) => {
     must(await c.var.sb.rpc('admin_ban_ip_lift' as never, { p_id: c.req.valid('param').id } as never));
     return c.body(null, 204);
+  })
+  .openapi(looseBanIps, async (c) => {
+    const p = c.req.valid('query');
+    const q = c.var.sb.rpc('admin_ban_ips_loose' as never, {} as never, { count: 'exact' });
+    type Row = z.infer<typeof LooseBanIpList>['items'][number];
+    const { rows, total } = await runList<Row, typeof q>(q as never, p, {}, 'id');
+    return c.json(envelope(rows, total, p), 200);
   })
   .openapi(addBanIp, async (c) => {
     const b = c.req.valid('json');

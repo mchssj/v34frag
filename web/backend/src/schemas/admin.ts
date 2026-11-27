@@ -348,6 +348,22 @@ export const BanIp = z
   })
   .openapi('BanIp');
 export const BanIpQuery = listQuery(['created_at'], { sort: 'created_at', order: 'asc' });
+// Baneos por IP sin ficha: los !banip de los servidores (replanteo 151).
+export const LooseBanIp = z
+  .object({
+    id: z.uuid(),
+    ip: z.string(),
+    reason: z.string().nullable(),
+    expires_at: z.string().nullable().openapi({ description: 'null = permanente' }),
+    created_at: z.string(),
+    created_by_name: z.string().nullable(),
+    server_name: z.string().nullable(),
+    active: z.boolean(),
+    exceptions: z.array(z.object({ id: z.uuid(), player_id: z.uuid().nullable(), user_id: z.uuid().nullable(), alias: z.string().nullable() })),
+  })
+  .openapi('LooseBanIp');
+export const LooseBanIpQuery = listQuery(['created_at'], { sort: 'created_at', order: 'desc' });
+export const LooseBanIpList = Envelope(LooseBanIp).openapi('LooseBanIpList');
 export const BanIpList = Envelope(BanIp).openapi('BanIpList');
 export const BanIpsBody = z
   .object({

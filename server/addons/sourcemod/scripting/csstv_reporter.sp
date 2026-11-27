@@ -38,7 +38,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.10.3"
+#define PLUGIN_VERSION "2.12.0"
 // Prefijo de los mensajes: [<csstv_chat_tag>] en verde. Se usa siempre como argumento "%s".
 char g_sTag[32] = "CMLeague";
 char g_sPrefix[48] = "\x04[CMLeague]\x01";
@@ -154,6 +154,7 @@ int g_iMatchLinkSideA;         // equipo de la partida de la web (1 o 2) que es 
 #include "csstv/claim.inc"
 #include "csstv/whois.inc"
 #include "csstv/webnick.inc"
+#include "csstv/bans.inc"
 #include "csstv/tips.inc"
 #include "csstv/ips.inc"
 #include "csstv/autoready.inc"
@@ -236,6 +237,7 @@ public void OnPluginStart()
 	Claim_Init();
 	Whois_Init();
 	WebNick_Init();
+	Bans_Init();
 	Tips_Init();
 	Clips_Init();
 }
@@ -279,6 +281,7 @@ public void OnConfigsExecuted()
 	Mm_OnConfigsExecuted();   // antes de Match_OnMapReady: retoma la sala
 	Match_OnMapReady();   // vínculo con la web: un pendiente se descarta, uno activo se actualiza (series)
 	Match_OnCoachCfg();   // !coach apagado en una sala del matchmaking
+	Bans_OnConfigsExecuted();
 }
 
 public void OnMapEnd()
@@ -315,6 +318,7 @@ public void OnClientPutInServer(int client)
 
 public void OnClientPostAdminCheck(int client)
 {
+	Bans_OnJoin(client);   // primero: a un baneado no se lo suma a nada
 	Recon_OnJoin(client);
 	Match_OnClientJoin(client);
 	Mm_OnClientJoin(client);

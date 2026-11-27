@@ -305,19 +305,23 @@ export function BanIpsSection({
 }
 
 /** Una IP o rango baneado, con sus excepciones: sacar una y sumar otra entre los que usaron ese rango. */
-function BannedIp({
+export function BannedIp({
   ip,
   playerId,
+  detail,
   lifting,
   onLift,
 }: {
   ip: {
     id: string
     ip: string
-    expires_at: string
+    expires_at: string | null
     exceptions: { id: string; alias: string | null }[]
   }
-  playerId: string
+  /** La ficha baneada (no se ofrece exceptuarla); null en un baneo del servidor sin ficha. */
+  playerId: string | null
+  /** Motivo, quién y desde dónde (los del servidor). */
+  detail?: string
   lifting: boolean
   onLift: () => void
 }) {
@@ -338,7 +342,7 @@ function BannedIp({
       <span className="flex flex-wrap items-center gap-1.5">
         <span className="font-mono text-[13px]">{ip.ip}</span>
         <span className="text-xs text-muted-foreground">
-          hasta el {fmtDate(ip.expires_at)}
+          {ip.expires_at ? `hasta el ${fmtDate(ip.expires_at)}` : "permanente"}
         </span>
         <button
           type="button"
@@ -350,6 +354,9 @@ function BannedIp({
           <XIcon aria-hidden className="size-3" />
         </button>
       </span>
+      {detail && (
+        <span className="text-xs text-muted-foreground">{detail}</span>
+      )}
       <span className="flex flex-wrap items-center gap-1.5 text-xs">
         <span className="text-muted-foreground">Excepciones:</span>
         {ip.exceptions.length === 0 && (

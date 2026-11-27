@@ -15,12 +15,18 @@ Un admin tiene todos los comandos del moderador (ver [Comandos del moderador en 
 | `!ban <jugador> 0 [motivo]` | Ban permanente |
 | `!unban <SteamID>` | Levanta un baneo |
 | `!addban <minutos> "<SteamID>" [motivo]` | Banea a alguien que no está en el servidor (en la consola, con el SteamID entre comillas) |
+| `!banip <IP, rango o #userid> <minutos> [motivo]` | Banea una IP (`181.21.4.7`) o un rango (`181.21.0.0/16`, como mucho `/16`). `0` minutos es permanente. Con `#userid` (de `status`), la IP con la que está conectado |
+| `!unbanip <IP o rango>` | Levanta un baneo por IP |
 | `!vote`, `!votemap`, `!votekick` | Votaciones de admin |
 | `!rcon <comando>` y `!cvar <nombre> <valor>` | Comandos y ajustes de la consola del servidor |
 
 > **Ojo:** cambiar el mapa con un mix en curso lo corta, y un mix cortado no se recupera. Antes de usar `!map` o `!cancelmatch` en vivo, asegúrate de que es lo que quieres.
 
-Los baneos también se manejan desde la web, con el historial de cada jugador (ver [Banear a un jugador](/help/moderador/banear-jugador)).
+Todos los baneos, del juego o de la web, son uno solo: valen en los tres servidores y en el matchmaking, y quedan en Administración › [Baneos](/admin/bans) (ver [Banear a un jugador](/help/moderador/banear-jugador)).
+
+- **Tu `!ban` también banea la IP** con la que está conectado el jugador, por el mismo tiempo. Si es una IP compartida, levántala o suma excepciones desde la web.
+- **Un `!banip` no tiene ficha:** aparece en la pestaña **IPs del servidor** de Baneos, donde le sumas excepciones o lo levantas. Al banear, echa a los que están conectados desde ahí. Los rangos alcanzan a todos los de ese proveedor: antes de banear uno, mira desde la web a quién más afecta.
+- Un baneo nuevo de la web llega a los servidores en 5 minutos como mucho.
 
 ## Revisar el estado de un servidor
 

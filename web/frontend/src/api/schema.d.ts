@@ -11424,6 +11424,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/ban-ips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Los baneos por IP sin ficha
+         * @description Los que se hicieron con `!banip` en un servidor (replanteo 151), activos. Se levantan con `DELETE /api/v1/admin/ban-ips/{id}`.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Página, desde 1 */
+                    page?: number;
+                    /** @description Elementos por página (máximo 100) */
+                    per?: number;
+                    /** @description Campo de orden: `created_at` */
+                    sort?: "created_at";
+                    /** @description `asc` o `desc` */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description IPs y rangos */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LooseBanIpList"];
+                    };
+                };
+                /** @description Datos inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin sesión o sesión vencida */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Sin permiso */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/bans/{id}/ip": {
         parameters: {
             query?: never;
@@ -32853,6 +32928,37 @@ export interface components {
         BanIpsBody: {
             /** @description Las IPs o rangos que quedan baneados con este baneo (reemplaza la lista). Rangos de hasta /16 en IPv4 o /32 en IPv6 */
             ips: string[];
+        };
+        LooseBanIpList: {
+            items: components["schemas"]["LooseBanIp"][];
+            /** @description Total con los filtros aplicados */
+            total: number;
+            page: number;
+            per: number;
+            sort: string;
+            /** @enum {string} */
+            order: "asc" | "desc";
+        };
+        LooseBanIp: {
+            /** Format: uuid */
+            id: string;
+            ip: string;
+            reason: string | null;
+            /** @description null = permanente */
+            expires_at: string | null;
+            created_at: string;
+            created_by_name: string | null;
+            server_name: string | null;
+            active: boolean;
+            exceptions: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                player_id: string | null;
+                /** Format: uuid */
+                user_id: string | null;
+                alias: string | null;
+            }[];
         };
         CreatedId: {
             /** Format: uuid */

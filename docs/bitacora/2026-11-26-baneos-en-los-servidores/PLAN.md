@@ -112,3 +112,18 @@ Va en su propio requerimiento, sobre este. Ya existe lo necesario para ver las I
 3. Manual y legales.
 4. Despliegue (sección 6), sin ningún mix en curso al subir y con la confirmación de Daniel.
 5. Documentación, guía y `PENDIENTES.md`.
+
+## 10. Agregado antes de implementar (Daniel, 2026-11-26): IPs y rangos también en los servidores
+
+Después de este plan se hizo el baneo por IP y por rango en la web ([`2026-11-26-baneo-por-ip`](../2026-11-26-baneo-por-ip/), replanteos `149` y `150`, con excepciones). Daniel pidió que todo valga en los dos sentidos y que no haga falta un plugin aparte de baneos por rango (lo sugirió un jugador, Venom): un baneo de la plataforma vale en los tres servidores, y uno del servidor vale en los tres servidores y en la plataforma, por SteamID o por IP.
+
+| Tema | Decisión |
+|---|---|
+| Al conectarse | El servidor manda el SteamID **y la IP**; la base responde si está baneado por ficha, SteamID o IP/rango, con las excepciones del rango (por la ficha dueña del SteamID o su cuenta) |
+| Copia local | También las IPs y rangos activos, con los SteamID exceptuados |
+| `!banip <IP o rango> <minutos> <motivo>` y `!unbanip <IP o rango>` | Nuevos. **Solo admins** (flag `z`), como en la web. Un baneo por IP del servidor puede existir solo, sin ficha: `ban_ips` suma motivo, quién y desde qué servidor, y `ban_id` pasa a ser opcional |
+| `!ban` a un jugador conectado (admin) | Además de la ficha o el SteamID, banea **su IP exacta por el mismo tiempo** que se le dio en el servidor (sin el tope de 30 días de la web) |
+| Cambios desde la web | Los toma el servidor solo: consulta la base al conectarse alguien y sincroniza cada 5 minutos |
+| Plugin de Venom | No hace falta: serían dos listas que no se hablan |
+
+Va en el replanteo `151` y en el reporter 2.12.0.

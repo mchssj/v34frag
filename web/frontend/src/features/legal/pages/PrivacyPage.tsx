@@ -233,8 +233,9 @@ const SECTIONS: LegalSection[] = [
             <strong>Tu dirección IP</strong>, con la fecha, el servidor y el
             nick con que te conectaste, y la cantidad de intentos de conexión de
             cada IP. Se usa para la seguridad de los servidores (por ejemplo,
-            frenar ataques) y para detectar evasión de baneos y cuentas
-            duplicadas.
+            frenar ataques), para detectar evasión de baneos y cuentas
+            duplicadas, y para aplicar los baneos: al conectarte, el servidor
+            consulta con la web si tu SteamID o tu IP están baneados.
           </li>
           <li>
             <strong>La IP con la que usas la web</strong>, al iniciar sesión, al

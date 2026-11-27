@@ -44,6 +44,7 @@ import {
 } from "../../components/ui"
 import { BanDialog } from "../components/BanDialog"
 import { BanPanel } from "../components/BanPanel"
+import { ServerIpBansPanel } from "../components/ServerIpBansPanel"
 import { SupportActivityPanel } from "../components/SupportActivityPanel"
 import {
   CommentReportsPanel,
@@ -175,13 +176,17 @@ export function AdminBansPage({
   const supportUserId = support ? me?.id : undefined
   const seesActivity = canSeeSupportActivity(role)
   const asked: StatusTab = search.status ?? "active"
-  const tab: StatusTab = asked === "support" && !seesActivity ? "active" : asked
+  const tab: StatusTab =
+    (asked === "support" && !seesActivity) || (asked === "ips" && !canPermanent)
+      ? "active"
+      : asked
   const status: BanStatus | undefined =
     tab === "all" ||
     tab === "mm" ||
     tab === "comments" ||
     tab === "tierlists" ||
     tab === "images" ||
+    tab === "ips" ||
     tab === "support"
       ? undefined
       : tab
@@ -309,6 +314,10 @@ export function AdminBansPage({
           { key: "comments", label: "Comentarios", badge: openComments },
           { key: "tierlists", label: "Tierlists", badge: openTierlists },
           { key: "images", label: "Imágenes", badge: openImages },
+          // Las IPs solo las ven los admins
+          ...(canPermanent
+            ? [{ key: "ips" as const, label: "IPs del servidor" }]
+            : []),
           ...(seesActivity
             ? [{ key: "support" as const, label: "Actividad del soporte" }]
             : []),
@@ -323,6 +332,8 @@ export function AdminBansPage({
         <TierlistReportsPanel />
       ) : tab === "images" ? (
         <MediaReportsPanel />
+      ) : tab === "ips" ? (
+        <ServerIpBansPanel />
       ) : tab === "mm" ? (
         <MmSourceContext value={apiMmSource}>
           <p className="text-[13px] leading-relaxed text-muted-foreground">

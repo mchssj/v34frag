@@ -4,17 +4,15 @@ resumen: Poner un baneo, elegir cuánto dura, cambiarlo, levantarlo y revisar el
 orden: 2
 ---
 
-Los baneos se manejan en Administración › [Baneos](/admin/bans). Entran los que se ponen desde la web y los importados de los servidores viejos.
+Los baneos se manejan en Administración › [Baneos](/admin/bans). Entran los que se ponen desde la web, los que se ponen con `!ban` en los servidores y los importados de los servidores viejos.
 
-Un jugador baneado no puede buscar partida en el matchmaking.
-
-> **Ojo:** por ahora, el baneo de la web **no lo echa de los servidores**. Si está jugando o entra a un servidor, usa `!ban` en ese servidor (ver [Comandos en el servidor](/help/moderador/comandos-en-el-servidor)): vale solo en ese servidor y no aparece en esta lista. Estamos trabajando para que el baneo de la web también valga en los servidores.
+Un jugador baneado no puede buscar partida en el matchmaking ni entrar a ningún servidor de CMLeague. Si está en un servidor cuando lo baneas, el servidor lo echa en 5 minutos como mucho, con el motivo y hasta cuándo. Al revés también: un `!ban` en el juego vale en los tres servidores y aparece en esta lista (ver [Comandos en el servidor](/help/moderador/comandos-en-el-servidor)).
 
 Si está en el matchmaking cuando lo baneas, la web lo saca sola, sin que hagas nada más:
 
 - **Buscando partida:** sale de la cola, junto con su grupo.
 - **En una sala que todavía no empezó** (aceptando, vetando mapas o conectándose): la sala se cancela y los otros vuelven a la cola con su lugar.
-- **Jugando:** su abandono cuenta en el acto, así se puede llamar antes a un reemplazo. La partida sigue. Para sacarlo del servidor, usa `!ban` ahí.
+- **Jugando:** su abandono cuenta en el acto, así se puede llamar antes a un reemplazo. La partida sigue, y el servidor lo echa en 5 minutos como mucho (o en el acto con `!ban` ahí).
 
 No se le suma una sanción de la cola: el baneo ya es la sanción.
 
@@ -56,7 +54,8 @@ En el detalle de un baneo activo, un admin ve la sección **IPs y rangos**. Sirv
 - También puedes escribir otra IP o rango en **Otra IP o rango** y tocar **Revisar**. Como mucho, `/16`.
 - Antes de confirmar, la web te muestra **a quién más afecta**: los jugadores de CMLeague que usaron alguna IP de ese rango. Cada uno tiene una casilla **Exceptuar**: los que no están baneados vienen marcados y siguen buscando partida desde ahí. Desmarca a quien creas que es otra cuenta del baneado.
 - En cada IP o rango baneado ves sus **excepciones**: con la **X** sacas una y con **Exceptuar a alguien** sumas a otro de los que usaron ese rango (por ejemplo, si un jugador escribe por Discord que no puede buscar partida).
-- Desde una IP o rango baneado nadie puede buscar partida, aceptar una ni crear una cuenta. Vence con el baneo, como mucho a los 30 días. Con la **X** lo levantas.
+- Desde una IP o rango baneado nadie puede buscar partida, aceptar una, crear una cuenta ni entrar a los servidores. Vence con el baneo, como mucho a los 30 días. Con la **X** lo levantas.
+- La IP que banea un admin con `!ban` en el juego aparece acá, por el mismo tiempo que el baneo (sin el tope de 30 días). Las que se banean con `!banip`, sin ficha, están en la pestaña **IPs del servidor**, con sus excepciones.
 
 > **Ojo:** con una VPN o los datos del celular la persona cambia de IP. Es una barrera más, no la única.
 

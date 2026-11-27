@@ -289,6 +289,20 @@ export function ipRangeAccountsOptions(range: string) {
   })
 }
 
+/** Los baneos por IP sin ficha: los !banip de los servidores (replanteo 151). */
+export function looseBanIpsOptions() {
+  return queryOptions({
+    queryKey: ["admin", "ban-ips", "loose"] as const,
+    queryFn: ({ signal }) =>
+      unwrap(
+        api.GET("/api/v1/admin/ban-ips", {
+          params: { query: { per: 100 } },
+          signal,
+        })
+      ),
+  })
+}
+
 const touchedIps = (qc: ReturnType<typeof useQueryClient>) => {
   void qc.invalidateQueries({ queryKey: ["admin", "ban-ips"] as const })
   void qc.invalidateQueries({ queryKey: ["admin", "ip-candidates"] as const })
