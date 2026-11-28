@@ -11,6 +11,10 @@
 --        marca leve (ip_family). Cloudflare atiende la API también por IPv6 y los servidores de juego son solo IPv4.
 --      - La respuesta suma always (enforce_always): el Bridge 1.4.0 la recuerda para expulsar por AC-0 (sin SteamID, sin
 --        preguntarle a la base) también fuera de un mix.
+--   4. Los servidores que toman salas (game_servers.mm_enabled) siguen al matchmaking (Daniel, 2026-11-27): con
+--      mm_config.require_anticheat lo exigen desde que el jugador entra (como always) y sin él no lo exigen (como off). Su
+--      fila de ac_server_policy no cuenta y el panel no deja cambiarles el modo: así la cola y el servidor piden lo mismo.
+--      Los demás servidores usan su modo de ac_server_policy, como antes.
 begin;
 
 do $$
@@ -32,6 +36,19 @@ alter table public.ac_devices
   add column game_eac     boolean,
   add column game_eac_why text check (game_eac_why in ('parent', 'ini', 'service', 'denied'));
 comment on column public.ac_devices.game_eac is 'El juego se abrió con el EAC de ClientMod (prohibido: eac_on, AC-6). null: agente anterior a 0.6.0';
+
+-- La regla que usa cada servidor: la del matchmaking si toma salas, si no la suya (ac_server_policy).
+-- protected: abre sesiones y puede expulsar. always: desde que el jugador entra. mixes: solo con cml_ac_mix 1. mm: la decide el matchmaking.
+create function public.ac_server_rule(p_server uuid, out protected boolean, out always boolean, out mixes boolean, out mm boolean)
+  language sql stable security definer set search_path = public as $$
+  select case when gs.mm_enabled then coalesce(c.require_anticheat, false) else coalesce(pol.protected, false) end,
+         case when gs.mm_enabled then coalesce(c.require_anticheat, false) else coalesce(pol.protected and pol.enforce_always, false) end,
+         case when gs.mm_enabled then false else coalesce(pol.protected and pol.enforce_mixes, false) end,
+         coalesce(gs.mm_enabled, false)
+    from (select p_server as id) x
+    left join game_servers gs on gs.id = x.id
+    left join ac_server_policy pol on pol.server_id = x.id
+    left join lateral (select require_anticheat from mm_config limit 1) c on true $$;
 
 -- IPv4 contra IPv6: true si las dos son de la misma familia.
 create function public.ac_same_ip_family(a text, b text) returns boolean language sql immutable as $$
@@ -118,7 +135,7 @@ create or replace function public.ac_bridge_player(p_token text, p_steam text, p
   language plpgsql security definer set search_path = public as $$
 declare
   v_server uuid := csstv_auth(p_token);
-  pol      ac_server_policy%rowtype;
+  rule     record;
   c        ac_config%rowtype;
   v_player uuid;
   v_user   uuid;
@@ -129,8 +146,8 @@ declare
   v_family boolean := true;
 begin
   if not is_steam64(p_steam) then raise exception 'SteamID inválido'; end if;
-  select * into pol from ac_server_policy where server_id = v_server;
-  if pol.server_id is null or not pol.protected then
+  select * into rule from ac_server_rule(v_server);  -- La del matchmaking si el servidor toma salas
+  if not rule.protected then
     return jsonb_build_object('protected', false, 'always', false, 'action', 'allow');
   end if;
   select * into c from ac_config where id = 1;
@@ -179,11 +196,11 @@ begin
      where steam_id = p_steam and server_id = v_server and status = 'open';
   end if;
 
-  v_force := (pol.enforce_always or (pol.enforce_mixes and coalesce(p_in_mix, false)))
+  v_force := (rule.always or (rule.mixes and coalesce(p_in_mix, false)))
     and coalesce((select open_until <= now() from ac_config where id = 1), true);
   if v_reason in ('hl2_detected', 'agent_modified', 'agent_outdated', 'machine_banned') then v_force := true; end if;
   -- always: el Bridge lo recuerda para AC-0, que no le pregunta a la base porque no tiene SteamID.
-  return jsonb_build_object('protected', true, 'always', coalesce(pol.enforce_always, false), 'linked', v_reason = 'ok', 'reason', v_reason, 'session_id', v_sess,
+  return jsonb_build_object('protected', true, 'always', rule.always, 'linked', v_reason = 'ok', 'reason', v_reason, 'session_id', v_sess,
     'action', case when v_reason <> 'ok' and v_force then 'kick' else 'allow' end);
 end $$;
 
@@ -196,9 +213,10 @@ end $$;
 --   mixes   protected, enforce_mixes: lo exige solo con cml_ac_mix 1 (la partida en vivo). Ya no se elige desde el panel
 --           (Daniel, 2026-11-27): quien entra sin el anticheat juega el calentamiento y lo expulsan al arrancar el mix. Se
 --           lista si un servidor ya lo tiene (la demo de Kyan, anticheat-demo.mts, o un cambio por SQL)
-create function public.ac_server_mode(p ac_server_policy) returns text language sql immutable as $$
-  select case when p.server_id is null or not p.protected then 'off' when p.enforce_always then 'always'
-              when p.enforce_mixes then 'mixes' else 'off' end $$;
+-- Un servidor que toma salas muestra always u off según el matchmaking, con mm = true, y no se cambia desde acá.
+create function public.ac_server_mode(p_server uuid) returns text language sql stable security definer set search_path = public as $$
+  select case when not r.protected then 'off' when r.always then 'always' when r.mixes then 'mixes' else 'off' end
+    from ac_server_rule(p_server) r $$;
 
 -- Los servidores activos con su modo. Pagina, filtra (nombre y modo) y ordena (name, mode o updated_at).
 create function public.ac_admin_server_policies(p_q text default null, p_mode text default null, p_sort text default 'name',
@@ -210,7 +228,7 @@ declare
 begin
   if not ac_can_review() then raise exception 'Solo un admin puede ver los servidores del anticheat' using errcode = '42501'; end if;
   with s as (
-    select gs.id, gs.name, ac_server_mode(pol) as mode, pol.updated_at
+    select gs.id, gs.name, ac_server_mode(gs.id) as mode, gs.mm_enabled as mm, pol.updated_at
       from game_servers gs
       left join ac_server_policy pol on pol.server_id = gs.id
      where gs.active
@@ -220,7 +238,7 @@ begin
   )
   select jsonb_build_object(
     'total', (select count(*) from f),
-    'items', coalesce((select jsonb_agg(jsonb_build_object('server_id', x.id, 'name', x.name, 'mode', x.mode, 'updated_at', x.updated_at)) from (
+    'items', coalesce((select jsonb_agg(jsonb_build_object('server_id', x.id, 'name', x.name, 'mode', x.mode, 'mm', x.mm, 'updated_at', x.updated_at)) from (
       select * from f
        order by case when not v_desc then case p_sort when 'mode' then f.mode when 'updated_at' then f.updated_at::text else f.name end end asc nulls last,
                 case when v_desc then case p_sort when 'mode' then f.mode when 'updated_at' then f.updated_at::text else f.name end end desc nulls last,
@@ -230,26 +248,29 @@ begin
   return v;
 end $$;
 
--- Cambia el modo de un servidor (off o always). Queda registrado.
+-- Cambia el modo de un servidor (off o always). Queda registrado. Los que toman salas no: los decide el matchmaking.
 create function public.ac_admin_set_server_policy(p_server uuid, p_mode text) returns jsonb
   language plpgsql security definer set search_path = public as $$
 begin
   if not ac_can_review() then raise exception 'Solo un admin puede cambiar los servidores del anticheat' using errcode = '42501'; end if;
   if p_mode is null or p_mode not in ('off', 'always') then raise exception 'Modo inválido: off o always'; end if;
   if not exists (select 1 from game_servers where id = p_server) then raise exception 'No existe ese servidor' using errcode = 'P0002'; end if;
+  if (select mm_enabled from game_servers where id = p_server) then
+    raise exception 'Este servidor toma salas del matchmaking: lo decide "Anticheat obligatorio" en Administración › Matchmaking';
+  end if;
   insert into ac_server_policy (server_id, protected, enforce_mixes, enforce_always, updated_at)
     values (p_server, p_mode <> 'off', false, p_mode = 'always', now())
     on conflict (server_id) do update
       set protected = excluded.protected, enforce_mixes = excluded.enforce_mixes, enforce_always = excluded.enforce_always, updated_at = now();
   insert into ac_admin_actions (actor, action, detail) values (auth.uid(), 'server_policy', jsonb_build_object('server', p_server, 'mode', p_mode));
-  return (select jsonb_build_object('server_id', gs.id, 'name', gs.name, 'mode', ac_server_mode(pol), 'updated_at', pol.updated_at)
+  return (select jsonb_build_object('server_id', gs.id, 'name', gs.name, 'mode', ac_server_mode(gs.id), 'mm', gs.mm_enabled, 'updated_at', pol.updated_at)
             from game_servers gs left join ac_server_policy pol on pol.server_id = gs.id where gs.id = p_server);
 end $$;
 
 -- =====================================================================================================
--- 5. Permisos (create or replace los mantiene; ac_same_ip_family y ac_server_mode son internas)
+-- 5. Permisos (create or replace los mantiene; ac_same_ip_family, ac_server_rule y ac_server_mode son internas)
 -- =====================================================================================================
-revoke all on function public.ac_same_ip_family(text, text), public.ac_server_mode(ac_server_policy) from public, anon, authenticated;
+revoke all on function public.ac_same_ip_family(text, text), public.ac_server_rule(uuid), public.ac_server_mode(uuid) from public, anon, authenticated;
 revoke all on function public.ac_admin_server_policies(text, text, text, text, integer, integer),
   public.ac_admin_set_server_policy(uuid, text) from public, anon;
 grant execute on function public.ac_admin_server_policies(text, text, text, text, integer, integer),

@@ -274,6 +274,8 @@ export type AcServerPolicy = {
   server_id: string
   name: string
   mode: AcServerMode
+  // Toma salas: su modo lo decide "Anticheat obligatorio" de Administración › Matchmaking y no se cambia acá
+  mm: boolean
   updated_at: string | null
 }
 

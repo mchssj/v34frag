@@ -3,7 +3,7 @@ CMLeague 2.9.79 --  Changelog
 CMLeague Anticheat
 
 - Los servidores de CMLeague van a pedir CMLeague Anticheat abierto y vinculado desde que entras, también en el calentamiento. Así nadie queda afuera con la partida empezada.
-- En nuestros servidores se juega con ClientMod sin su anticheat (EAC). Antes de abrir el juego, apágalo en CM Launcher: el botón del anticheat tiene que quedar gris y debajo de Play tiene que decir "Anticheat: Disabled". Si te olvidas, CMLeague Anticheat te avisa en naranja y el servidor te dice cómo arreglarlo.
+- En nuestros servidores se juega con ClientMod sin su anticheat (EAC). Antes de abrir el juego, apágalo en CM Launcher: el botón del anticheat tiene que quedar gris y debajo de Play tiene que decir "Anticheat: Disabled" o "Anticheat: Not available". Si te olvidas, CMLeague Anticheat te avisa en naranja y el servidor te dice cómo arreglarlo.
 - Si todavía no vinculaste tu SteamID (tu primera partida, o desde otra PC), el servidor te avisa y tienes 1 minuto para escribir el !claim que te muestra la sala.
 - Si el servidor te saca, te da un código (AC-0 a AC-6). Qué hacer con cada uno está en Ayuda, en "Jugar con CMLeague Anticheat".
 - Si tu conexión usa IPv6, ya no te saca por error.

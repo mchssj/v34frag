@@ -20,9 +20,11 @@ El servidor sabe que el anticheat es tuyo por tu SteamID, así que tiene que est
 
 ## ClientMod, sin su anticheat
 
-En nuestros servidores se juega con ClientMod **con su anticheat (EAC) apagado**. Antes de abrir el juego, en CM Launcher deja **gris** el botón del anticheat: debajo de **Play** tiene que decir `Anticheat: Disabled`. Si está **azul** y dice `Anticheat: Enabled`, tócalo para apagarlo.
+En nuestros servidores se juega con ClientMod **con su anticheat (EAC) apagado**. Antes de abrir el juego, en CM Launcher deja **gris** el botón del anticheat: debajo de **Play** tiene que decir `Anticheat: Disabled` o `Anticheat: Not available` (las dos quieren decir que está apagado). Si está **azul** y dice `Anticheat: Enabled`, tócalo para apagarlo.
 
-Si lo abriste con el EAC prendido, CMLeague Anticheat te lo dice con un aviso naranja. Cierra el juego, deja gris el botón del anticheat en CM Launcher (`Anticheat: Disabled`) y vuelve a abrirlo.
+![CM Launcher con el botón del anticheat gris, a la izquierda de Play, y debajo el texto Anticheat: Not available](img/cm-launcher-anticheat.webp)
+
+Si lo abriste con el EAC prendido, CMLeague Anticheat te lo dice con un aviso naranja. Cierra el juego, deja gris el botón del anticheat en CM Launcher (`Anticheat: Disabled` o `Not available`) y vuelve a abrirlo.
 
 ## Los códigos del servidor
 
@@ -36,7 +38,7 @@ Si el servidor te avisa o te saca, te da un código:
 | `AC-3` | Cierra cualquier otro juego que corra como `hl2.exe` (por ejemplo, otro Counter-Strike: Source o Garry's Mod). Este te saca siempre |
 | `AC-4` | Actualiza CMLeague Anticheat a la última versión, bajándolo de nuevo desde la web |
 | `AC-5` | Habla con el staff |
-| `AC-6` | En CM Launcher, deja gris el botón del anticheat de ClientMod (EAC): debajo de **Play** tiene que decir `Anticheat: Disabled`. Después vuelve a abrir el juego |
+| `AC-6` | En CM Launcher, deja gris el botón del anticheat de ClientMod (EAC): debajo de **Play** tiene que decir `Anticheat: Disabled` o `Not available`. Después vuelve a abrir el juego |
 
 > **Ojo:** si crees que te sacó por error, habla con el staff y dile el código.
 

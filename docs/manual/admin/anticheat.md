@@ -59,7 +59,11 @@ Para que se marquen los archivos del juego modificados, tienen que estar cargado
 
 ## Elegir qué servidores exigen el anticheat
 
-En **Servidores** está cada servidor activo con su modo. Lo cambias con el menú de cada fila:
+En **Servidores** está cada servidor activo con su modo.
+
+Los **servidores que toman salas del matchmaking** (hoy #1, #2 y #3) no se cambian acá: siguen a **Anticheat obligatorio** de Administración › [Matchmaking](/admin/matchmaking). Prendido, están en **Siempre**; apagado, en **No lo exige**. En la fila dice "Lo decide el matchmaking". Así la cola y el servidor piden lo mismo.
+
+En los demás lo cambias con el menú de cada fila:
 
 - **Siempre**: exige el anticheat desde que el jugador entra, también en el calentamiento. Es el de los servidores de partidas: así nadie queda afuera con la partida empezada.
 - **No lo exige**: no abre sesiones ni expulsa a nadie por el anticheat, ni siquiera por los códigos graves.

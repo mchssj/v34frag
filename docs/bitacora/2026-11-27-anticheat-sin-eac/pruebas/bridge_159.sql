@@ -2,6 +2,7 @@
 -- no deja nada en la base. Uso: armar_prueba.sh (concatena las migraciones sin sus begin/commit y este archivo).
 \set ON_ERROR_STOP on
 create temp table r (caso text, got text, want text);
+create temp table prueba (steam text, user_id uuid);
 
 do $$
 declare
@@ -19,6 +20,7 @@ begin
   insert into auth.users (id, instance_id, aud, role, email) values (v_user, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', v_user || '@prueba.local');
   insert into game_servers (id, name, token_hash, active) values (v_srv, 'Prueba 159', ac_hash('token-prueba'), true);
   insert into players (id, nick, steam_id, user_id) values (v_pl, 'Prueba159', steam, v_user);
+  insert into prueba values (steam, v_user);
   insert into ac_server_policy (server_id, protected, enforce_mixes) values (v_srv, true, true);
   insert into ac_devices (user_id, name, access_hash, access_expires_at, refresh_hash)
     values (v_user, 'PC', ac_hash('acceso'), now() + interval '1 hour', ac_hash('renovar')) returning id into v_dev;
@@ -122,6 +124,46 @@ begin
     perform ac_admin_set_server_policy(v_srv, 'always');
     insert into r values ('panel: sin ser admin', 'aceptado', 'rechazado');
   exception when insufficient_privilege then insert into r values ('panel: sin ser admin', 'rechazado', 'rechazado');
+  end;
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- Un servidor que toma salas sigue a "Anticheat obligatorio" del matchmaking (mm_config.require_anticheat), no a su fila.
+do $$
+declare
+  v_admin uuid := (select actor from ac_admin_actions where action = 'server_policy' order by created_at desc limit 1);
+  v_srv   uuid := (select id from game_servers where name = 'Prueba 159');
+  steam   text := (select steam from prueba);
+  x jsonb;
+begin
+  -- El agente con el EAC prendido: eac_on, que solo expulsa si el servidor lo exige.
+  update ac_devices set revoked_at = null, machine_id = null, last_seen_at = now(), last_ip = '10.0.0.1', agent_ok = null,
+         agent_version = '0.6.0', game_clientmod = true, game_hl2 = false, game_eac = true, game_reported_at = now()
+   where user_id = (select user_id from prueba);
+  update ac_server_policy set protected = false, enforce_always = false, enforce_mixes = false where server_id = v_srv;
+  update game_servers set mm_enabled = true where id = v_srv;
+
+  update mm_config set require_anticheat = true;
+  x := ac_bridge_player('token-prueba', steam, '10.0.0.1', false);
+  insert into r values ('mm: obligatorio, servidor en off', x->>'reason' || '/' || (x->>'action') || '/' || (x->>'always'), 'eac_on/kick/true');
+  x := ac_bridge_player('token-prueba', '76561197960000001', '10.0.0.1', false);
+  insert into r values ('mm: obligatorio, steamid sin vincular', x->>'reason' || '/' || (x->>'action'), 'no_profile/kick');
+
+  update mm_config set require_anticheat = false;
+  update ac_server_policy set protected = true, enforce_always = true where server_id = v_srv;
+  x := ac_bridge_player('token-prueba', steam, '10.0.0.1', true);
+  insert into r values ('mm: no obligatorio, servidor en always', (x->>'protected') || '/' || (x->>'action') || '/' || (x->>'always'), 'false/allow/false');
+
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', v_admin, 'role', 'authenticated')::text, true);
+  x := ac_admin_server_policies('Prueba 159', null);
+  insert into r values ('mm: panel muestra off y mm', (x->'items'->0->>'mode') || '/' || (x->'items'->0->>'mm'), 'off/true');
+  update mm_config set require_anticheat = true;
+  x := ac_admin_server_policies('Prueba 159', 'always');
+  insert into r values ('mm: panel muestra always (filtro)', (x->>'total') || '/' || (x->'items'->0->>'mm'), '1/true');
+  begin
+    perform ac_admin_set_server_policy(v_srv, 'off');
+    insert into r values ('mm: panel no deja cambiarlo', 'aceptado', 'rechazado');
+  exception when raise_exception then insert into r values ('mm: panel no deja cambiarlo', 'rechazado', 'rechazado');
   end;
   perform set_config('request.jwt.claims', '', true);
 end $$;

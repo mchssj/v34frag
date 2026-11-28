@@ -61,11 +61,31 @@ Con el EAC prendido, el agente **no** lista los módulos ni busca programas con 
 
 | Modo (panel) | Valor | En `ac_server_policy` | Qué hace |
 |---|---|---|---|
-| **Siempre** | `always` | `protected`, `enforce_always` | Lo exige desde que el jugador entra, también en el calentamiento. #1, #2 y #3 (Daniel, 2026-11-27) |
+| **Siempre** | `always` | `protected`, `enforce_always` | Lo exige desde que el jugador entra, también en el calentamiento. En los servidores que toman salas, es lo que da "Anticheat obligatorio" del matchmaking prendido (ver abajo) |
 | **No lo exige** | `off` | `protected = false` o sin fila | No abre sesiones ni expulsa a nadie |
 | Solo en la partida (ya no se elige) | `mixes` | `protected`, `enforce_mixes` | Lo exige con `cml_ac_mix 1`, que pone `live.cfg`. Se lista si un servidor ya lo tiene |
 
 Con "Siempre", nadie queda afuera con la partida empezada: el aviso y la expulsión llegan en el calentamiento.
+
+### Los servidores del matchmaking siguen a "Anticheat obligatorio"
+
+Daniel, 2026-11-27: un solo interruptor para la cola y los servidores. Antes eran dos (`mm_config.require_anticheat` solo cerraba la cola y el modo del panel solo lo usaba el servidor) y se podían contradecir: la cola pedía el agente y el servidor dejaba entrar a cualquiera, o al revés.
+
+- `ac_server_rule(server)` (interna) da la regla de cada servidor. Si toma salas (`game_servers.mm_enabled`), `require_anticheat` prendido es **Siempre** y apagado es **No lo exige**, sin mirar su fila de `ac_server_policy`. Si no, su fila, como antes.
+- La usan `ac_bridge_player` (expulsar y `always` de la respuesta) y `ac_server_mode(server)`, que da el modo del panel.
+- `ac_admin_server_policies` suma `mm` a cada servidor, y `ac_admin_set_server_policy` no deja cambiar uno que toma salas (400 con el mensaje).
+- El panel muestra el modo de esos servidores con "Lo decide el matchmaking", sin menú. El texto de "Anticheat obligatorio" en Administración › Matchmaking lo dice.
+- El cambio le llega al Bridge en la próxima revisión de cada jugador (al entrar y cada minuto). El Bridge no cambia.
+- `mm_lobbies.require_anticheat` (lo que tenía la configuración al armar la sala) no cuenta para el servidor: manda el interruptor de ahora.
+
+```mermaid
+flowchart TD
+  A[Jugador entra al servidor] --> B{¿El servidor toma salas?}
+  B -- Sí --> C{¿Anticheat obligatorio<br/>en el matchmaking?}
+  C -- Sí --> S[Siempre]
+  C -- No --> O[No lo exige]
+  B -- No --> P[Su modo de Anticheat › Servidores]
+```
 
 "Solo en la partida" era el modo de Kyan. Daniel lo sacó del panel el 2026-11-27, después de probarlo en el servidor local: quien entra sin el anticheat, o con el EAC prendido, juega todo el calentamiento y el servidor lo expulsa al arrancar el mix, con el equipo ya armado. `ac_admin_set_server_policy` y el `PUT` solo aceptan `off` y `always`. La columna `enforce_mixes` y su lógica en `ac_bridge_player` siguen, porque las usan la demo (`anticheat-demo.mts`) y las pruebas de integración de Kyan.
 
@@ -131,7 +151,7 @@ La 1.3.0 se hizo con el plan; la 1.4.0, después de la prueba en el servidor loc
 
 Lo que ya hacía la 1.3.0:
 
-- `eac_on` → `AC-6`. Chat: "Apaga el anticheat de ClientMod (EAC): en CM Launcher, debajo de Play tiene que decir Anticheat: Disabled. Después vuelve a abrir el juego (AC-6). Tienes 20 segundos." Expulsión: lo mismo, más corto. En CM Launcher, el botón del EAC está gris apagado y azul prendido, y debajo de **Play** dice `Anticheat: Disabled` o `Anticheat: Enabled` (Daniel, 2026-11-27). El aviso del agente y el manual del jugador lo dicen igual.
+- `eac_on` → `AC-6`. Chat: "Apaga el anticheat de ClientMod (EAC): en CM Launcher, debajo de Play tiene que decir Disabled o Not available. Después vuelve a abrir el juego (AC-6). Tienes 20 segundos." Expulsión: lo mismo, más corto. En CM Launcher, el botón del EAC está gris apagado y azul prendido, y debajo de **Play** dice `Anticheat: Disabled` o `Anticheat: Enabled` (Daniel, 2026-11-27); `Anticheat: Not available` también es apagado. El aviso del agente y el manual del jugador lo dicen igual, y el manual muestra la captura de CM Launcher (`docs/manual/jugador/img/cm-launcher-anticheat.webp`).
 - Sin SteamID: `AC-0`, "No pudimos leer tu SteamID. Vuelve a entrar al servidor".
 - `AC-1` dice "Para jugar aquí…" en vez de "Para jugar este mix…", porque con "Siempre" también expulsa en el calentamiento.
 - `OnMapStart` borra los avisos pendientes. Antes, si cambiaba el mapa durante los 20 s, el aviso se perdía y al minuto se expulsaba sin volver a avisar.

@@ -135,7 +135,8 @@ end $$;
 
 drop function public.ac_admin_set_server_policy(uuid, text);
 drop function public.ac_admin_server_policies(text, text, text, text, integer, integer);
-drop function public.ac_server_mode(ac_server_policy);
+drop function public.ac_server_mode(uuid);
+drop function public.ac_server_rule(uuid);
 drop function public.ac_same_ip_family(text, text);
 alter table public.ac_devices drop column game_eac_why, drop column game_eac;
 alter table public.ac_server_policy drop column enforce_always;

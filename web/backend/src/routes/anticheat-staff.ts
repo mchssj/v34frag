@@ -115,11 +115,16 @@ const AgentConfigBody = z
 
 // El modo de cada servidor (replanteo 159): off no protege y always lo exige desde que el jugador entra. mixes (con la partida
 // en vivo, cml_ac_mix 1) ya no se elige (Daniel, 2026-11-27: quien entra sin el anticheat juega el calentamiento y lo expulsan
-// al arrancar el mix). Se sigue listando y filtrando si un servidor ya lo tiene.
+// al arrancar el mix). Se sigue listando y filtrando si un servidor ya lo tiene. Los servidores que toman salas (mm) siguen
+// a "Anticheat obligatorio" del matchmaking: su modo es always u off según ese interruptor y no se cambia acá.
 const ServerMode = z.enum(['off', 'mixes', 'always']).openapi({ description: '`off`, `always` o `mixes` (ya no se elige)' });
 const SettableMode = z.enum(['off', 'always']).openapi({ description: '`off` o `always`' });
 const ServerPolicy = z
-  .object({ server_id: z.uuid(), name: z.string(), mode: ServerMode, updated_at: z.string().nullable() })
+  .object({
+    server_id: z.uuid(), name: z.string(), mode: ServerMode,
+    mm: z.boolean().openapi({ description: 'Toma salas: su modo lo decide "Anticheat obligatorio" del matchmaking' }),
+    updated_at: z.string().nullable(),
+  })
   .openapi('AcServerPolicy');
 const ServerQuery = listQuery(['name', 'mode', 'updated_at'] as const, { sort: 'name', order: 'asc' }).extend({
   q: z.string().trim().max(64).optional().openapi({ description: 'Parte del nombre del servidor' }),
@@ -225,7 +230,7 @@ const servers = createRoute({
 const serverSet = createRoute({
   method: 'put', path: '/api/v1/admin/anticheat/servers/{id}', tags: ['Admin'], security: bearer, middleware: [requireUser, requireAdmin] as const,
   summary: 'Cambiar cuándo exige el anticheat un servidor',
-  description: 'Lo toma el Bridge en la próxima revisión (al entrar y cada minuto). Queda registrado.',
+  description: 'Lo toma el Bridge en la próxima revisión (al entrar y cada minuto). Queda registrado. Un servidor que toma salas del matchmaking no se cambia acá (400): lo decide "Anticheat obligatorio" del matchmaking.',
   request: { params: IdParam, body: { required: true, ...json(ServerModeBody) } },
   responses: { 200: { description: 'Servidor', ...json(ServerPolicy) }, ...errorResponses(400, 401, 403, 404) },
 });

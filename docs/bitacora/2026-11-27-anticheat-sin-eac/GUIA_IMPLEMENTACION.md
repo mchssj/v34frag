@@ -1,6 +1,6 @@
 # Anticheat sin el EAC de ClientMod: guía de implementación
 
-Implementado en la rama `kyan/ac` (worktree `v34frag-ac`) el 2026-11-27, **sin commit y sin desplegar**. Sigue a los tres requerimientos de Kyan del mismo día ([ver el juego](../2026-11-27-anticheat-ver-el-juego/), [ventana nueva](../2026-11-27-anticheat-ventana-nueva/) y [detección](../2026-11-27-anticheat-deteccion/)), que tampoco están desplegados.
+Implementado en la rama `kyan/ac` (worktree `v34frag-ac`) el 2026-11-27, **commiteado y sin desplegar**. Sigue a los tres requerimientos de Kyan del mismo día ([ver el juego](../2026-11-27-anticheat-ver-el-juego/), [ventana nueva](../2026-11-27-anticheat-ventana-nueva/) y [detección](../2026-11-27-anticheat-deteccion/)), que tampoco están desplegados.
 
 ## Qué cambió respecto del plan
 
@@ -18,11 +18,15 @@ Implementado en la rama `kyan/ac` (worktree `v34frag-ac`) el 2026-11-27, **sin c
 | (No estaba) | `cml_aimstats` 1.0.1: el envío en lotes de 12 (System2 corta en 2048 bytes), el historial de la mira borrado al empezar el mix y cada ronda, y sin las kills a un compañero ni las de granada | Revisión del plugin de Kyan antes de subirlo (Daniel, 2026-11-27) |
 | (No estaba) | Plantillas `server/cfg/sourcemod/cml_anticheat.cfg` y `cml_aimstats.cfg` | Para el despliegue: antes solo estaba descrito |
 | (No estaba) | El latido firmado con el token vencido responde 401 | Salió en la prueba en el servidor local: con 403, el agente se quedaba sin latidos a los 15 minutos |
+| #1, #2 y #3 en **Siempre** desde el panel, y aparte "Anticheat obligatorio" del matchmaking | Los servidores que toman salas siguen a "Anticheat obligatorio" (`ac_server_rule`) y el panel no deja cambiarlos | Daniel (2026-11-27): un solo interruptor, para que la cola y el servidor no se contradigan |
+| (No estaba) | La captura de CM Launcher en el manual del jugador, y `Anticheat: Not available` también cuenta como apagado | Daniel (2026-11-27) |
 
 ## Pruebas hechas
 
 | Qué | Cómo | Resultado |
 |---|---|---|
+| Base: los servidores del matchmaking siguen a `require_anticheat` | La copia local ya tenía la `159`: se aplicaron las funciones cambiadas y `pruebas/bridge_159.sql` con `rollback` | 32 de 32 (6 nuevos: obligatorio con el servidor en off expulsa, también el SteamID sin vincular; no obligatorio con el servidor en always deja jugar; el panel muestra el modo y `mm`, filtra por él y no deja cambiarlo). Las funciones nuevas quedaron aplicadas en la copia local: #1, #2 y #3 salen en **No lo exige**, porque `require_anticheat` está apagado ahí |
+| Web y API, con el matchmaking | `tsc`, `eslint` y `vitest` de `features/admin/anticheat` y `features/matchmaking`; `tsc` y `vitest run test/unit` de la API | Sin errores; 4 pruebas de **Servidores** (1 nueva: el servidor del matchmaking sin menú), 106 de las dos carpetas y 582 de la API |
 | Base: la `159` sin "Solo en la partida" y con `always` en la respuesta | La copia local ya tenía la `159`: su inversa, la `159` y los casos, con `rollback` | 26 de 26 (3 nuevos: `always` en la respuesta y el SteamID sin vincular). Las dos funciones nuevas quedaron aplicadas en la copia local |
 | Base: `155` a `159` (la primera vez) | `pruebas/armar_prueba.sh`: las cinco migraciones sobre la copia local de producción, 23 casos de `pruebas/bridge_159.sql`, la inversa de la `159` y `rollback` | 23 de 23. La inversa deja la base sin las columnas nuevas. **Es la primera vez que se aplican la `155` a la `158`**, y van bien sobre la copia de producción |
 | Firmas | El `.sql` de 1.5.14 dos veces sobre las migraciones, con `rollback` | 72 firmas, sin duplicados |
@@ -50,11 +54,10 @@ Implementado en la rama `kyan/ac` (worktree `v34frag-ac`) el 2026-11-27, **sin c
 - La pestaña **Servidores** en el navegador: la extensión de Chrome no estaba conectada. Se probó con la API simulada (pruebas de la web) y la API local contra la base local (ver arriba).
 - **Para repetir la prueba local:** el servidor de pruebas con `+ip 26.228.23.45` (Radmin), y con `+clientport 27006 +tv_port 27025` si ClientMod ya está abierto: el juego toma el 27005 y el 27020, y con los mismos puertos no se puede entrar ("Retrying"). El agente de pruebas, con `--portable`: sin él se ofrece a instalarse, y la copia instalada se abre sin `--api` y apunta a la API real.
 - Las pruebas de integración del anticheat (`test/integration/anticheat.test.ts`): escriben en la base local.
-- Una captura de CM Launcher para el manual del jugador. El texto ya dice dónde está (el botón gris, `Anticheat: Disabled` debajo de **Play**), según lo que contó Daniel.
 
 ## Despliegue (pendiente)
 
-Todo junto con lo de Kyan, y **en este orden**. Si los servidores pasan a **Siempre** antes de que los jugadores tengan el agente, expulsan a todos.
+Todo junto con lo de Kyan, y **en este orden**. Si se prende "Anticheat obligatorio" antes de que los jugadores tengan el agente, la cola no deja entrar a nadie y los servidores expulsan a todos.
 
 1. **Llevar el anticheat a `main`** commit por commit. `kyan/ac` sale de `kyan/pruebas` (tienda, VIP y demás): no se mezcla entera.
    - **Renumerar las migraciones.** El 2026-11-27 `main` usó la `155` para otra cosa (`155_mm_sala_oculta_al_aceptar.sql`, aplicada en producción a las 19:58 UTC). Las del anticheat pasan a ser la siguiente libre en adelante, en el mismo orden: hoy, `156_anticheat_juego`, `157_anticheat_deteccion`, `158_anticheat_maquinas`, `159_anticheat_aim` y `160_anticheat_sin_eac`, con sus inversas y las referencias en la bitácora y los comentarios. No tocan ninguna función de esa `155`.
@@ -63,7 +66,10 @@ Todo junto con lo de Kyan, y **en este orden**. Si los servidores pasan a **Siem
 3. **API:** `AC_HWID_SALT` en `/etc/cmleague/api.env` (generada en el VPS, `openssl rand -hex 32`) y desplegar desde `main`.
 4. **Web:** desplegar desde `main` (Servidores, manual, términos y privacidad).
 5. **Firmas de ClientMod:** bajar ClientMod limpio, correr `agent\firmas-clientmod.ps1 -Carpeta <carpeta> -Salida firmas.sql` y aplicarlo por el túnel.
-6. **Agente 0.6.0:** el certificado de firma de código (lo compra el equipo), firmarlo, publicarlo en `cmleague.lat` y cargar su hash en **Agente** › hashes permitidos.
+6. **Agente 0.6.0:** publicarlo en `cmleague.lat` y cargar su hash en **Agente** › hashes permitidos.
+   - **Sale sin firma de código**, igual que la app (Daniel, 2026-11-27). El control del servidor no la necesita: compara el hash del `.exe` con los permitidos. Sin firma, Windows muestra "Windows protegió tu PC" en cada versión nueva, y el antivirus tiene más chances de desconfiar (el agente mira los procesos, saca capturas y manda datos).
+   - Si Defender lo marca o lo pone en cuarentena (el jugador ve `AC-1`), mandar el `.exe` como falso positivo al portal de Microsoft Security Intelligence.
+   - Si pasa seguido, comprar el certificado: Microsoft Artifact Signing (unos 10 USD al mes; confirmar que acepta el país) o Certum Standard Code Signing en la nube (unos 170 € al año, a nombre de una persona con su documento). En ese caso, **primero se firma y después se calcula el hash**: firmar cambia el archivo.
 7. **Servidores #1, #2 y #3**, en la misma tanda, por SFTP (`SFTP_CSS_*_MVZG`) y **sin un mix en curso**:
    - `addons/sourcemod/plugins/cml_anticheat_bridge.smx` y `cml_aimstats.smx`.
    - `cfg/sourcemod/cml_anticheat.cfg`, de la plantilla `server/cfg/sourcemod/cml_anticheat.cfg`: ya trae `cml_ac_api_url "https://db.cmleague.lat/rest/v1/rpc/"`; en cada servidor se pegan `cml_ac_api_key` (la anon, la misma de `csstv_api_key`) y `cml_ac_server_token` (el mismo `csstv_server_token` de cada uno).
@@ -72,8 +78,8 @@ Todo junto con lo de Kyan, y **en este orden**. Si los servidores pasan a **Siem
    - Se cargan solos en el próximo cambio de mapa. **No recargar el plugin con una partida en curso.**
    - El de retake, mientras exista, no lo lleva: no es un servidor de partidas.
 8. **Avisar a los jugadores** (el `CHANGELOG_DISCORD.txt`, con 2.9.79: `main` usó la 2.9.78 el 2026-11-27 para la sala oculta; si ya se usó, el siguiente libre) y darles unos días para instalarlo.
-9. **Panel › Anticheat › Servidores:** #1, #2 y #3 en **Siempre**. Hasta acá, en **No lo exige**.
-   - **A decidir por Daniel:** prender también `require_anticheat` del matchmaking (Administración › Matchmaking; en producción está en `false`). Con eso, la cola no deja buscar partida sin el agente vinculado y con latido de los últimos 90 s (`mm_can_queue`, replanteo `48`): quien no lo tiene se entera antes de que le toque una sala, no cuando ya entró al servidor.
+9. **Prender "Anticheat obligatorio" en Administración › Matchmaking** (`mm_config.require_anticheat`, hoy en `false` en producción). Con eso, la cola no deja buscar partida sin el agente vinculado y con latido de los últimos 90 s, y #1, #2 y #3 (los que toman salas) pasan solos a **Siempre** en menos de un minuto (Daniel, 2026-11-27: un solo interruptor). Hasta acá, apagado: los tres no lo exigen.
+   - Un servidor que no toma salas se pone en **Siempre** desde Panel › Anticheat › Servidores.
 10. Quitar "En preparación" de la sección del anticheat en `/terminos`, `/privacidad`, `/seguridad` y las preguntas frecuentes, en el mismo commit.
 
 ## Vuelta atrás

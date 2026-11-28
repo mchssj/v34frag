@@ -168,8 +168,9 @@ function Form({ initial }: { initial: MmAdminConfig }) {
               <span className="flex flex-col">
                 Anticheat obligatorio
                 <span className="text-xs text-muted-foreground">
-                  Sin el agente activo no se entra a la cola y el servidor
-                  expulsa al jugador. Apagarlo vale para las salas nuevas.
+                  Sin el agente activo no se entra a la cola, y los servidores
+                  que toman salas lo exigen desde que el jugador entra (en
+                  menos de un minuto después de cambiarlo).
                 </span>
               </span>
             </label>

@@ -359,6 +359,11 @@ export function ServersTab() {
             </li>
           ))}
           <li>
+            <span className="font-medium text-foreground">Servidores del matchmaking:</span> los que toman salas siguen a
+            "Anticheat obligatorio" de Administración › Matchmaking (prendido es Siempre, apagado es No lo exige) y no se cambian
+            acá. Así la cola y el servidor piden lo mismo.
+          </li>
+          <li>
             En cualquier modo menos "No lo exige", el servidor expulsa siempre por AC-3, AC-4 y AC-5. El cambio llega al servidor
             en la próxima revisión del jugador (al entrar y cada minuto). "Abrir mixes" deja jugar sin el anticheat mientras dure.
           </li>
@@ -400,27 +405,35 @@ export function ServersTab() {
                   <TableCell>
                     <span className="inline-flex items-center gap-2">
                       <Dot tone={MODES[s.mode].tone} />
-                      <Select
-                        value={s.mode}
-                        disabled={change.isPending}
-                        onValueChange={(v) => change.mutate({ id: s.server_id, mode: v as AcSettableMode })}
-                      >
-                        <SelectTrigger aria-label={`Anticheat en ${s.name}`} className="h-9 w-[190px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {s.mode === "mixes" ? (
-                            <SelectItem value="mixes" disabled>
-                              {MODES.mixes.label}
-                            </SelectItem>
-                          ) : null}
-                          {SETTABLE.map((m) => (
-                            <SelectItem key={m} value={m}>
-                              {MODES[m].label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {s.mm ? (
+                        // Toma salas: lo decide "Anticheat obligatorio" del matchmaking (la API no deja cambiarlo acá).
+                        <span className="flex flex-col" aria-label={`Anticheat en ${s.name}`}>
+                          <span>{MODES[s.mode].label}</span>
+                          <span className="text-xs text-muted-foreground">Lo decide el matchmaking</span>
+                        </span>
+                      ) : (
+                        <Select
+                          value={s.mode}
+                          disabled={change.isPending}
+                          onValueChange={(v) => change.mutate({ id: s.server_id, mode: v as AcSettableMode })}
+                        >
+                          <SelectTrigger aria-label={`Anticheat en ${s.name}`} className="h-9 w-[190px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {s.mode === "mixes" ? (
+                              <SelectItem value="mixes" disabled>
+                                {MODES.mixes.label}
+                              </SelectItem>
+                            ) : null}
+                            {SETTABLE.map((m) => (
+                              <SelectItem key={m} value={m}>
+                                {MODES[m].label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </span>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{s.updated_at ? fmtDate(s.updated_at) : "—"}</TableCell>

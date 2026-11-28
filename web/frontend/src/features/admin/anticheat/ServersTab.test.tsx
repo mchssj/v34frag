@@ -12,8 +12,8 @@ import { ServersTab } from "./AdminAnticheatTools"
 const ok = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } })
 const LIST = {
   items: [
-    { server_id: "96bb5060-a639-483a-94ef-f15135c57b1b", name: "CM League #1", mode: "always", updated_at: "2026-11-27T12:00:00Z" },
-    { server_id: "9374340c-88fc-48ad-bdd6-766957671854", name: "CM League #2", mode: "off", updated_at: null },
+    { server_id: "96bb5060-a639-483a-94ef-f15135c57b1b", name: "CM League #1", mode: "always", mm: false, updated_at: "2026-11-27T12:00:00Z" },
+    { server_id: "9374340c-88fc-48ad-bdd6-766957671854", name: "CM League #2", mode: "off", mm: false, updated_at: null },
   ],
   total: 2,
   page: 1,
@@ -53,5 +53,17 @@ describe("ServersTab", () => {
     renderWithQuery(<ServersTab />)
     expect(await screen.findByRole("combobox", { name: "Anticheat en Demo" })).toHaveTextContent("Solo en la partida")
     expect(screen.queryByRole("radio", { name: "Solo en la partida" })).not.toBeInTheDocument()
+  })
+
+  // Los que toman salas siguen a "Anticheat obligatorio" del matchmaking (Daniel, 2026-11-27): se ven, no se cambian.
+  it("un servidor del matchmaking muestra su modo sin poder cambiarlo", async () => {
+    authFetch.mockImplementation(() =>
+      Promise.resolve(ok({ ...LIST, items: [{ ...LIST.items[0], mm: true }, { ...LIST.items[1], mm: false }] }))
+    )
+    renderWithQuery(<ServersTab />)
+    await screen.findByText("CM League #1")
+    expect(screen.queryByRole("combobox", { name: "Anticheat en CM League #1" })).not.toBeInTheDocument()
+    expect(screen.getByLabelText("Anticheat en CM League #1")).toHaveTextContent("SiempreLo decide el matchmaking")
+    expect(screen.getByRole("combobox", { name: "Anticheat en CM League #2" })).toHaveTextContent("No lo exige")
   })
 })

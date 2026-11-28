@@ -295,7 +295,7 @@ void Enforce(int client, const char[] why, const char[] code = "AC-1", bool alwa
 		else if (StrEqual(code, "AC-0"))
 			PrintToChat(client, "\x04[CMLeague]\x01 No pudimos leer tu SteamID. Vuelve a entrar al servidor. Tienes %d segundos.", RoundToFloor(KICK_GRACE));
 		else if (StrEqual(code, "AC-6"))
-			PrintToChat(client, "\x04[CMLeague]\x01 Apaga el anticheat de ClientMod (EAC): en CM Launcher, debajo de Play tiene que decir Anticheat: Disabled. Después vuelve a abrir el juego (AC-6). Tienes %d segundos.", RoundToFloor(KICK_GRACE));
+			PrintToChat(client, "\x04[CMLeague]\x01 Apaga el anticheat de ClientMod (EAC): en CM Launcher, debajo de Play tiene que decir Disabled o Not available. Después vuelve a abrir el juego (AC-6). Tienes %d segundos.", RoundToFloor(KICK_GRACE));
 		else
 			PrintToChat(client, "\x04[CMLeague]\x01 CMLeague Anticheat no te deja jugar (%s). Tienes %d segundos.", code, RoundToFloor(KICK_GRACE));
 		CreateTimer(KICK_GRACE, Timer_Recheck, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
@@ -307,7 +307,7 @@ void Enforce(int client, const char[] why, const char[] code = "AC-1", bool alwa
 	else if (StrEqual(code, "AC-0"))
 		KickClient(client, "No pudimos leer tu SteamID. Vuelve a entrar al servidor");
 	else if (StrEqual(code, "AC-6"))
-		KickClient(client, "Apaga el anticheat de ClientMod (EAC): en CM Launcher tiene que decir Anticheat: Disabled. Después vuelve a abrir el juego (AC-6)");
+		KickClient(client, "Apaga el anticheat de ClientMod (EAC): en CM Launcher, debajo de Play tiene que decir Disabled o Not available. Después vuelve a abrir el juego (AC-6)");
 	else
 		KickClient(client, "CMLeague Anticheat no te deja jugar (%s). Si crees que es un error, habla con el staff", code);
 }

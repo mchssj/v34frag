@@ -13,7 +13,7 @@ El matchmaking se configura en Administración › [Matchmaking](/admin/matchmak
 | Sección | Qué cambias |
 |---|---|
 | **Cola** | Abierta o cerrada. Cerrarla impide entrar, sin cancelar las salas armadas. También qué modos están habilitados y cuáles dan ELO |
-| **Quién puede jugar** | Mixes mínimos jugados y días de cuenta mínimos. En 0 no se exige |
+| **Quién puede jugar** | Mixes mínimos jugados y días de cuenta mínimos. En 0 no se exige. Y **Anticheat obligatorio**: prendido, nadie entra a la cola sin CMLeague Anticheat abierto y vinculado, y los servidores que toman salas lo exigen desde que el jugador entra, también en el calentamiento. Apagado, ni la cola ni esos servidores lo piden. Llega a los servidores en menos de un minuto. Ver [Anticheat](/help/admin/anticheat) |
 | **Bloqueo de compañeros** | Cuántos jugadores puede bloquear cada cuenta para que no le toquen en su equipo (en contra sí). En 0 está apagado |
 | **Grupos** | Tamaño máximo (1 = sin grupos; 2 = dúo) y la diferencia de ELO máxima dentro del grupo |
 | **Tiempos** | Para aceptar, por turno del veto, para conectarse, esperando servidor, para volver si se desconecta y el cierre de la cola antes de que termine la temporada |
