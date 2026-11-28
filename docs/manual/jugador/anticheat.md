@@ -8,7 +8,7 @@ Los servidores de CMLeague pueden exigir **CMLeague Anticheat**, una aplicación
 
 ## Instalarlo y vincularlo
 
-1. Bájalo desde la web e instálalo. La primera vez te pide que aceptes los términos y la política de privacidad.
+1. Bájalo con **Descargar CMLeague Anticheat**, en [Jugar](/play) debajo del botón para buscar partida (o directo desde [descargas.cmleague.lat](https://descargas.cmleague.lat/anticheat/CMLeagueAC.exe)), y ábrelo: se instala solo. La primera vez te pide que aceptes los términos y la política de privacidad. Si Windows dice "Windows protegió tu PC", toca **Más información** y después **Ejecutar de todas formas**.
 2. Toca **Vincular con cmleague.lat**. Se abre la web con un código: confírmalo con tu cuenta.
 3. Listo. Desde ahí, ábrelo antes de jugar y déjalo abierto hasta terminar. Si dice **Todo listo para jugar**, puedes entrar al servidor.
 

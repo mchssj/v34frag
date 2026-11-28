@@ -11,6 +11,7 @@ import { useState, type ReactNode } from "react"
 import { toast } from "sonner"
 
 import { errorMessage } from "@/api/errors"
+import { ANTICHEAT } from "@/config/site"
 import { CountryFlag } from "@/components/brand/CountryFlag"
 import { LevelBadge } from "@/components/brand/LevelBadge"
 import { Button } from "@/components/ui/button"
@@ -373,23 +374,33 @@ function QueueInfo({
 }
 
 function AnticheatLine({ anticheat }: { anticheat: MmState["anticheat"] }) {
+  const ok = anticheat.status === "ok"
+  // Sin el agente activo, el link para bajarlo (también cuando todavía no es obligatorio).
+  const download = !ok && (
+    <a
+      href={ANTICHEAT.downloadUrl}
+      className="font-medium text-foreground underline underline-offset-4"
+    >
+      Descargar CMLeague Anticheat
+    </a>
+  )
   if (!anticheat.required)
     return (
-      <span className="text-xs text-muted-foreground">
-        Anticheat no obligatorio
+      <span className="text-center text-xs text-muted-foreground">
+        Anticheat no obligatorio{download && <> · {download}</>}
       </span>
     )
-  const ok = anticheat.status === "ok"
   const Icon = ok ? ShieldCheckIcon : ShieldAlertIcon
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs",
+        "inline-flex flex-wrap items-center justify-center gap-1.5 text-xs",
         ok ? "text-win" : "text-destructive"
       )}
     >
       <Icon aria-hidden className="size-3.5" />
       {ok ? "Anticheat activo" : "Anticheat inactivo"}
+      {download && <> · {download}</>}
     </span>
   )
 }

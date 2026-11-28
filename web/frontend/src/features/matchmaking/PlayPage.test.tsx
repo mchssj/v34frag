@@ -303,13 +303,28 @@ describe("PlayPage (con la demo)", () => {
       await screen.findByText("Para jugar necesitas el anticheat activo")
     ).toBeInTheDocument()
     expect(await searchButton()).toBeDisabled()
+    // El link para bajar el agente, en el aviso y en la barra.
+    for (const a of screen.getAllByRole("link", {
+      name: "Descargar CMLeague Anticheat",
+    }))
+      expect(a).toHaveAttribute(
+        "href",
+        "https://descargas.cmleague.lat/anticheat/CMLeagueAC.exe"
+      )
+    expect(
+      screen.getAllByRole("link", { name: "Descargar CMLeague Anticheat" })
+    ).toHaveLength(2)
 
     const config = await source.adminConfig()
     await act(async () => {
       await source.saveConfig({ ...config, require_anticheat: false })
     })
     expect(
-      await screen.findByText("Anticheat no obligatorio")
+      await screen.findByText(/Anticheat no obligatorio/)
+    ).toBeInTheDocument()
+    // Sin el agente, aunque no sea obligatorio, sigue el link para bajarlo.
+    expect(
+      screen.getByRole("link", { name: "Descargar CMLeague Anticheat" })
     ).toBeInTheDocument()
     expect(await searchButton()).toBeEnabled()
   })

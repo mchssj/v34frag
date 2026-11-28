@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ANTICHEAT } from "@/config/site"
 import { AcceptDialog } from "./AcceptDialog"
 import {
   alertInvite,
@@ -171,14 +172,20 @@ export function PlayPage() {
                 <span>
                   {state.anticheat.status === "stale"
                     ? "Tu agente dejó de responder. Ábrelo de nuevo en esta PC."
-                    : "Abre el agente de CM League en tu PC y vincula esta cuenta."}{" "}
-                  {/* La ruta está en la rama del anticheat: al mezclar, pasa a <Link>. */}
+                    : "Abre CMLeague Anticheat en tu PC y vincula esta cuenta."}{" "}
                   <a
-                    href="/anticheat/vincular"
+                    href={ANTICHEAT.downloadUrl}
+                    className="font-medium underline underline-offset-4"
+                  >
+                    Descargar CMLeague Anticheat
+                  </a>
+                  {" · "}
+                  <Link
+                    to="/anticheat/vincular"
                     className="font-medium underline underline-offset-4"
                   >
                     Vincular el agente
-                  </a>
+                  </Link>
                 </span>
               </AlertDescription>
             </Alert>

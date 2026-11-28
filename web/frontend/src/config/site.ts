@@ -31,6 +31,15 @@ export const LAUNCHER = {
   openUrl: "cmleague://play",
 }
 
+/**
+ * CMLeague Anticheat, el agente de Windows (docs/bitacora/2026-11-27-anticheat-sin-eac). Se publica en el R2 de Daniel,
+ * en descargas.cmleague.lat/anticheat/: `CMLeagueAC.exe` es siempre la última versión (sin caché), y cada versión queda
+ * también en su carpeta (`0.6.0/CMLeagueAC.exe`), que es el link de Panel › Anticheat › Agente para la actualización.
+ */
+export const ANTICHEAT = {
+  downloadUrl: "https://descargas.cmleague.lat/anticheat/CMLeagueAC.exe",
+}
+
 /** La tarjeta del Discord en el inicio. Los números (en línea y miembros) los da la API: GET /api/v1/community/discord. */
 export const DISCORD = {
   inviteUrl: COMMUNITY.discordUrl,
