@@ -502,14 +502,22 @@ const SECTIONS: LegalSection[] = [
         </p>
         <ul>
           <li>
-            Antes de empezar, la aplicación te muestra qué recopila y te pide tu
-            consentimiento. Si no aceptas, no recopila nada, pero no vas a poder
+            Antes de empezar, la aplicación te pide que aceptes los términos y
+            esta política. Si no aceptas, no recopila nada, pero no vas a poder
             jugar las partidas que la exigen.
           </li>
           <li>
-            <strong>Solo recopila con una sesión abierta</strong>, mientras
-            juegas en un servidor de la liga que la exige. Durante la sesión
-            envía:
+            Mientras está abierta, cada 10 a 30 segundos envía un aviso de que
+            sigue abierta, con su versión y su huella, si el juego está abierto,
+            si se abrió con el anticheat de ClientMod (EAC), los puertos de red
+            del juego y unos identificadores del hardware de tu PC. Esos
+            identificadores se guardan solo como una huella cifrada que no
+            permite recuperarlos, y sirven para que una PC baneada no pueda
+            volver con otra cuenta.
+          </li>
+          <li>
+            <strong>La evidencia la junta solo con una sesión abierta</strong>,
+            mientras juegas en un servidor de la liga que la exige:
             <ul>
               <li>
                 La lista de procesos abiertos y sus cambios: nombre, ruta,
@@ -518,28 +526,31 @@ const SECTIONS: LegalSection[] = [
                 se ve tu nombre de usuario de Windows.
               </li>
               <li>
-                Capturas de la pantalla del juego, solo cuando el juego está al
-                frente. Cuando el staff pide una, te avisa.
+                Datos técnicos del juego y de tu PC: los archivos que carga el
+                juego, los programas y ventanas que interactúan con él, los
+                drivers cargados y las huellas de los archivos de ClientMod.
               </li>
               <li>
-                Un aviso cada 30 segundos para saber que la aplicación sigue
-                abierta.
+                <strong>Capturas de toda la pantalla</strong> donde está el
+                juego, cada 30 a 35 segundos y cuando el staff pide una, sin
+                aviso, solo con el juego al frente. Si algo tuyo está en esa
+                pantalla (una notificación, un chat), puede salir en la captura.
               </li>
             </ul>
           </li>
           <li>
-            No lee la memoria del juego ni se inyecta en él, no abre tus
-            archivos personales, no usa tu micrófono ni tu cámara y no recopila
-            nada fuera de las sesiones.
+            No se inyecta en el juego ni lo modifica, no abre tus archivos
+            personales, no usa tu micrófono ni tu cámara y, fuera de las
+            sesiones, no junta evidencia.
           </li>
           <li>
             Los datos de vinculación se guardan cifrados en tu PC, en{" "}
             <code>%LOCALAPPDATA%\CMLeagueAC</code>.
           </li>
           <li>
-            La evidencia la ve solo el staff, en un almacenamiento privado, y se
-            borra a los 30 días. El sistema no decide ni sanciona solo: lo
-            revisa una persona.
+            La evidencia la ve solo el staff, en un almacenamiento privado. Las
+            capturas se borran a los 7 días y el resto a los 30. El sistema no
+            decide ni sanciona solo: lo revisa una persona.
           </li>
           <li>
             Puedes desinstalar la aplicación cuando quieras y pedir que se borre

@@ -17,6 +17,8 @@ No hace falta vincularlo antes de jugar: lo haces en tu primera partida.
 
 > **Ojo:** el código dura 10 minutos y se usa una sola vez. Si se vence, genera otro. Puedes generar hasta 5 por hora.
 
+> **Ojo:** en los servidores que exigen CMLeague Anticheat tienes **1 minuto** desde que entras para escribir el `!claim`. Si no, el servidor te saca y tienes que volver a entrar (ver [Jugar con CMLeague Anticheat](/help/jugador/anticheat)).
+
 ## Si ya jugabas antes de vincular
 
 No pierdes nada. Si jugaste con esa cuenta de Steam antes de tener cuenta en la web, al vincularla se suman a tu perfil todas esas partidas y tu ELO se calcula con ellas.

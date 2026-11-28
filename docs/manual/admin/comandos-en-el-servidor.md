@@ -19,6 +19,7 @@ Un admin tiene todos los comandos del moderador (ver [Comandos del moderador en 
 | `!unbanip <IP o rango>` | Levanta un baneo por IP |
 | `!vote`, `!votemap`, `!votekick` | Votaciones de admin |
 | `!rcon <comando>` y `!cvar <nombre> <valor>` | Comandos y ajustes de la consola del servidor |
+| `sm_ac_open <minutos>` | En la consola: deja jugar en ese servidor sin el anticheat por esos minutos (hasta 720), por ejemplo si se cayó. `sm_ac_open 0` lo vuelve a exigir. Los códigos `AC-3`, `AC-4` y `AC-5` sacan igual |
 
 > **Ojo:** cambiar el mapa con un mix en curso lo corta, y un mix cortado no se recupera. Antes de usar `!map` o `!cancelmatch` en vivo, asegúrate de que es lo que quieres.
 

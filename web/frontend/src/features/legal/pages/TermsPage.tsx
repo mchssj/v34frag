@@ -166,32 +166,46 @@ const SECTIONS: LegalSection[] = [
         </p>
         <ul>
           <li>
-            Antes de usarla te muestra qué recopila y te pide tu consentimiento.
-            La vinculas con tu cuenta de cmleague.lat con un código que
-            confirmas en la web.
+            Antes de usarla te pide que aceptes estos términos y la{" "}
+            <Link to="/privacidad">política de privacidad</Link>, que detalla qué
+            datos junta. La vinculas con tu cuenta de cmleague.lat con un código
+            que confirmas en la web.
           </li>
           <li>
-            <strong>Solo recopila mientras tienes una sesión abierta</strong>,
-            es decir, mientras juegas en un servidor de la liga que la exige.
-            Durante la sesión puede enviar la lista de procesos abiertos
-            (nombre, ruta, huella del archivo y firma) y capturas de la ventana
-            del juego, solo cuando el juego está al frente. Al pedirte una
-            captura, te avisa.
+            <strong>Solo junta evidencia mientras tienes una sesión abierta</strong>,
+            es decir, mientras juegas en un servidor de la liga que la exige. Lo
+            que junta está en la{" "}
+            <Link to="/privacidad" hash="anticheat">
+              política de privacidad
+            </Link>
+            . Las capturas son de toda la pantalla donde está el juego y se toman
+            sin aviso, también cuando las pide el staff.
           </li>
           <li>
-            No lee la memoria del juego, no se inyecta en él, no lee tus
-            archivos personales, tu micrófono ni tu cámara, y no recopila nada
-            fuera de las sesiones.
+            Cada servidor de la liga decide si la exige. Si la exige, es desde que
+            entras, también en el calentamiento. Si no la tienes abierta y vinculada en
+            la misma PC del juego, el servidor te avisa y te expulsa a los 20
+            segundos. Expulsarte no es una sanción.
           </li>
           <li>
-            La evidencia se guarda en un almacenamiento privado, solo la ve el
-            staff y se borra a los 30 días, salvo que forme parte de una sanción
-            en curso.
+            En esos servidores tienes que abrir ClientMod{" "}
+            <strong>sin su anticheat (EAC)</strong>: se apaga en CM Launcher.
+            Tampoco puedes tener abierto otro juego que corra como{" "}
+            <code>hl2.exe</code>.
+          </li>
+          <li>
+            La evidencia se guarda en un almacenamiento privado y solo la ve el
+            staff. Las capturas se borran a los 7 días y el resto a los 30, salvo
+            que forme parte de una sanción en curso.
           </li>
           <li>
             El sistema no decide ni sanciona solo: el staff revisa los hechos y
-            decide. Si no tienes una sesión válida en un mix que la exige, el
-            servidor te puede expulsar de esa partida.
+            decide. Si una PC queda baneada, una cuenta que use la aplicación en
+            esa PC queda baneada por evasión.
+          </li>
+          <li>
+            Modificar la aplicación, imitarla o usar una versión vieja es motivo
+            de expulsión de la partida y de sanción.
           </li>
           <li>
             No estás obligado a instalarla. Si no la instalas, no vas a poder

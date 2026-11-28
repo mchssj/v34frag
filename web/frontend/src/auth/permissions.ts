@@ -17,6 +17,7 @@ export const ADMIN_SECTIONS = [
   "users",
   "bans",
   "shop",
+  "anticheat",
 ] as const
 export type AdminSection = (typeof ADMIN_SECTIONS)[number]
 
