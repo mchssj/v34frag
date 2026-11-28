@@ -3,7 +3,7 @@
 # Se corre desde la PC de Daniel (Git Bash) y, más adelante, desde el pipeline de GitHub. Entra como `deploy`.
 #
 # Uso: deploy/vps/desplegar.sh <api|web|hud> [--sin-pruebas]
-#   api: pruebas y build de web/backend; sube server.mjs, season-tick.mjs, medals-tick.mjs, demos-sftp.mjs, notify-tick.mjs, mm-worker.mjs y manual/; reinicia cmleague-api y chequea
+#   api: pruebas y build de web/backend; sube server.mjs, season-tick.mjs, medals-tick.mjs, demos-sftp.mjs, notify-tick.mjs, mm-worker.mjs, anticheat-tick.mjs y manual/; reinicia cmleague-api y chequea
 #        /api/health con el commit. Si el chequeo falla, vuelve sola a la versión anterior. Si cmleague-api está apagado
 #        (VPS nuevo antes del corte), solo sube la versión.
 #   web: pruebas y build de web/frontend (VITE_API_URL, por defecto https://api.cmleague.lat); sube dist/.
@@ -149,7 +149,7 @@ if [[ "$parte" == api ]]; then
   BUILD_SHA="$sha" pnpm build
   pnpm build:check
   local_dir="$RAIZ/web/backend/dist"
-  archivos=(server.mjs server.mjs.map season-tick.mjs season-tick.mjs.map medals-tick.mjs medals-tick.mjs.map demos-sftp.mjs demos-sftp.mjs.map notify-tick.mjs notify-tick.mjs.map mm-worker.mjs mm-worker.mjs.map)
+  archivos=(server.mjs server.mjs.map season-tick.mjs season-tick.mjs.map medals-tick.mjs medals-tick.mjs.map demos-sftp.mjs demos-sftp.mjs.map notify-tick.mjs notify-tick.mjs.map mm-worker.mjs mm-worker.mjs.map anticheat-tick.mjs anticheat-tick.mjs.map)
   # El manual de usuario (plan docs/bitacora/2026-11-02-manual-usuario): lo valida y lo copia el build.
   if [[ -d dist/manual ]]; then archivos+=(manual); fi
 elif [[ "$parte" == hud ]]; then

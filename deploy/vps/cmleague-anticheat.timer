@@ -1,0 +1,11 @@
+# Una vez al día, a las 07:30 UTC (madrugada en Latinoamérica). Persistent: si el VPS estaba apagado a la hora, corre apenas arranca.
+[Unit]
+Description=CMLeague: limpieza del anticheat una vez al día
+
+[Timer]
+OnCalendar=*-*-* 07:30:00 UTC
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

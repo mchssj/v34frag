@@ -45,7 +45,7 @@ id "$ADMIN" >/dev/null 2>&1 || falla "no existe el usuario $ADMIN"
 grep -qE '^(ssh-ed25519|ssh-rsa|ecdsa-sha2-)' "/home/$ADMIN/.ssh/authorized_keys" 2>/dev/null \
   || falla "$ADMIN no tiene ninguna llave SSH: sin llave, apagar las contraseñas deja el servidor sin acceso"
 for f in Caddyfile Caddyfile.ip cmleague-api.service cmleague-mm.service cmleague-season.service cmleague-season.timer cmleague-notify.service \
-         cmleague-notify.timer cmleague-medals.service cmleague-medals.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer sudoers-deploy api.env.example season.env.example \
+         cmleague-notify.timer cmleague-medals.service cmleague-medals.timer cmleague-anticheat.service cmleague-anticheat.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer sudoers-deploy api.env.example season.env.example \
          demos.env.example demos-sftp.json.example hud.json.example; do
   [[ -f "$DIR/$f" ]] || falla "falta $f al lado del script"
 done
@@ -240,7 +240,7 @@ ls -la "$ETC"
 # --- 3.12 Servicios -------------------------------------------------------------------------------------------------
 paso "3.12 Servicios de systemd"
 for u in cmleague-api.service cmleague-mm.service cmleague-season.service cmleague-season.timer cmleague-notify.service cmleague-notify.timer \
-         cmleague-medals.service cmleague-medals.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer cmleague-vigia.service cmleague-vigia.timer; do
+         cmleague-medals.service cmleague-medals.timer cmleague-anticheat.service cmleague-anticheat.timer cmleague-hud.service cmleague-demos.service cmleague-demos.timer \n         cmleague-vigia.service cmleague-vigia.timer; do
   install -m 644 "$DIR/$u" "/etc/systemd/system/$u"
 done
 systemctl daemon-reload
@@ -250,8 +250,8 @@ if (( EN_ESPERA )); then
   # En el corte: systemctl enable --now cmleague-api cmleague-mm y los timers (docs/bitacora/2026-11-26-migracion-vps-brasil).
   echo "--en-espera: unidades instaladas, ninguna prendida"
 else
-  systemctl enable cmleague-api.service cmleague-mm.service cmleague-season.timer cmleague-notify.timer cmleague-medals.timer >/dev/null 2>&1
-  systemctl start cmleague-season.timer cmleague-notify.timer cmleague-medals.timer
+  systemctl enable cmleague-api.service cmleague-mm.service cmleague-season.timer cmleague-notify.timer cmleague-medals.timer cmleague-anticheat.timer >/dev/null 2>&1
+  systemctl start cmleague-season.timer cmleague-notify.timer cmleague-medals.timer cmleague-anticheat.timer
   # Vigía de la web (docs/bitacora/2026-11-20-proteccion-ddos): avisa por Discord si se completa vigia.env.
   systemctl enable --now cmleague-vigia.timer >/dev/null 2>&1
 fi
@@ -298,6 +298,7 @@ if (( EN_ESPERA )); then echo "  [--]  Timers y vigía en espera (--en-espera)";
 ok "Timer de temporadas"                 "systemctl is-active cmleague-season.timer"
 ok "Timer de notificaciones"             "systemctl is-active cmleague-notify.timer"
 ok "Timer de medallas"                   "systemctl is-active cmleague-medals.timer"
+ok "Timer del anticheat"                 "systemctl is-active cmleague-anticheat.timer"
 ok "Vigía de la web"                      "systemctl is-active cmleague-vigia.timer"
 fi
 ok "sudoers de deploy"                   "test -f /etc/sudoers.d/$APP-deploy"

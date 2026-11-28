@@ -20,6 +20,7 @@ await build({
     'demos-sftp': 'scripts/demos-sftp.mts',
     'notify-tick': 'scripts/notify-tick.mts',
     'mm-worker': 'scripts/mm-worker.mts',
+    'anticheat-tick': 'scripts/anticheat-tick.mts',
   },
   outdir: 'dist',
   outExtension: { '.js': '.mjs' },

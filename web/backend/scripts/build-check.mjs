@@ -64,3 +64,13 @@ const codeNotify = await new Promise((r) => notify.once('exit', r));
 const notifyOk = codeNotify === 1 && salidaNotify.includes('notify:tick: faltan');
 console.log(`build:check: notify-tick.mjs ${notifyOk ? 'carga' : 'FALLA'}: ${salidaNotify.trim().split('\n')[0]}`);
 if (!notifyOk) process.exitCode = 1;
+
+// anticheat-tick.mjs: lo mismo (la limpieza diaria del anticheat, cmleague-anticheat.timer).
+const ac = spawn(process.execPath, ['dist/anticheat-tick.mjs'], { env: { PATH: process.env.PATH }, stdio: ['ignore', 'pipe', 'pipe'] });
+let salidaAc = '';
+ac.stdout.on('data', (d) => (salidaAc += d));
+ac.stderr.on('data', (d) => (salidaAc += d));
+const codeAc = await new Promise((r) => ac.on('exit', r));
+const acOk = codeAc === 1 && salidaAc.includes('anticheat:tick: faltan');
+console.log(`build:check: anticheat-tick.mjs ${acOk ? 'carga' : 'FALLA'}: ${salidaAc.trim().split('\n')[0]}`);
+if (!acOk) process.exitCode = 1;

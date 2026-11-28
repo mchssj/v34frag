@@ -12,6 +12,7 @@ Todo lo necesario para rehacer el VPS de CMLeague (OVH, Ubuntu 26.04) desde cero
 | `cmleague-api.service` | La API | `/etc/systemd/system/` |
 | `cmleague-season.service` y `.timer` | Cierre de temporadas cada 10 minutos | `/etc/systemd/system/` |
 | `cmleague-notify.service` y `.timer` | Notificaciones programadas cada 10 minutos (usa `season.env`) | `/etc/systemd/system/` |
+| `cmleague-anticheat.service` y `.timer` | Limpieza del anticheat una vez al día: capturas a los 7 días y sesiones a los 30 (usa `season.env`) | `/etc/systemd/system/` |
 | `cmleague-hud.service` | Relay del HUD en modo VPS (apagado hasta completar `hud.json` y copiar las fuentes; UDP 27500 a 27519) | `/etc/systemd/system/` |
 | `cmleague-demos.service` y `.timer` | Demos por SFTP a R2 cada 10 minutos (apagado hasta completar sus variables) | `/etc/systemd/system/` |
 | `sudoers-deploy` | Lo único que `deploy` puede hacer con `sudo` | `/etc/sudoers.d/cmleague-deploy` |
