@@ -1,7 +1,18 @@
 # Pendientes
 
-Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-26**.
+Todo lo que se planteó o se empezó y todavía no está terminado o desplegado. Actualizado el **2026-11-28** (solo la sección del anticheat).
 
+
+## CMLeague Anticheat (2026-10-30 a 2026-11-28): en `feat/anticheat`, sin desplegar
+
+- **Qué es:** el anticheat completo de Kyan (agente, API, panel, Bridge, `cml_aimstats` y las migraciones `156` a `159`) más lo que pidió Daniel el 2026-11-27: el EAC de ClientMod prohibido (`AC-6`), expulsión desde que se entra, 1 minuto para el `!claim` y los servidores del matchmaking siguiendo a **Anticheat obligatorio** (migración `160`). Detalle: [`2026-11-27-anticheat-sin-eac`](bitacora/2026-11-27-anticheat-sin-eac/) y las carpetas del anticheat del 2026-10-30 y del 2026-11-27.
+- **Hecho:** probado en local con Daniel el 2026-11-27 (agente, Bridge, `AC-1`, `AC-6`, el `!claim`). Llevado desde `kyan/ac` a la rama `feat/anticheat` (worktree `v34frag-anticheat`, desde `main`) el 2026-11-28, sin la tienda, el VIP ni lo demás de `kyan/pruebas`. Las migraciones del anticheat se renumeraron de `155`–`159` a `156`–`160`, porque `main` usó la `155` (la sala oculta).
+- **Falta:**
+  1. Revisarlo y mezclarlo en `main` (y la base y la API en `feat/frontend-fase-1` y `feat/mm-claim-en-sala`, como el matchmaking).
+  2. Bajar ClientMod limpio para cargar sus firmas.
+  3. El despliegue, en el orden de la [guía](bitacora/2026-11-27-anticheat-sin-eac/GUIA_IMPLEMENTACION.md): base, API (con `AC_API_SECRET` y `AC_HWID_SALT`) y web, el cron `anticheat:tick` en el VPS, firmas de ClientMod, agente publicado, Bridge y `cml_aimstats` en **#1, #2 y #3** en la misma tanda y sin un mix en curso, avisar a los jugadores (changelog 2.9.79), prender **Anticheat obligatorio** en el matchmaking y quitar "En preparación" de los términos.
+  4. Después del despliegue: mirar si `aim_snap` marca a jugadores limpios, si algún servidor se cierra solo después de una expulsión, que `AC-0` funcione con alguien sin el SteamID vinculado y si Defender marca al agente.
+  5. **El agente sale sin firma de código**, igual que la app de CMLeague (Daniel, 2026-11-27). Si Defender lo marca, se manda el `.exe` como falso positivo a Microsoft; el certificado se compra solo si pasa seguido.
 
 ## La sala oculta mientras se acepta la partida (2026-11-27): desplegado
 
