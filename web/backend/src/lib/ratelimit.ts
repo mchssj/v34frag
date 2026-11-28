@@ -20,6 +20,9 @@ export const RATE_RULES = {
   replace: { name: 'replace', limit: 10, windowSec: 60, binding: 'RL_REPLACE' },
   // Canjear un código: 10 por minuto por IP (replanteo 126). Los topes por cuenta (5 fallos en 15 minutos, 20 en 24 horas) los lleva la base.
   redeem: { name: 'redeem', limit: 10, windowSec: 60, binding: 'RL_REDEEM' },
+  // Anticheat: empezar una vinculación, y consultar o renovar (el agente consulta cada 5 segundos).
+  acLink: { name: 'ac_link', limit: 10, windowSec: 60, binding: 'RL_AC_LINK' },
+  acClaim: { name: 'ac_claim', limit: 60, windowSec: 60, binding: 'RL_AC_CLAIM' },
 } as const satisfies Record<string, RateRule>;
 
 export type RateResult = { ok: boolean; retryAfter: number };

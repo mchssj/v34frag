@@ -13,6 +13,9 @@ import { MemoryRateLimiter, type RateLimiter } from './lib/ratelimit';
 import { createRouter } from './lib/router';
 import { account } from './routes/account';
 import { adminDemos } from './routes/admin-demos';
+import { anticheat } from './routes/anticheat';
+import { anticheatEvidence } from './routes/anticheat-evidence';
+import { anticheatStaff } from './routes/anticheat-staff';
 import { adminPlayers } from './routes/admin-players';
 import { adminEmailDomains } from './routes/admin-email-domains';
 import { adminBanIps } from './routes/admin-ban-ips';
@@ -138,6 +141,9 @@ export function createApp(options: AppOptions = {}) {
   app.route('/', events);
   app.route('/', pcwPlay);
   app.route('/', servers);
+  app.route('/', anticheat); // (replanteos 45 a 47 y 156 a 160) agente, Bridge y panel del anticheat
+  app.route('/', anticheatEvidence);
+  app.route('/', anticheatStaff);
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
     type: 'http',

@@ -46,8 +46,12 @@ const EnvSchema = z.object({
     .string()
     .regex(/^(?=.{1,253}$)[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i)
     .optional(),
-  // La API no la usa: la usa el cron de las temporadas (scripts/season-tick.mts). Se declara para que el despliegue
-  // falle temprano si viene mal formada.
+  // Secreto del anticheat: la base lo pide para que solo la API informe la IP del agente (replanteo 45). Sin él, el agente da 501.
+  AC_API_SECRET: z.string().min(32).optional(),
+  // Sal del HMAC de los identificadores de la máquina (replanteo 158). Sin ella, no hay ban por máquina.
+  AC_HWID_SALT: z.string().min(32).optional(),
+  // La API la usa solo para subir las capturas del anticheat al bucket privado. También la usa el cron de las temporadas
+  // (scripts/season-tick.mts). Se declara para que el despliegue falle temprano si viene mal formada.
   SUPABASE_SERVICE_KEY: z.string().min(20).optional(),
   // Webhook de Discord del aviso de la cola del matchmaking (#avisos) y el rol que menciona (replanteo 57). Secreto: solo en
   // el entorno. Sin el webhook, el aviso responde 501.
