@@ -65,7 +65,7 @@ Todo junto con lo de Kyan, y **en este orden**. Si se prende "Anticheat obligato
 2. **Base, en el VPS** (backup antes, `sudo sb`): confirmar que la `45` a la `47` están aplicadas en producción y aplicar las cinco del anticheat, en orden y con sus números nuevos (ver el paso 1).
 3. **API:** `AC_HWID_SALT` en `/etc/cmleague/api.env` (generada en el VPS, `openssl rand -hex 32`) y desplegar desde `main`.
 4. **Web:** desplegar desde `main` (Servidores, manual, términos y privacidad).
-5. **Firmas de ClientMod:** bajar ClientMod limpio, correr `agent\firmas-clientmod.ps1 -Carpeta <carpeta> -Salida firmas.sql` y aplicarlo por el túnel.
+5. **Firmas de ClientMod:** aplicar por el túnel [`pruebas/firmas-clientmod-1.5.14.sql`](pruebas/firmas-clientmod-1.5.14.sql) (72 archivos, verificados con un ClientMod recién bajado el 2026-11-28). Si para entonces salió otra versión de ClientMod, bajarla limpia y correr `agent\firmas-clientmod.ps1 -Carpeta <carpeta> -Salida firmas.sql`.
 6. **Agente 0.6.0:** publicarlo en `cmleague.lat` y cargar su hash en **Agente** › hashes permitidos.
    - **Sale sin firma de código**, igual que la app (Daniel, 2026-11-27). El control del servidor no la necesita: compara el hash del `.exe` con los permitidos. Sin firma, Windows muestra "Windows protegió tu PC" en cada versión nueva, y el antivirus tiene más chances de desconfiar (el agente mira los procesos, saca capturas y manda datos).
    - Si Defender lo marca o lo pone en cuarentena (el jugador ve `AC-1`), mandar el `.exe` como falso positivo al portal de Microsoft Security Intelligence.

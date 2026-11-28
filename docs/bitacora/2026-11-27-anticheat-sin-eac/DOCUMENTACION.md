@@ -182,7 +182,7 @@ Queda para mirar con datos reales: `cml_aim_snap` (25°) es por tick, así que d
 
 Las DLL del v34 y de ClientMod no tienen firma digital: sin firmas `good`, cada sesión llena el panel de marcas `module_unsigned`. `agent/firmas-clientmod.ps1` calcula el SHA-256 de cada `.dll` y `.exe` de una instalación (la raíz, `bin`, `bin_clientmod` y `EasyAntiCheat`; no `cstrike*`, que es contenido del jugador) y escribe un `.sql` que las carga como `good` para `module` y `game_file`. Va por hash: un cheat puede llamarse `client.dll`. Volver a aplicarlo no duplica nada.
 
-Con la instalación de la PC de Daniel (ClientMod 1.5.14) salieron 72 ([`pruebas/firmas-clientmod-1.5.14.sql`](pruebas/firmas-clientmod-1.5.14.sql)). Esa instalación tiene un `steam_api.dll` de 2014 en `cstrike/cfg` que no es de ClientMod: **para producción se generan con un ClientMod recién bajado**.
+Con la instalación de la PC de Daniel (ClientMod 1.5.14) salieron 72 ([`pruebas/firmas-clientmod-1.5.14.sql`](pruebas/firmas-clientmod-1.5.14.sql)). Esa instalación tiene un `steam_api.dll` de 2014 en `cstrike/cfg` que no es de ClientMod, así que el 2026-11-28 se repitió con un ClientMod 1.5.14 recién bajado (`D:\ClientModClean`): salieron los mismos 72 archivos con los mismos hashes. Ese `.sql` es el de producción. Probado en la copia local dentro de una transacción con rollback: carga 72 firmas `good` y aplicarlo dos veces no duplica nada. El script, además, ya acepta una ruta absoluta en `-Salida` (antes fallaba con "No se admite el formato proporcionado de la ruta de acceso").
 
 ## Panel: Administración › Anticheat › Servidores
 
