@@ -1,5 +1,5 @@
--- Firmas buenas de ClientMod 1.5.14: 72 archivos de C:\CSSv34_ClientMod.
--- Generado por agent/firmas-clientmod.ps1 el 2026-11-27 10:43. Volver a aplicarlo no duplica nada.
+-- Firmas buenas de ClientMod 1.5.14: 72 archivos de D:\ClientModClean.
+-- Generado por agent/firmas-clientmod.ps1 el 2026-11-28 12:12. Volver a aplicarlo no duplica nada.
 begin;
 insert into public.ac_signatures (sha256, name, kinds, verdict, label)
 select v.sha256, v.name, array['module', 'game_file'], 'good', v.label

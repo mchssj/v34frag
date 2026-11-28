@@ -60,5 +60,6 @@ commit;
 "@
 
 $utf8 = New-Object System.Text.UTF8Encoding($false)
-[System.IO.File]::WriteAllText((Join-Path (Get-Location) $Salida), $sql, $utf8)
+$destino = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Salida)
+[System.IO.File]::WriteAllText($destino, $sql, $utf8)
 Write-Host "ClientMod $version`: $($filas.Count) archivos en $Salida"
